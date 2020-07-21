@@ -14,3 +14,8 @@ Repo for the project of NN 2020 based on the paper "Interpreting CNNs via Decisi
 - **nodes**: represents a decision node, *i.e.* a set of meaningful rationales
     - **root**: set of all decision nodes, *i.e.* set of all possible rationales 
 - **leaves**: represent the specific decision node of a certain image, *i.e.* the rationale of a specific image  
+
+### building the exaplanation Tree
+1. learn filters to represents object parts???
+2. assign each filter with a specific part name??
+3. ¿¿mine?? the decision nodes to explain how the CNN use the filters and construct the tree
