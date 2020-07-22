@@ -33,13 +33,7 @@ The filter we want to learn (?) is activted by the same object part (bird's head
 The filter loss ensures that given an input image x_f will match only one of the possible location candidates. For doing this, we assume that repetitive shapes on various region probably describe low-level textures rather than high-level shapes (evidences in the paper Interpretable CNN [40]); we are then interested in the top conv-layer filters because they will most likely represent object parts.
 
 ### Tree
-At the beginning, we initialize the decision mode of each positive image Ii as a leaf node by setting g=gi
-and α = 1. Thus, we build an initial tree Q as shown in
-Fig. 4, in which the root node takes decision modes of all
-positive images as children. Then, in each step, we select
-and merge two nodes v, v′ ∈ V in the second tree layer (i.e.
-children of the root node) to obtain a new node u, where V
-denotes the children set of the root. u becomes a new child
-6265
-of the root node, and v and v′ are re-assigned as u’s children.
+1. We initialize the decision mode of each positive image as a leaf node.
+2. We build an initial tree Q in which the root node takes decision modes of all positive images as children.
+3. Then, in each step, we select and merge two nodes `v` and `v′` in the second tree layer (i.e. children of the root node) to obtain a new node `u` that becomes a new child of the root node, and `v` and `v′` are re-assigned as `u`’s children.
 
