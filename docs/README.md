@@ -35,5 +35,8 @@ The filter loss ensures that given an input image x_f will match only one of the
 ### Tree
 1. We initialize the decision mode of each positive image as a leaf node.
 2. We build an initial tree Q in which the root node takes decision modes of all positive images as children.
-3. Then, in each step, we select and merge two nodes `v` and `v′` in the second tree layer (i.e. children of the root node) to obtain a new node `u` that becomes a new child of the root node, and `v` and `v′` are re-assigned as `u`’s children.
+3. Then, in each step, we select and merge two nodes `v` and `v′` in the second tree layer (i.e. children of the root node) to obtain a new node `u` that becomes a new child of the root nodes.
+4. `v` and `v′` are re-assigned as `u`’s children.
+
+
 
