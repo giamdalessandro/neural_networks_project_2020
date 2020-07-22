@@ -1,3 +1,4 @@
+# README for the selected paper
 ## Definitions
 - `object part`: associates each disentangled filter with an explicit semantic meaning. This association enables linguistic descriptions of middle-layer knowledge, for example, how many parts are memorized in the CNN and how the parts are organized.
 - `rationale`: we define the rationale of a CNN prediction as the set of object parts (or filters) that are activated and contribute to the prediction. Given different input images, the
@@ -32,7 +33,7 @@ The filter we want to learn (?) is activted by the same object part (bird's head
 
 The filter loss ensures that given an input image x_f will match only one of the possible location candidates. For doing this, we assume that repetitive shapes on various region probably describe low-level textures rather than high-level shapes (evidences in the paper Interpretable CNN [40]); we are then interested in the top conv-layer filters because they will most likely represent object parts.
 
-### Tree
+### Actually building the bloody tree
 1. We initialize the decision mode of each positive image as a leaf node.
 2. We build an initial tree Q in which the root node takes decision modes of all positive images as children.
 3. Then, in each step, we select and merge two nodes `v` and `v′` in the second tree layer (i.e. children of the root node) to obtain a new node `u` that becomes a new child of the root nodes.
