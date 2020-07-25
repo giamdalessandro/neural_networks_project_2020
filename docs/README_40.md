@@ -1,10 +1,11 @@
 # README 40
 
-### Algorithm of Interpretable CNN
+## Algorithm of Interpretable CNN
 
 The algorithm focuses on the learning of a single filter `f` in the target conv-layer.
 For doing this, we add a loss to the `feature map x` of `f` after the ReLu operation.
 So the structure is:
+
 - in --> CONV --> RELU --> Loss for filter f --> out
 
 ### Feature map x 
@@ -22,3 +23,18 @@ Each template `T_i` is also an `n`x`n` matrix that describes the ideal distribut
 
 - __Luca__: i template sono tutti i possibili modi di attivare il filtro f, cioè tutte le possibili zone in cui può apparire quella object part. Di queste viene poi selezionata solo quella con l'attivazione maggiore per evitare duplicati.
   - Perchè non usano una sliding window con lo stride per fare questo?
+
+
+
+### Forward pass
+
+For each input image $I$ the algorithm proceed as follows:
+$$
+\forall I \text{ : } \hat \mu = argmax_{[i,j]} x_{i,j} \implies x_{masked} = max(x *T_{\hat \mu}, 0)
+$$
+Then it applies the obtained mask, i.e. the template $T_{\hat \mu}$ centered on the filter pixel with the highest ($\hat \mu$), on the map filter $f$.
+
+### Backward pass
+
+- $T = \{T^-, T_{\mu_1}, ..., T_{\mu_{n^2}} \}$ candidate templates
+- $X = \{x|x = f(I), I \in \text{I} \}$ set of all feature maps of filter $f$ 
