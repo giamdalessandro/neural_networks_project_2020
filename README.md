@@ -26,5 +26,16 @@ Just like in most part-localization studies, they used animal categories, which 
 
 ### Our implementation
 
-- CNN:
-- Benchmark dataset:
+- CNN: VGG16
+- Benchmark dataset: PASCAL VOC 2010 Part Dataset + ILSVR-C 2013 DET
+
+Environment set up:
+```
+cd ~
+python3 -m venv --system-site-packages ./nn_venv
+source ./nn_venv/bin/activate                       # to enter the virtual env
+pip install --upgrade pip
+pip install --upgrade tensorflow
+python -c "import tensorflow as tf;print(tf.reduce_sum(tf.random.normal([1000, 1000])))"
+deactivate                                              # to exit the virtual env
+```
