@@ -4,9 +4,9 @@ Repo for the project of NN 2020 based on the paper "Interpreting CNNs via Decisi
 
 ## Requirements
 4 types of disentagled CNNs:
-- AlexNet   (**not suitable for multi-class**)
-- VGG-M
-- VGG-S
+- ~AlexNet~   (**not suitable for multi-class**)
+- ~VGG-M~
+- ~VGG-S~
 - VGG-16
 
 All of them were pre-trained on *ImageNet ILSVRC 2012* with a loss for 1000-category classification.
@@ -15,7 +15,7 @@ They used 3 combined datasets to evaluate the new CNN:
 - PASCAL VOC 2010 Part Dataset
     - 6 categorie: `bird`, `cat`, `cow`, `dog`, `horse`, `sheep`
     - http://roozbehm.info/pascal-parts/pascal-parts.html
-- CUB200-2011 (**not suitable for multi-class**)
+- ~CUB200-2011~ (**not suitable for multi-class**)
     - 11.8K imgs (1.1GB) di 200 categorie di uccelli che hanno unificato in una sola: `bird`
 - ILSVR-C 2013 DET Animal-Part
     - https://github.com/zqs1022/detanimalpart.git
