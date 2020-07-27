@@ -3,6 +3,11 @@ from tensorflow import keras
 #import numpy as np
 #import matplotlib.pyplot as plt
 
+# TODO
+#   - Disentgled CNN
+#       - aggiungere loss filtri
+#   - Build decision trees
+
 
 # GPU check
 print("Num GPUs Available: ", len(tf.config.experimental.list_physical_devices('GPU')))
