@@ -9,10 +9,8 @@ import matplotlib.pyplot as plt
 #   - Build decision trees
 
 
-keras.applications.VGG16(
 # GPU check
 print("Num GPUs Available: ", len(tf.config.experimental.list_physical_devices('GPU')))
-
 
 model = keras.applications.VGG16(
     include_top=True, weights='imagenet', input_tensor=None, input_shape=None,
