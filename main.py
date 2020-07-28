@@ -18,3 +18,5 @@ model = keras.applications.VGG16(
 )
 
 print("Model loaded.")
+
+model.
