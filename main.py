@@ -20,5 +20,10 @@ VGG16 = keras.applications.VGG16(
 model = keras.Sequential(VGG16.layers[:-1])
 print(model.summary())
 
+'''
+lay_cfg = model.get_layer(name='block5_conv3').get_config()
+for k,v in lay_cfg.items():
+    print(k + ": \t" + str(v))
+'''
 
 print(">> Model loaded.")
