@@ -10,6 +10,8 @@ from tensorflow import keras
 print("Num GPUs Available: ", len(tf.config.experimental.list_physical_devices('GPU')))
 
 #   1. (tf.keras) getting first 5 VGG16 pre-trained conv blocks without last max pool
+print("\n[1] Loading vgg16 from keras...")
+
 VGG16 = keras.applications.VGG16(
     include_top=False, weights='imagenet', input_tensor=None, input_shape=None,
     pooling=None, classes=1000, classifier_activation='softmax'
@@ -22,13 +24,15 @@ for k,v in lay_cfg.items():
     print(k + ": \t" + str(v))
 '''
 
-#       1.1 (.mat) getting first 5 VGG16-verydeep pre-trained conv blocks without last max pool
+#   -   1.1 (.mat) getting first 5 VGG16-verydeep pre-trained conv blocks without last max pool
+print("\n[1] Loading vgg16-verydeep from mat file...")
+
 from scipy.io import loadmat
 net = loadmat("./dataset/imagenet-vgg-verydeep-16.mat") # load .mat file as a dict
-print(net.keys())
-print(net["layers"].shape)
+print("[1] {}".format(net.keys()))
+print("[1] loaded layers: {}".format(net["layers"].shape[1]))
 
-print(">> Model loaded.")
+print("[1] Model loaded.")
 
 
 #   2. modificare filtri nel top conv-layer --> aggiungere maschere
