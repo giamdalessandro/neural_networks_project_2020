@@ -1,8 +1,7 @@
 import json
-import tensorflow as tf
 from tensorflow import keras
 
-def load_cnn():
+def load_keras():
     print("\n[1] Loading vgg16 from keras...")
     VGG16 = keras.applications.VGG16(
         include_top=False, weights='imagenet', input_tensor=None, input_shape=None,
@@ -11,25 +10,23 @@ def load_cnn():
     model = keras.Sequential(VGG16.layers[:-1])
     print(model.summary())
 
-    print("\n[1] Loading vgg16-verydeep from mat file...")
+    return net
 
+
+def load_very_deep():
     from scipy.io import loadmat
+    print("\n[1] Loading vgg16-verydeep from mat file...")
     net = loadmat("./dataset/imagenet-vgg-verydeep-16.mat") # load .mat file as a dict
     print("[1] {}".format(net.keys()))
     print("[1] loaded layers: {}".format(net["layers"].shape[1]))
 
     print("[1] Model loaded.")
+    #net_list = net["layers"][0].tolist()
 
-    return net
+    #import tables
+    #file = tables.open_file("./dataset/imagenet-vgg-verydeep-16.mat", mode="r+")
+    #print(len(file.root.layers[:]))
 
-
-def load_weights():
-    from scipy.io import loadmat
-    net = loadmat("./dataset/imagenet-vgg-verydeep-16.mat") # load .mat file as a dict
-    print("[1] {}".format(net.keys()))
-    
-    net_list = net["layers"][0].tolist()
-    #print(len(net_list))
     for ar in net_list:
         layer = ar.tolist()
         print("zavve, {}, len: {}".format(type(ar),len(layer)))
@@ -43,4 +40,4 @@ def load_weights():
         break
     
 
-load_weights()
+load_very_deep()
