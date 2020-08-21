@@ -3,14 +3,14 @@ from tensorflow import keras
 
 def load_keras():
     print("\n[1] Loading vgg16 from keras...")
-    VGG16 = keras.applications.VGG16(
+    model = keras.applications.VGG16(
         include_top=False, weights='imagenet', input_tensor=None, input_shape=None,
         pooling=None, classes=1000, classifier_activation='softmax'
     )
-    model = keras.Sequential(VGG16.layers[:-1])
+    #model = keras.Sequential(VGG16.layers[:-1])
     print(model.summary())
 
-    return net
+    return model
 
 
 def load_very_deep():
@@ -39,5 +39,6 @@ def load_very_deep():
             break
         break
     
-
-load_very_deep()
+# .test
+#load_keras()
+#load_very_deep()
