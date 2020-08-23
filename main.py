@@ -1,10 +1,10 @@
-import tensorflow as tf
-from tensorflow import keras
+from tensorflow.config import experimental
+from tensorflow.keras import Sequential
 from tensorflow.keras.layers import Dense, Conv2D, MaxPool2D , Flatten
 from load_cnn import load_keras
 
 # GPU check
-print("Num GPUs Available: ", len(tf.config.experimental.list_physical_devices('GPU')))
+print("Num GPUs Available: ", len(experimental.list_physical_devices('GPU')))
 
 # TODO
 #   - Disentangled CNN
@@ -15,7 +15,7 @@ print("Num GPUs Available: ", len(tf.config.experimental.list_physical_devices('
 #   'cause VGG16_vd .mat file is not working...
 
 net = load_keras()
-model = keras.Sequential()
+model = Sequential(name="Interpretable_vgg16")
 for layer in net.layers[:-1]:  # just exclude last layer from copying
     model.add(layer)
 #print(model.summary())
