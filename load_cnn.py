@@ -1,13 +1,13 @@
 import json
-from tensorflow import keras
+from tensorflow.keras.applications import VGG16
+from tensorflow.keras.preprocessing.image import ImageDataGenerator
 
 def load_keras():
     print("\n[1] Loading vgg16 from keras...")
-    model = keras.applications.VGG16(
-        include_top=False, weights='imagenet', input_tensor=None, input_shape=None,
+    model = VGG16(
+        include_top=False, weights='imagenet', input_tensor=None, input_shape=(224, 224, 3),
         pooling=None, classes=1000, classifier_activation='softmax'
     )
-    #model = keras.Sequential(VGG16.layers[:-1])
     print(model.summary())
 
     return model
@@ -39,6 +39,37 @@ def load_very_deep():
             break
         break
     
-# .test
 #load_keras()
 #load_very_deep()
+
+DATA_PATH = "./dataset/ILSVRC_2013_DET_part/"
+BATCH_SIZE = 32
+
+def load_dataeset():
+    train_datagen = ImageDataGenerator(
+        rescale=1./255,
+        shear_range=0.2,
+        zoom_range=0.2,
+        horizontal_flip=True,
+        validation_split=0.2
+    )
+    test_datagen = ImageDataGenerator(rescale=1./255)
+
+    train_generator = train_datagen.flow_from_directory(
+        directory=DATA_PATH,
+        target_size=(224, 224),
+        color_mode="rgb",
+        batch_size=BATCH_SIZE,
+        class_mode="categorical",
+        shuffle=True,
+        subset="training"
+    )
+    validation_generator = test_datagen.flow_from_directory(
+        directory=DATA_PATH,
+        target_size=(224, 224),
+        batch_size=BATCH_SIZE,
+        class_mode="binary",
+        subset="validation"
+    )
+
+    return train_generator, validation_generator
