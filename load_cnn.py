@@ -1,4 +1,5 @@
 import json
+from tensorflow import keras
 from tensorflow.keras.applications import VGG16
 from tensorflow.keras.preprocessing.image import ImageDataGenerator
 
@@ -19,6 +20,16 @@ def load_very_deep():
     net = loadmat("./dataset/imagenet-vgg-verydeep-16.mat") # load .mat file as a dict
     print("[1] {}".format(net.keys()))
     print("[1] loaded layers: {}".format(net["layers"].shape[1]))
+
+
+    print("\n[1] Loading vgg16 from keras...")
+
+    VGG16 = keras.applications.VGG16(
+        include_top=True, weights='imagenet', input_tensor=None, input_shape=None,
+        pooling=None, classes=1000, classifier_activation='softmax')
+
+    model = keras.Sequential(VGG16.layers[:-1])
+    print(model.summary())
 
     print("[1] Model loaded.")
     #net_list = net["layers"][0].tolist()
