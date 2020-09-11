@@ -56,19 +56,17 @@ def load_very_deep():
 #load_very_deep()
 
 DATA_PATH = "./dataset/ILSVRC_2013_DET_part/"
-BATCH_SIZE = 32
+BATCH_SIZE = 8
 
 def load_dataeset():
-    train_datagen = ImageDataGenerator(
-        rescale=1./255,
+    datagen = ImageDataGenerator(
+        rescale=1./255,             # data agumentation 
         shear_range=0.2,
-        zoom_range=0.2,
+        zoom_range=0.2,       
         horizontal_flip=True,
-        validation_split=0.2
+        validation_split=0.2        # train and val
     )
-    test_datagen = ImageDataGenerator(rescale=1./255)
-
-    train_generator = train_datagen.flow_from_directory(
+    train_generator = datagen.flow_from_directory(
         directory=DATA_PATH,
         target_size=(224, 224),
         color_mode="rgb",
@@ -77,11 +75,11 @@ def load_dataeset():
         shuffle=True,
         subset="training"
     )
-    validation_generator = test_datagen.flow_from_directory(
+    validation_generator = datagen.flow_from_directory(
         directory=DATA_PATH,
         target_size=(224, 224),
         batch_size=BATCH_SIZE,
-        class_mode="binary",
+        class_mode="categorical",
         subset="validation"
     )
 
