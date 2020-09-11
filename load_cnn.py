@@ -37,7 +37,9 @@ def load_very_deep():
     #import tables
     #file = tables.open_file("./dataset/imagenet-vgg-verydeep-16.mat", mode="r+")
     #print(len(file.root.layers[:]))
-
+    
+    # zavve-subgull & co. #
+    
     for ar in net_list:
         layer = ar.tolist()
         print("zavve, {}, len: {}".format(type(ar),len(layer)))
