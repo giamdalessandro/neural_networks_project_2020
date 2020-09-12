@@ -26,17 +26,19 @@ print(model.summary())    # problema: toglie lo stato di input finale
 '''
 out_tensor = model.layers[-1].output
 print(type(out_tensor), out_tensor)
-print(out_tensor[0][0][0][0].values)
+print(out_tensor[0][0][0][0])
 
 # for all feature map in top conv layer:ù
-for z in range(512):
+ttt = tf.random.uniform((14,14,512))
+for z in range(1): #512
     # find max indices in the feature map
-    i, j = my_argmax(out_tensor[0], z)
+    feature_map = tf.slice(ttt, [0,0,z], [14,14,0])
+    #i, j = my_argmax(out_tensor[0], z)
+    mu = tf.math.argmax(feature_map)
     # compute mask centered in those indeces
-    mask = compute_mask(i,j)
+    mask = compute_mask(mu)
     # apply corresponding mask
-    tf.math.multiply(out_tensor, mask)
-
+    tf.math.multiply(feature_map,mask)
 
 
 

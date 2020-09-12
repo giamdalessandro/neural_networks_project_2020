@@ -32,15 +32,17 @@ def my_argmax(t, z):
 
 
 
-def compute_mask(i_max,j_max):
+def compute_mask(mu):
+    i_max = mu[0]
+    j_max = mu[1]
     n    = 14
     tau  = 1                     # da verificare
     beta = 1                     # da verificare
-    mat = np.zeros(shape=(n,n))
-    #mat = tf.zeros(shape=(n,n))
+    #mat = np.zeros(shape=(n,n,0))
+    mat = tf.zeros(shape=(n,n,0))
     for i in range(n):
         for j in range(n):
-            mat[i,j] = tau * max(-1, 1-beta*(abs(i-i_max)+abs(j-j_max))/n)
+            mat[i,j,0] = tau * max(-1, 1-beta*(abs(i-i_max)+abs(j-j_max))/n)
     print(mat)
     return mat
 
