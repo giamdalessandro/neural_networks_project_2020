@@ -1,20 +1,65 @@
 import json
+import tensorflow as tf
+import numpy as np
 from tensorflow import keras
+from tensorflow.keras import Sequential
 from tensorflow.keras.applications import VGG16
 from tensorflow.keras.preprocessing.image import ImageDataGenerator
 
 def load_keras():
     print("\n[1] Loading vgg16 from keras...")
-    model = VGG16(
+    pretrained = VGG16(
         include_top=False, weights='imagenet', input_tensor=None, input_shape=(224, 224, 3),
         pooling=None, classes=1000, classifier_activation='softmax'
     )
-    print(model.summary())
-
+    model = Sequential(name="Interpretable_vgg16")
+    for layer in pretrained.layers[:-1]:  # just exclude last layer from copying
+        model.add(layer)
     return model
 
 
+
+def my_argmax(t, z):
+    max_value = i_max = j_max = 0
+    for i in range(14):
+        for j in range(14):
+            if t[i,j,z] > max_value:
+                i_max = i
+                j_max = j
+                max_value = t[i,j,z]
+    print("max value at depth %d found at %d%d : %d".format(z, i_max, j_max, max_value))
+    return i_max, j_max
+
+
+
+def compute_mask(i_max,j_max):
+    n    = 14
+    tau  = 1                     # da verificare
+    beta = 1                     # da verificare
+    mat = np.zeros(shape=(n,n))
+    #mat = tf.zeros(shape=(n,n))
+    for i in range(n):
+        for j in range(n):
+            mat[i,j] = tau * max(-1, 1-beta*(abs(i-i_max)+abs(j-j_max))/n)
+    print(mat)
+    return mat
+
+    
+
+
+
+
+
+
+
+
+
+
+
 def load_very_deep():
+    # c'è il casino da fare per tirare fuori i pesi
+    # si può fare forse se si converte il .mat nel formato più nuovo (da matlab), ma per ora
+    # non penso che serva
     from scipy.io import loadmat
     print("\n[1] Loading vgg16-verydeep from mat file...")
     net = loadmat("./dataset/imagenet-vgg-verydeep-16.mat") # load .mat file as a dict
@@ -51,9 +96,6 @@ def load_very_deep():
                 break
             break
         break
-    
-#load_keras()
-#load_very_deep()
 
 DATA_PATH = "./dataset/ILSVRC_2013_DET_part/"
 BATCH_SIZE = 8

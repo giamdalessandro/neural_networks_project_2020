@@ -1,43 +1,61 @@
+import tensorflow as tf
 from tensorflow.config import experimental
-from tensorflow.keras import Sequential
 from tensorflow.keras.layers import Dense, Conv2D, MaxPool2D , Flatten, Dropout
 from tensorflow.keras.optimizers import Adam
 from tensorflow.keras.losses import categorical_crossentropy
-from load_cnn import load_keras, load_dataeset
+from load_cnn import *
 
 # GPU check
 print("Num GPUs Available: ", len(experimental.list_physical_devices('GPU')))
 
-''' TODO
-    - Disentangled CNN
-       - aggiungere loss filtri
-    - Build decision trees
-
-    1. loading pre-trained net from keras.Applications model, 
-    'cause VGG16_vd .mat file is not working...
 '''
-model = Sequential(name="Interpretable_vgg16")
+1. loading pre-trained net from keras.Applications model, because VGG16_vd .mat file is not working...
+'''
 
-net = load_keras()
-for layer in net.layers[:-1]:  # just exclude last layer from copying
-    model.add(layer)
-#print(model.summary())
+model = load_keras()
+print(model.summary())    # problema: toglie lo stato di input finale
 
+'''
+2. add loss for each of the 512 filters
+'''
+
+# skippata per ora
 
 ''' 
-    2. make top conv-layer(s) interpretable --> add masks to ouput filter
+3. add masks to ouput filter
 '''
-top_conv = model.layers[-1]
-out_tensor = top_conv.output
+out_tensor = model.layers[-1].output
 print(type(out_tensor), out_tensor)
-print(out_tensor[0,0])
-#block_mask_1 = Conv2D(filters=512, kernel_size=(3,3), strides=(1,1), padding="same", dilation_rate=(1,1),
-#                    activation="relu", name="block_mask1")  # da completare con magia nera ?!?!
-#block_mask_1.add_weight(shape=(3,3,512,512), initializer="random_normal", trainable=True)
+print(out_tensor[0][0][0][0].values)
 
-#block_mask_1.add_loss()        # to build the interpretable tree?
-#model.add(block_mask_1)         # add block_mask to model
+# for all feature map in top conv layer:ù
+for z in range(512):
+    # find max indices in the feature map
+    i, j = my_argmax(out_tensor[0], z)
+    # compute mask centered in those indeces
+    mask = compute_mask(i,j)
+    # apply corresponding mask
+    tf.math.multiply(out_tensor, mask)
+
+
+
+
+'''
+4. add final pooling
+'''
+
 model.add(MaxPool2D(name="block_pool", pool_size=(2,2),strides=(2,2)))         # add max pool layer
+
+
+
+
+
+
+
+
+
+
+
 
 '''
     3. aggiungere filter loss al top_conv_layer
