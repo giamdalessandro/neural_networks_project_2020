@@ -24,26 +24,27 @@ print(model.summary())    # problema: toglie lo stato di input finale
 ''' 
 3. add masks to ouput filter
 '''
-out_tensor = model.layers[-1].output
-print(type(out_tensor), out_tensor)
-print(out_tensor[0][0][0][0])
 
 # for all feature map in top conv layer:
-n = 5
-ttt = tf.random.uniform(shape=(n,n,512), seed=42)
-for z in range(1): #512
-    feature_map = tf.slice(ttt, [0,0,z], [n,n,1])       # find max indices in the feature map
-    print("feature map:", feature_map)
-    array_inutile = tf.reshape(feature_map, shape=[-1,1])
-    print(array_inutile)
-    mu = my_argmax(array_inutile, n)
-    print("mu", mu)
-    mask = compute_mask(mu, n)                             # compute mask centered in those indeces
-    print("mask", mask)
-    output = tf.math.multiply(feature_map,mask)         # apply corresponding mask
-    print("masked output", output)
+n = 14
+depth = 512
+# out_tensor = tf.random.uniform(shape=(n,n,512), seed=42)
+out_tensor = model.layers[-1].output[0]
 
-print("hello i'm stooopid")
+for z in range(depth):
+    feature_map = tf.slice(out_tensor, [0,0,z], [n,n,1])       # find max indices in the feature map
+    #print("feature map:", feature_map)
+    array_inutile = tf.reshape(feature_map, shape=[-1,1])
+    #print(array_inutile)
+    mu = my_argmax(array_inutile, n)
+    #print("mu", mu)
+    mask = compute_mask(mu, n)                             # compute mask centered in those indeces
+    #print("mask", mask)
+    output = tf.math.multiply(feature_map,mask)         # apply corresponding mask
+    #print("masked output", output)
+    
+    # sostituire masked output all'output originale
+
 
 
 '''
