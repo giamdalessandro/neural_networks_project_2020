@@ -28,18 +28,22 @@ out_tensor = model.layers[-1].output
 print(type(out_tensor), out_tensor)
 print(out_tensor[0][0][0][0])
 
-# for all feature map in top conv layer:ù
-ttt = tf.random.uniform((14,14,512))
+# for all feature map in top conv layer:
+n = 5
+ttt = tf.random.uniform(shape=(n,n,512), seed=42)
 for z in range(1): #512
-    # find max indices in the feature map
-    feature_map = tf.slice(ttt, [0,0,z], [14,14,0])
-    #i, j = my_argmax(out_tensor[0], z)
-    mu = tf.math.argmax(feature_map)
-    # compute mask centered in those indeces
-    mask = compute_mask(mu)
-    # apply corresponding mask
-    tf.math.multiply(feature_map,mask)
+    feature_map = tf.slice(ttt, [0,0,z], [n,n,1])       # find max indices in the feature map
+    print("feature map:", feature_map)
+    array_inutile = tf.reshape(feature_map, shape=[-1,1])
+    print(array_inutile)
+    mu = my_argmax(array_inutile, n)
+    print("mu", mu)
+    mask = compute_mask(mu, n)                             # compute mask centered in those indeces
+    print("mask", mask)
+    output = tf.math.multiply(feature_map,mask)         # apply corresponding mask
+    print("masked output", output)
 
+print("hello i'm stooopid")
 
 
 '''

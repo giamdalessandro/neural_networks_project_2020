@@ -18,32 +18,24 @@ def load_keras():
     return model
 
 
-
-def my_argmax(t, z):
-    max_value = i_max = j_max = 0
-    for i in range(14):
-        for j in range(14):
-            if t[i,j,z] > max_value:
-                i_max = i
-                j_max = j
-                max_value = t[i,j,z]
-    print("max value at depth %d found at %d%d : %d".format(z, i_max, j_max, max_value))
-    return i_max, j_max
+def my_argmax(array_inutile, n):    
+    mu = tf.math.argmax(array_inutile, 0)
+    col = mu // n
+    row = mu % n
+    return row, col
 
 
-
-def compute_mask(mu):
+def compute_mask(mu, n, tau=1, beta=1):
     i_max = mu[0]
     j_max = mu[1]
-    n    = 14
     tau  = 1                     # da verificare
     beta = 1                     # da verificare
-    #mat = np.zeros(shape=(n,n,0))
-    mat = tf.zeros(shape=(n,n,0))
+    mat = np.zeros(shape=(n,n,1))
+    #mat = tf.zeros(shape=(n,n,0))
     for i in range(n):
         for j in range(n):
-            mat[i,j,0] = tau * max(-1, 1-beta*(abs(i-i_max)+abs(j-j_max))/n)
-    print(mat)
+            mat[i,j] = tau * max(-1, 1-beta*(abs(i-i_max)+abs(j-j_max))/n)
+    #print(mat)
     return mat
 
     
