@@ -18,37 +18,6 @@ def load_keras():
     return model
 
 
-def my_argmax(array_inutile, n):    
-    mu = tf.math.argmax(array_inutile, 0)
-    col = mu // n
-    row = mu % n
-    return row, col
-
-
-def compute_mask(mu, n, tau=1, beta=1):
-    i_max = mu[0]
-    j_max = mu[1]
-    tau  = 1                     # da verificare
-    beta = 1                     # da verificare
-    mat = np.zeros(shape=(n,n,1))
-    #mat = tf.zeros(shape=(n,n,0))
-    for i in range(n):
-        for j in range(n):
-            mat[i,j] = tau * max(-1, 1-beta*(abs(i-i_max)+abs(j-j_max))/n)
-    #print(mat)
-    return mat
-
-    
-
-
-
-
-
-
-
-
-
-
 
 def load_very_deep():
     # c'è il casino da fare per tirare fuori i pesi
