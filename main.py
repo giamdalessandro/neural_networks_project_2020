@@ -1,12 +1,12 @@
 import tensorflow as tf
-from tensorflow.config import experimental
 from tensorflow.keras.layers import Dense, Conv2D, MaxPool2D , Flatten, Dropout
 from tensorflow.keras.optimizers import Adam
 from tensorflow.keras.losses import categorical_crossentropy
-from load_cnn import *
+from load_cnn import load_keras, my_argmax, compute_mask
+from MaskLayer import *
 
 # GPU check
-print("Num GPUs Available: ", len(experimental.list_physical_devices('GPU')))
+# print(tf.test.is_gpu_available())
 
 '''
 1. loading pre-trained net from keras.Applications model, because VGG16_vd .mat file is not working...
@@ -25,33 +25,16 @@ print(model.summary())    # problema: toglie lo stato di input finale
 3. add masks to ouput filter
 '''
 
-# for all feature map in top conv layer:
-n = 14
-depth = 512
-# out_tensor = tf.random.uniform(shape=(n,n,512), seed=42)      # to test
-out_tensor = model.layers[-1].output[0]
-
-for z in range(depth):
-    feature_map = tf.slice(out_tensor, [0,0,z], [n,n,1])       # find max indices in the feature map
-    #print("feature map:", feature_map)
-    array_inutile = tf.reshape(feature_map, shape=[-1,1])
-    #print(array_inutile)
-    mu = my_argmax(array_inutile, n)
-    #print("mu", mu)
-    mask = compute_mask(mu, n)                             # compute mask centered in those indeces
-    #print("mask", mask)
-    output = tf.math.multiply(feature_map,mask)         # apply corresponding mask
-    #print("masked output", output)
-    
-    # sostituire masked output all'output originale
-
-
+model.add(MaskLayer())
+print(model.summary())    # problema: toglie lo stato di input finale
 
 '''
 4. add final pooling
 '''
 
 model.add(MaxPool2D(name="block_pool", pool_size=(2,2),strides=(2,2)))         # add max pool layer
+print(model.summary())    # problema: toglie lo stato di input finale
+
 
 
 
