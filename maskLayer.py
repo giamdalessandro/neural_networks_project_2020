@@ -28,12 +28,12 @@ class MaskLayer(tf.keras.layers.Layer):
     def call(self, inputs):                         # the computation function
         temp = np.zeros(shape=self.shape)
         for z in range(self.depth):
-            feature_map = tf.slice(inputs[0], [0,0,z], [self.img_size, self.img_size, 1])        # select just one matrix of the 512 in inputs  
+            feature_map = tf.slice(inputs[0],[0,0,z],[self.img_size,self.img_size,1])   # select just one matrix of the 512
             mu = self.__argmax(tf.reshape(feature_map, shape=[-1,1]))           # find max indices in the (flattened) feature map
-            mask = self.__compute_mask(mu, self.img_size)                              # compute mask centered in those indeces
+            mask = self.__compute_mask(mu, self.img_size)                       # compute mask centered in those indeces
             masked_output = tf.math.multiply(feature_map,mask).numpy()          # apply corresponding mask
             
-            for i in range(self.img_size):                                             # copy masked feature map in the data structure
+            for i in range(self.img_size):                                      # copy masked feature map in the data structure
                 for j in range(self.img_size):
                     temp[i,j,z] = masked_output[i,j,0]     
         
