@@ -11,13 +11,13 @@ class MaskLayer(tf.keras.layers.Layer):
         - call():   performs the masking task
         - WARN:     this current version uses ugly for loops
     """
-    def __init__(self, img_size=14, depth=512, tau=1, beta=1):
+    def __init__(self, img_size=14, depth=512):
         super(MaskLayer, self).__init__(trainable=False, dynamic=True)
         self.img_size = img_size
         self.depth = depth
         self.shape = (img_size, img_size, depth)
-        self.tau  = tau                         # da verificare
-        self.beta = beta                        # da verificare
+        self.tau  = 0.5/(img_size*img_size)
+        self.beta = 4
         aux = tf.zeros_initializer()
         self.masked_filters = tf.Variable(
             initial_value=aux(shape=self.shape, dtype='float32'),
