@@ -28,7 +28,7 @@ print(model.summary())    # problema: toglie lo stato di input finale
 # for all feature map in top conv layer:
 n = 14
 depth = 512
-# out_tensor = tf.random.uniform(shape=(n,n,512), seed=42)
+# out_tensor = tf.random.uniform(shape=(n,n,512), seed=42)      # to test
 out_tensor = model.layers[-1].output[0]
 
 for z in range(depth):
