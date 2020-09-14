@@ -80,7 +80,7 @@ def print_heatmap(img1, img2):
     plt.show()
 
     
-def print_feature_maps(model, masked):
+def __print_feature_maps(model, masked):
     feature_maps = model.predict(loaddd())
     square = 4
     ix = 1
@@ -103,52 +103,87 @@ def print_feature_maps(model, masked):
     # show the figure
     plt.show()
 
-
-def print_comparison(model_raw, model_mask, n_imgs=4):
-    rows = n_imgs*2 + 1
+def print_feature_maps(x, masked=False, n_imgs=4, cmap="bone"):
+    rows = n_imgs*2
     cols = n_imgs*2
-    cmap = "bone"
 
-    raw_x = model_raw.predict(loaddd())
-    masked_x = model_mask.predict(loaddd())
+    fig = plt.figure()
+    if masked:
+        fig.suptitle('Masked feature map')
+    else:
+        fig.suptitle('Raw feature map')
 
-    fig, axs = plt.subplots(rows, cols)
-    fig.suptitle('Raw feature maps | Masked feature map')
+    ax = []                     # ax enables access to manipulate each of subplots
+    images = []                 # aux array to calculate min & max value for the color scale
+    ix = 1
 
-    for i in range(rows):
-        for j in range(cols):
+    for i in range(cols*rows):
+        ax.append(fig.add_subplot(rows, cols, i+1))   
+        if masked: 
+            ax[-1].set_title("masked x: " + str(int(i)))
+            images.append(plt.imshow(x[:, :, ix-1], cmap))
+        else:
+            ax[-1].set_title("raw x: " + str(int(i)))
+            images.append(plt.imshow(x[0, :, :, ix-1], cmap))
+        
+        ax[i].label_outer()
+        ix+=1
 
-
-    
-
-
-
-def print_all():
-    np.random.seed(19680801)
-    Nr = 3
-    Nc = 2
-    cmap = "cool"
-
-    fig, axs = plt.subplots(Nr, Nc)
-    fig.suptitle('Multiple images')
-
-    images = []
-    for i in range(Nr):
-        for j in range(Nc):
-            # Generate data with a range that varies from one plot to the next.
-            data = ((1 + i + j) / 10) * np.random.rand(10, 20) * 1e-6
-            images.append(axs[i, j].imshow(data, cmap=cmap))
-            axs[i, j].label_outer()
-
-    # Find the min and max of all colors for use in setting the color scale.
     vmin = min(image.get_array().min() for image in images)
     vmax = max(image.get_array().max() for image in images)
     norm = clr.Normalize(vmin=vmin, vmax=vmax)
+
     for im in images:
         im.set_norm(norm)
 
-    fig.colorbar(images[0], ax=axs, orientation='horizontal', fraction=.1)
+    fig.colorbar(images[0], ax=ax, orientation='horizontal', fraction=.1)
 
+    def update(changed_image):
+        for im in images:
+            if (changed_image.get_cmap() != im.get_cmap()
+                    or changed_image.get_clim() != im.get_clim()):
+                im.set_cmap(changed_image.get_cmap())
+                im.set_clim(changed_image.get_clim())
+
+    for im in images:
+        im.callbacksSM.connect('changed', update)
+
+    plt.show()
+
+def print_comparison(raw_x, masked_x, n_imgs=4, cmap="bone"):
+    # code based on:
+    #   - https://matplotlib.org/3.1.1/gallery/images_contours_and_fields/multi_image.html#sphx-glr-gallery-images-contours-and-fields-multi-image-py
+    #   - https://stackoverflow.com/questions/46615554/how-to-display-multiple-images-in-one-figure-correctly/46616645
+    rows = n_imgs*2
+    cols = n_imgs*2
+
+    fig = plt.figure()
+    fig.suptitle('Raw feature maps | Masked feature map')
+
+    ax = []                     # ax enables access to manipulate each of subplots
+    images = []                 # aux array to calculate min & max value for the color scale
+    ix = 0
+
+    for i in range(cols*rows):
+        ax.append(fig.add_subplot(rows, cols, i+1))   
+        if i%2 == 0:                                            # raw feature maps are on even indeces
+            ax[-1].set_title("raw x: " + str(int(((i/2)+1))))
+            images.append(plt.imshow(raw_x[0, :, :, ix], cmap))
+        else:
+            ax[-1].set_title("masked x: " + str(int(((i-1)/2)+1)))
+            images.append(plt.imshow(masked_x[:, :, ix-1], cmap))
+        
+        ax[i].label_outer()
+        ix+=1
+
+    vmin = min(image.get_array().min() for image in images)
+    vmax = max(image.get_array().max() for image in images)
+    norm = clr.Normalize(vmin=vmin, vmax=vmax)
+
+    for im in images:
+        im.set_norm(norm)
+
+    fig.colorbar(images[0], ax=ax, orientation='horizontal', fraction=.1)
 
     # Make images respond to changes in the norm of other images (e.g. via the
     # "edit axis, curves and images parameters" GUI on Qt), but be careful not to
@@ -159,7 +194,6 @@ def print_all():
                     or changed_image.get_clim() != im.get_clim()):
                 im.set_cmap(changed_image.get_cmap())
                 im.set_clim(changed_image.get_clim())
-
 
     for im in images:
         im.callbacksSM.connect('changed', update)

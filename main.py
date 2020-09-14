@@ -15,10 +15,9 @@ import matplotlib.image as mpimg
 1. loading pre-trained net from keras.Applications model, because VGG16_vd .mat file is not working...
 '''
 
-model1 = load_keras()
-#model1.add(Activation(tf.keras.activations.tanh))
-#print(model.summary())    # problema: toglie lo stato di input finale
-feature_map_no_mask = compute_heatmap(model=model1, img=loaddd(), mask=False)
+model_raw = load_keras()
+model_masked = load_keras()
+
 
 '''
 2. add loss for each of the 512 filters
@@ -29,26 +28,24 @@ feature_map_no_mask = compute_heatmap(model=model1, img=loaddd(), mask=False)
 ''' 
 3. add masks to ouput filter
 '''
+print("\n[2] Adding one mask layer...")
+model_masked.add(MaskLayer())
+print("[2]                        << Added.")
 
-model2 = load_keras()
-model2.add(MaskLayer())
-#model2.add(Activation(tf.keras.activations.relu))
-feature_map_mask = compute_heatmap(model=model2, img=loaddd(), mask=True)
+# ORSETTO LAVAROSSO VA IN CERCA DI FIORELLINI #
+#raw_heatmap = compute_heatmap(model=model_raw, img=loaddd(), mask=False)
+#masked_heatmap = compute_heatmap(model=model_masked, img=loaddd(), mask=True)
+#print_heatmap(raw_heatmap, masked_heatmap)
+raw_x = model_raw.predict(loaddd())
+masked_x = model_masked.predict(loaddd())
+print("[2] Computing raw model feature maps...")
+print_feature_maps(raw_x, masked=False, n_imgs=2)
 
-print_heatmap(feature_map_no_mask, feature_map_mask)
+print("[2] Computing masked model feature maps...")
+print_feature_maps(masked_x, masked=True, n_imgs=2)
 
-# ORSETTO LAVAROSSO LIVEs
-
-# vedi qui https://matplotlib.org/3.1.1/gallery/images_contours_and_fields/multi_image.html#sphx-glr-gallery-images-contours-and-fields-multi-image-py
-
-# printa vicino le feature maps mascherate e non per capire che cazzo succede
-
-
-print_all()
-
-
-print_feature_maps(model1, masked=False)
-print_feature_maps(model2, masked=True)
+print("[2] Computing model comparison...")
+print_comparison(raw_x, masked_x, n_imgs=2)
 
 '''
 4. add final pooling

@@ -16,12 +16,13 @@ class MaskLayer(tf.keras.layers.Layer):
         self.img_size = img_size
         self.depth = depth
         self.shape = (img_size, img_size, depth)
-        self.tau  = 0.5/(img_size*img_size)
+        self.tau  = 4   #0.5/(img_size*img_size)
         self.beta = 4
         aux = tf.zeros_initializer()
         self.masked_filters = tf.Variable(
             initial_value=aux(shape=self.shape, dtype='float32'),
             trainable=False)
+
 
 
 
@@ -54,7 +55,7 @@ class MaskLayer(tf.keras.layers.Layer):
         mat = np.zeros(shape=(n,n,1))
         for i in range(n):
             for j in range(n):
-                mat[i,j] = self.tau * max(-1, 1-self.beta*(abs(i-i_max)+abs(j-j_max))/n)
+                mat[i,j] = self.tau * max(1-self.beta*(abs(i-i_max)+abs(j-j_max))/n, 0) #-1)
         return mat
 
 
