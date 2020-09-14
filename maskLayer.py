@@ -6,18 +6,21 @@ class MaskLayer(tf.keras.layers.Layer):
     Class for mask layer, used to filter out noisy activation function.
         - img_size: size of the input feature maps (n*n)
         - depth:    input's depth (# of feature maps)
-        - tau:      multiplicative constant 
-        - beta:     multiplicative constant
+        - visualize:    if you want fiorellini, put True
         - call():   performs the masking task
         - WARN:     this current version uses ugly for loops
     """
-    def __init__(self, img_size=14, depth=512):
+    def __init__(self, img_size=14, depth=512, visualize=False):
         super(MaskLayer, self).__init__(trainable=False, dynamic=True)
         self.img_size = img_size
         self.depth = depth
         self.shape = (img_size, img_size, depth)
-        self.tau  = 4   #0.5/(img_size*img_size)
-        self.beta = 4
+        self.tau  = 1#0.5/(img_size*img_size)
+        self.beta = 1#4
+        self.minimum = -1
+        if visualize:      # these values are ONLY for visualizing heatmaps and featuremaps at the same scale as the original ones
+            self.tau  = 4
+            self.minimum = 0
         aux = tf.zeros_initializer()
         self.masked_filters = tf.Variable(
             initial_value=aux(shape=self.shape, dtype='float32'),
@@ -55,7 +58,7 @@ class MaskLayer(tf.keras.layers.Layer):
         mat = np.zeros(shape=(n,n,1))
         for i in range(n):
             for j in range(n):
-                mat[i,j] = self.tau * max(1-self.beta*(abs(i-i_max)+abs(j-j_max))/n, 0) #-1)
+                mat[i,j] = self.tau * max(1-self.beta*(abs(i-i_max)+abs(j-j_max))/n, self.minimum)
         return mat
 
 

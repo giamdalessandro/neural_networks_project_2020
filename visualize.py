@@ -9,10 +9,15 @@ import matplotlib.image as mpimg
 import numpy as np
 from mpl_toolkits.axes_grid1 import AxesGrid
 
-path = '/media/luca/DATA2/uni/neural_networks_project_2020/dataset/detanimalpart/n02355227_obj/img/img/00007.jpg'
+folder = '/media/luca/DATA2/uni/neural_networks_project_2020/dataset/detanimalpart/'
+fileid = 'n02355227_obj/img/img/00008.jpg'
+path = folder+fileid
 
 
-def loaddd():
+def load_def():
+    """
+    loads default img specified in 'visualize.py' in variable 'path'
+    """
     img = load_img(path, target_size=(224, 224))      # test image
     img = img_to_array(img)
     img = np.expand_dims(img, axis=0)
@@ -20,88 +25,86 @@ def loaddd():
     return img
 
 
-def compute_heatmap(model, img, mask):
-    feature_maps = model.predict(img)
-    if mask:
-        #temp = feature_maps.sum(axis=2, dtype='float32')        # heatmap = somma ???
-        temp = feature_maps.mean(axis=2, dtype='float32')        # heatmap = somma ???
-
+def compute_heatmap(x, masked=False, mode="sum"):
+    """
+    mode can be "sum" or "avg"
+    """
+    if masked:
+        if mode=="sum":
+            temp = x.sum(axis=2, dtype='float32')        # heatmap = somma ???
+        else:
+            temp = x.mean(axis=2, dtype='float32')        # heatmap = somma ???
     else:
-        #temp = feature_maps.sum(axis=3, dtype='float32')        # heatmap = somma ???
-        temp = feature_maps.mean(axis=3, dtype='float32')        # heatmap = somma ???
-
+        if mode=="sum":
+            temp = x.sum(axis=3, dtype='float32')        # heatmap = somma ???
+        else:
+            temp = x.mean(axis=3, dtype='float32')        # heatmap = somma ???
     return temp
 
 
-def print_heatmap(img1, img2):
-
-    '''
-    fig = plt.figure()
-    grid = AxesGrid(fig, 111,
-                    nrows_ncols=(1, 3),
-                    axes_pad=0.05,
-                    share_all=True,
-                    label_mode="L",
-                    cbar_location="right",
-                    cbar_mode="single",
-                    )
-
-    ax = plt.subplot(1, 3, 1)
-    im = ax.imshow(loaddd()[0, :, :, :])        # preprocessed image
-    
-    ax = plt.subplot(1, 3, 2)
-    im = ax.imshow(img1[0,:,:], cmap='bone')    # feature maps
-
-    ax = plt.subplot(1, 3, 3)
-    im = ax.imshow(img2[:,:], cmap='bone')      # masked feature maps
-
-    grid.cbar_axes[0].colorbar(im)
-
-    for cax in grid.cbar_axes:
-        cax.toggle_label(True)
-
-    plt.show()
-
-    '''
+def __print_heatmap(img1, img2, cmap):
     ax = plt.subplot(1, 3, 1)
     ax.set_title('preprocessed image')
-    plt.imshow(loaddd()[0, :, :, :])        # preprocessed image
+    plt.imshow(load_def()[0, :, :, :])        # preprocessed image
     
     ax = plt.subplot(1, 3, 2)
     ax.set_title('feature maps')
-    plt.imshow(img1[0,:,:], cmap='bone')    # feature maps
+    plt.imshow(img1[0,:,:], cmap)    # feature maps
     plt.colorbar()
 
     ax = plt.subplot(1, 3, 3)
     ax.set_title('masked feature maps')
-    plt.imshow(img2[:,:], cmap='bone')      # masked feature maps
+    plt.imshow(img2[:,:], cmap)      # masked feature maps
     plt.colorbar()
     
     plt.show()
 
+def print_heatmap(raw, masked, cmap="bone", scale="same"):
     
-def __print_feature_maps(model, masked):
-    feature_maps = model.predict(loaddd())
-    square = 4
-    ix = 1
+    if scale == "same":
+        
+        # rows = 1
+        # cols = 3
 
-    for _ in range(square):
-        for _ in range(square):
-            # specify subplot and turn of axis
-            ax = plt.subplot(square, square, ix)
-            ax.set_xticks([])
-            ax.set_yticks([])
-            # plot filter channel in grayscale
-            if masked:
-                plt.title("masked feature maps")
-                plt.imshow(feature_maps[:, :, ix-1], cmap='bone')
-            else:
-                plt.title("original feature maps")
-                plt.imshow(feature_maps[0, :, :, ix-1], cmap='bone')
-            ix += 1
-            plt.colorbar()
-    # show the figure
-    plt.show()
+        fig = plt.figure()
+        fig.suptitle('Heatmaps of preprocessed image'+fileid)
+
+        ax = []                     # ax enables access to manipulate each of subplots
+        images = []                 # aux array to calculate min & max value for the color scale
+        ix = 1
+
+        ax.append(fig.add_subplot(1,3,1))
+        ax[-1].set_title("preprocessed img")
+        images.append(plt.imshow(load_def()[0, :, :, :], cmap))
+        ax[-1].label_outer()
+
+        ax.append(fig.add_subplot(1,3,2))
+        ax[-1].set_title("raw heatmap")
+        images.append(plt.imshow(raw[0, :, :], cmap))
+        ax[-1].label_outer()
+
+        ax.append(fig.add_subplot(1,3,3))
+        ax[-1].set_title("masked heatmap")
+        images.append(plt.imshow(masked[:, :], cmap))
+        ax[-1].label_outer()
+
+        vmin = min(image.get_array().min() for image in images)
+        vmax = max(image.get_array().max() for image in images)
+        norm = clr.Normalize(vmin=vmin, vmax=vmax)
+
+        for im in images:
+            im.set_norm(norm)
+
+        fig.colorbar(images[0], ax=ax, orientation='horizontal', fraction=.1)
+
+        for im in images:
+            im.callbacksSM.connect('changed', update)
+
+        plt.show()
+    
+    else:
+        __print_heatmap(raw, masked, cmap)
+
 
 def print_feature_maps(x, masked=False, n_imgs=4, cmap="bone"):
     rows = n_imgs*2
@@ -109,9 +112,9 @@ def print_feature_maps(x, masked=False, n_imgs=4, cmap="bone"):
 
     fig = plt.figure()
     if masked:
-        fig.suptitle('Masked feature map')
+        fig.suptitle('Masked feature map of '+fileid)
     else:
-        fig.suptitle('Raw feature map')
+        fig.suptitle('Raw feature map of '+fileid)
 
     ax = []                     # ax enables access to manipulate each of subplots
     images = []                 # aux array to calculate min & max value for the color scale
@@ -138,12 +141,12 @@ def print_feature_maps(x, masked=False, n_imgs=4, cmap="bone"):
 
     fig.colorbar(images[0], ax=ax, orientation='horizontal', fraction=.1)
 
-    def update(changed_image):
+    """     def update(changed_image):
         for im in images:
             if (changed_image.get_cmap() != im.get_cmap()
                     or changed_image.get_clim() != im.get_clim()):
                 im.set_cmap(changed_image.get_cmap())
-                im.set_clim(changed_image.get_clim())
+                im.set_clim(changed_image.get_clim()) """
 
     for im in images:
         im.callbacksSM.connect('changed', update)
@@ -188,14 +191,21 @@ def print_comparison(raw_x, masked_x, n_imgs=4, cmap="bone"):
     # Make images respond to changes in the norm of other images (e.g. via the
     # "edit axis, curves and images parameters" GUI on Qt), but be careful not to
     # recurse infinitely!
-    def update(changed_image):
+    """     def update(changed_image):
         for im in images:
             if (changed_image.get_cmap() != im.get_cmap()
                     or changed_image.get_clim() != im.get_clim()):
                 im.set_cmap(changed_image.get_cmap())
-                im.set_clim(changed_image.get_clim())
+                im.set_clim(changed_image.get_clim()) """
 
     for im in images:
         im.callbacksSM.connect('changed', update)
 
     plt.show()
+
+def update(changed_image):
+    for im in images:
+        if (changed_image.get_cmap() != im.get_cmap()
+                or changed_image.get_clim() != im.get_clim()):
+            im.set_cmap(changed_image.get_cmap())
+            im.set_clim(changed_image.get_clim())
