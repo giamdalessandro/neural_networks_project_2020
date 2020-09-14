@@ -19,7 +19,7 @@ def load_keras():
 
 
 
-def load_very_deep():
+def load_matlab():
     # c'è il casino da fare per tirare fuori i pesi
     # si può fare forse se si converte il .mat nel formato più nuovo (da matlab), ma per ora
     # non penso che serva
@@ -60,30 +60,54 @@ def load_very_deep():
             break
         break
 
-DATA_PATH = "./dataset/ILSVRC_2013_DET_part/"
+
+
+ILSRVC_2013 = "./dataset/ILSVRC_2013_DET_part/"
+CUB_200 = "./dataset/CUB_200_2011/"
+PASCAL_VOC = "./dataset/PascalVOC_2010_part/VOCdevkit/"
 BATCH_SIZE = 8
 
-def load_dataeset():
-    datagen = ImageDataGenerator(
-        rescale=1./255,             # data agumentation 
-        shear_range=0.2,
-        zoom_range=0.2,       
-        horizontal_flip=True,
-        validation_split=0.2        # train and val
-    )
+def load_dataeset(dataset='cub200', batch_size=BATCH_SIZE, agumentation=False):
+    """
+    Loading training dataset via ImageDataGenerator
+        - dataset:      one of 'cub200', 'imagenet', 'voc2010'
+        - batch_size:   data batch size for training
+    """
+    if agumentation:
+        datagen = ImageDataGenerator(
+            rescale=1./255,             # data agumentation 
+            shear_range=0.2,
+            zoom_range=0.2,       
+            horizontal_flip=True,
+            validation_split=0.2        # train and val
+        )
+    else:
+        datagen = ImageDataGenerator(
+            rescale=1./255,             # train and val
+            validation_split=0.2        
+        )
+
+    data_path = ''
+    if dataset == 'imagenet':
+        data_path = ILSRVC_2013
+    elif dataset == 'cub200':
+        data_path = CUB_200
+    elif dataset == 'voc2010':
+        data_path = PASCAL_VOC
+
     train_generator = datagen.flow_from_directory(
-        directory=DATA_PATH,
+        directory=data_path,
         target_size=(224, 224),
         color_mode="rgb",
-        batch_size=BATCH_SIZE,
+        batch_size=batch_size,
         class_mode="categorical",
         shuffle=True,
         subset="training"
     )
     validation_generator = datagen.flow_from_directory(
-        directory=DATA_PATH,
+        directory=data_path,
         target_size=(224, 224),
-        batch_size=BATCH_SIZE,
+        batch_size=batch_size,
         class_mode="categorical",
         subset="validation"
     )
