@@ -5,8 +5,10 @@ from tensorflow.keras.losses import categorical_crossentropy
 from load_utils import load_keras, load_dataeset
 from maskLayer import *
 
-MASK_LAYER = 1
-FILTER_LOSS = 0
+TRAIN       =    True
+MASK_LAYER  =    True
+#FILTER_LOSS =    False
+
 # GPU check
 # print(tf.test.is_gpu_available())
 
@@ -31,8 +33,8 @@ if MASK_LAYER:
 '''
 4. add final pooling
 '''
-model.add(MaxPool2D(name="block_pool", pool_size=(2,2),strides=(2,2)))         # add max pool layer
-#print(model.summary())                         # problema: toglie lo stato di input finale
+model.add(MaxPool2D(name="max_pool", pool_size=(2,2),strides=(2,2)))         # add max pool layer
+#print(model.summary())                         
 model.trainable = False                         # we only train the top fully connected layers 
 
 ''' 
@@ -56,11 +58,13 @@ model.compile(
     loss= categorical_crossentropy,
     metrics=["accuracy"]
 )
-#train_generator, validation_generator = load_dataeset(dataset='cub200')
-#model.fit(
-#    train_generator,
-#    steps_per_epoch=50,
-#    epochs=10,
-#    validation_data=validation_generator,
-#    validation_steps=100
-#)
+
+if TRAIN:
+    train_generator, validation_generator = load_dataeset(dataset='cub200')
+    model.fit(
+        train_generator,
+        steps_per_epoch=50,
+        epochs=10,
+        validation_data=validation_generator,
+        validation_steps=100
+    )

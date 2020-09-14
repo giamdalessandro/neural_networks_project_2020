@@ -94,10 +94,12 @@ def load_dataeset(dataset='cub200', batch_size=BATCH_SIZE, agumentation=False):
         data_path = CUB_200
     elif dataset == 'voc2010':
         data_path = PASCAL_VOC
+    print("\nUsing " + dataset + " dataset for training...")
+    
 
     train_generator = datagen.flow_from_directory(
         directory=data_path,
-        target_size=(224, 224),
+        target_size=(224,224),
         color_mode="rgb",
         batch_size=batch_size,
         class_mode="categorical",
@@ -106,7 +108,7 @@ def load_dataeset(dataset='cub200', batch_size=BATCH_SIZE, agumentation=False):
     )
     validation_generator = datagen.flow_from_directory(
         directory=data_path,
-        target_size=(224, 224),
+        target_size=(224,224),
         batch_size=batch_size,
         class_mode="categorical",
         subset="validation"
