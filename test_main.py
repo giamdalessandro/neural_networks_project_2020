@@ -45,7 +45,7 @@ model.add(Flatten())
 model.add(Dense(units=4096,activation="relu"))
 #model.add(Dropout(rate=0.8))
 model.add(Dense(units=4096,activation="relu"))
-model.add(Dense(units=3, activation="softmax"))
+model.add(Dense(units=31, activation="softmax"))
 
 print(model.summary())
 
@@ -60,7 +60,7 @@ model.compile(
 )
 
 if TRAIN:
-    train_generator, validation_generator = load_dataeset(dataset='cub200')
+    train_generator, validation_generator = load_dataeset(dataset='imagenet')
     model.fit(
         train_generator,
         steps_per_epoch=50,

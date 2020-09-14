@@ -15,6 +15,7 @@ def load_keras():
     model = Sequential(name="Interpretable_vgg16")
     for layer in pretrained.layers[:-1]:  # just exclude last layer from copying
         model.add(layer)
+    print("[1]                        Loaded.")
     return model
 
 
@@ -62,7 +63,7 @@ def load_matlab():
 
 
 
-ILSRVC_2013 = "./dataset/ILSVRC_2013_DET_part/"
+ILSRVC_2013 = "./dataset/detanimalpart/"
 CUB_200 = "./dataset/CUB_200_2011/"
 PASCAL_VOC = "./dataset/PascalVOC_2010_part/VOCdevkit/"
 BATCH_SIZE = 8

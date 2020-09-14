@@ -2,7 +2,7 @@ import tensorflow as tf
 from tensorflow.keras.layers import Dense, Conv2D, MaxPool2D , Flatten, Dropout, Activation
 from tensorflow.keras.optimizers import Adam
 from tensorflow.keras.losses import categorical_crossentropy
-from load_cnn import load_keras
+from load_utils import load_keras
 from maskLayer import *
 from visualize import *
 from matplotlib import pyplot as plt
@@ -28,8 +28,13 @@ model_masked = load_keras()
 ''' 
 3. add masks to ouput filter
 '''
+
+visualize = False       # False = use their parameters (but scale the masked x before plotting)
+                        # True = use dummy parameters (t=b=1), but no need to scale (better for seeing the differences)
+scale = 100
+
 print("\n[2] Adding one mask layer...")
-model_masked.add(MaskLayer(visualize=False))
+model_masked.add(MaskLayer(visualize=visualize))
 print("[2]                        Added.")
 
 # ORSETTO LAVAROSSO VA IN CERCA DI FIORELLINI #
@@ -39,20 +44,24 @@ raw_x = model_raw.predict(load_def())
 masked_x = model_masked.predict(load_def())
 
 print("[2] Computing raw model feature maps...")
-print_feature_maps(raw_x, masked=False, n_imgs=4, cmap="rainbow")
+#print_feature_maps(raw_x, masked=False, n_imgs=4, cmap="rainbow")
 
 print("[2] Computing masked model feature maps...")
-print_feature_maps(masked_x, masked=True, n_imgs=4, cmap="rainbow")
+#print_feature_maps(masked_x, masked=True, n_imgs=4, cmap="rainbow")
 
 print("[2] Computing model comparison...")
 print_comparison(raw_x, masked_x, n_imgs=4, cmap="rainbow")
+for i in range(1):
+    print_comparison_step(raw_x, masked_x, n_imgs=4, cmap="rainbow", i=i)
+#print_comparison_step(raw_x, masked_x, n_imgs=4, cmap="rainbow", i=40)      # problema!!!!!!!!!!!!!!!
 
 
 print("[2] Computing heatmaps...")
-#raw_heatmap = compute_heatmap(x=100*raw_x, masked=False, mode="avg")
-#masked_heatmap = compute_heatmap(x=100*masked_x, masked=True, mode="avg")
 raw_heatmap = compute_heatmap(x=raw_x, masked=False, mode="avg")
-masked_heatmap = compute_heatmap(x=masked_x, masked=True, mode="avg")
+if visualize:
+    masked_heatmap = compute_heatmap(x=masked_x, masked=True, mode="avg")
+else:
+    masked_heatmap = compute_heatmap(x=scale*masked_x, masked=True, mode="avg")
 print_heatmap(raw_heatmap, masked_heatmap, scale="different", cmap="rainbow")
 print_heatmap(raw_heatmap, masked_heatmap, scale="same", cmap="rainbow")
 
@@ -60,7 +69,6 @@ print_heatmap(raw_heatmap, masked_heatmap, scale="same", cmap="rainbow")
 
 # TODO:
 #   - reshape della feature map alla stessa size dell'immagine di input (quadrata) e sovrapposizione per vedere che "zona" prende
-#   - controllare la funzione maschera, a volte non amplifica i massimi ma anzi li mette negativi, come se prendesse il massimo in un punto non esistente della feature map
 
 
 '''

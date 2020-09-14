@@ -42,7 +42,7 @@ def compute_heatmap(x, masked=False, mode="sum"):
     return temp
 
 
-def __print_heatmap(img1, img2, cmap):
+def print_heatmap_diff(img1, img2, cmap):
     ax = plt.subplot(1, 3, 1)
     ax.set_title('preprocessed image')
     plt.imshow(load_def()[0, :, :, :])        # preprocessed image
@@ -58,6 +58,7 @@ def __print_heatmap(img1, img2, cmap):
     plt.colorbar()
     
     plt.show()
+
 
 def print_heatmap(raw, masked, cmap="bone", scale="same"):
     
@@ -97,13 +98,20 @@ def print_heatmap(raw, masked, cmap="bone", scale="same"):
 
         fig.colorbar(images[0], ax=ax, orientation='horizontal', fraction=.1)
 
+        def update(changed_image):
+            for im in images:
+                if (changed_image.get_cmap() != im.get_cmap()
+                        or changed_image.get_clim() != im.get_clim()):
+                    im.set_cmap(changed_image.get_cmap())
+                    im.set_clim(changed_image.get_clim())
+
         for im in images:
             im.callbacksSM.connect('changed', update)
 
         plt.show()
     
     else:
-        __print_heatmap(raw, masked, cmap)
+        print_heatmap_diff(raw, masked, cmap)
 
 
 def print_feature_maps(x, masked=False, n_imgs=4, cmap="bone"):
@@ -141,19 +149,62 @@ def print_feature_maps(x, masked=False, n_imgs=4, cmap="bone"):
 
     fig.colorbar(images[0], ax=ax, orientation='horizontal', fraction=.1)
 
-    """     def update(changed_image):
+    def update(changed_image):
         for im in images:
             if (changed_image.get_cmap() != im.get_cmap()
                     or changed_image.get_clim() != im.get_clim()):
                 im.set_cmap(changed_image.get_cmap())
-                im.set_clim(changed_image.get_clim()) """
+                im.set_clim(changed_image.get_clim())
 
     for im in images:
         im.callbacksSM.connect('changed', update)
 
     plt.show()
 
-def print_comparison(raw_x, masked_x, n_imgs=4, cmap="bone"):
+
+def print_comparison_step(raw_x, masked_x, n_imgs=4, cmap="bone", i=0):
+    ax = []                     # ax enables access to manipulate each of subplots
+    images = []                 # aux array to calculate min & max value for the color scale
+
+    fig = plt.figure()
+    fig.suptitle('Raw feature maps | Masked feature map')
+
+    ax.append(fig.add_subplot(1, 2, 1))
+    ax[-1].set_title("raw x: " + str(int(i)))
+    images.append(plt.imshow(raw_x[0, :, :, i], cmap))
+    ax[-1].label_outer()
+
+    ax.append(fig.add_subplot(1, 2, 2))
+    ax[-1].set_title("masked x: " + str(int(i)))
+    images.append(plt.imshow(masked_x[:, :, i], cmap))
+    ax[-1].label_outer()
+
+    vmin = min(image.get_array().min() for image in images)
+    vmax = max(image.get_array().max() for image in images)
+    norm = clr.Normalize(vmin=vmin, vmax=vmax)
+
+    for im in images:
+        im.set_norm(norm)
+
+    fig.colorbar(images[-1], ax=ax, orientation='horizontal', fraction=.1)
+
+    # Make images respond to changes in the norm of other images (e.g. via the
+    # "edit axis, curves and images parameters" GUI on Qt), but be careful not to
+    # recurse infinitely!
+    def update(changed_image):
+        for im in images:
+            if (changed_image.get_cmap() != im.get_cmap()
+                    or changed_image.get_clim() != im.get_clim()):
+                im.set_cmap(changed_image.get_cmap())
+                im.set_clim(changed_image.get_clim())
+
+    for im in images:
+        im.callbacksSM.connect('changed', update)
+
+    plt.show()
+
+
+def print_comparison(raw_x, masked_x, n_imgs=4, cmap="bone", step=False):
     # code based on:
     #   - https://matplotlib.org/3.1.1/gallery/images_contours_and_fields/multi_image.html#sphx-glr-gallery-images-contours-and-fields-multi-image-py
     #   - https://stackoverflow.com/questions/46615554/how-to-display-multiple-images-in-one-figure-correctly/46616645
@@ -165,19 +216,17 @@ def print_comparison(raw_x, masked_x, n_imgs=4, cmap="bone"):
 
     ax = []                     # ax enables access to manipulate each of subplots
     images = []                 # aux array to calculate min & max value for the color scale
-    ix = 0
 
     for i in range(cols*rows):
-        ax.append(fig.add_subplot(rows, cols, i+1))   
+        ax.append(fig.add_subplot(rows, cols, i+1))
         if i%2 == 0:                                            # raw feature maps are on even indeces
             ax[-1].set_title("raw x: " + str(int(((i/2)+1))))
-            images.append(plt.imshow(raw_x[0, :, :, ix], cmap))
+            images.append(plt.imshow(raw_x[0, :, :, i], cmap))
         else:
             ax[-1].set_title("masked x: " + str(int(((i-1)/2)+1)))
-            images.append(plt.imshow(masked_x[:, :, ix-1], cmap))
+            images.append(plt.imshow(masked_x[:, :, i-1], cmap))   # i -1 perchè è un for perverso
         
         ax[i].label_outer()
-        ix+=1
 
     vmin = min(image.get_array().min() for image in images)
     vmax = max(image.get_array().max() for image in images)
@@ -191,21 +240,14 @@ def print_comparison(raw_x, masked_x, n_imgs=4, cmap="bone"):
     # Make images respond to changes in the norm of other images (e.g. via the
     # "edit axis, curves and images parameters" GUI on Qt), but be careful not to
     # recurse infinitely!
-    """     def update(changed_image):
+    def update(changed_image):
         for im in images:
             if (changed_image.get_cmap() != im.get_cmap()
                     or changed_image.get_clim() != im.get_clim()):
                 im.set_cmap(changed_image.get_cmap())
-                im.set_clim(changed_image.get_clim()) """
+                im.set_clim(changed_image.get_clim())
 
     for im in images:
         im.callbacksSM.connect('changed', update)
 
     plt.show()
-
-def update(changed_image):
-    for im in images:
-        if (changed_image.get_cmap() != im.get_cmap()
-                or changed_image.get_clim() != im.get_clim()):
-            im.set_cmap(changed_image.get_cmap())
-            im.set_clim(changed_image.get_clim())

@@ -15,12 +15,12 @@ class MaskLayer(tf.keras.layers.Layer):
         self.img_size = img_size
         self.depth = depth
         self.shape = (img_size, img_size, depth)
-        self.tau  = 1#0.5/(img_size*img_size)
-        self.beta = 1#4
+        self.tau  = 0.5/(img_size*img_size)
+        self.beta = 4
         self.minimum = -1
         if visualize:      # these values are ONLY for visualizing heatmaps and featuremaps at the same scale as the original ones
-            self.tau  = 4
-            self.minimum = 0
+            self.tau  = 1
+            self.beta = 1
         aux = tf.zeros_initializer()
         self.masked_filters = tf.Variable(
             initial_value=aux(shape=self.shape, dtype='float32'),
@@ -47,8 +47,8 @@ class MaskLayer(tf.keras.layers.Layer):
 
     def __argmax(self, flatten_feature_map):    
         mu = tf.math.argmax(flatten_feature_map, 0)
-        col = mu // self.img_size
-        row = mu % self.img_size
+        row = mu // self.img_size
+        col = mu % self.img_size
         return row, col
 
 
