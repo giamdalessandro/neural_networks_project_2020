@@ -37,13 +37,14 @@ feature_map_mask = compute_heatmap(model=model2, img=loaddd(), mask=True)
 
 print_heatmap(feature_map_no_mask, feature_map_mask)
 
-
+# ORSETTO LAVAROSSO LIVEs
 
 # vedi qui https://matplotlib.org/3.1.1/gallery/images_contours_and_fields/multi_image.html#sphx-glr-gallery-images-contours-and-fields-multi-image-py
 
 # printa vicino le feature maps mascherate e non per capire che cazzo succede
 
 
+print_all()
 
 
 print_feature_maps(model1, masked=False)
