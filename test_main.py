@@ -5,7 +5,7 @@ from tensorflow.keras.losses import categorical_crossentropy
 from load_utils import load_keras, load_dataeset
 from maskLayer import *
 
-TRAIN       =    False
+TRAIN       =    True
 MASK_LAYER  =    True
 #FILTER_LOSS =    False
 

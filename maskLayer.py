@@ -23,25 +23,65 @@ class MaskLayer(tf.keras.layers.Layer):
             self.beta = 1
         aux = tf.zeros_initializer()
         self.masked_filters = tf.Variable(
-            initial_value=aux(shape=self.shape, dtype='float32'),
+            initial_value=aux(shape=(8,14,14,512), dtype='float32'),
             trainable=False)
 
+    '''
+    old call, takes ages
+    def call(self, inputs):                         # the computation function
+        pippo = np.zeros(shape=(8,14,14,512))
+        temp = np.zeros(shape=self.shape)
+        for b in range(8):
+            for z in range(self.depth):
+                feature_map = tf.slice(inputs[b],[0,0,z],[self.img_size,self.img_size,1])   # select just one matrix of the 512
+                mu = self.__argmax(tf.reshape(feature_map, shape=[-1,1]))           # find max indices in the (flattened) feature map
+                mask = self.__compute_mask(mu, self.img_size)                       # compute mask centered in those indeces
+                masked_output = tf.math.multiply(feature_map,mask).numpy()          # apply corresponding mask
+                
+                for i in range(self.img_size):                                      # copy masked feature map in the data structure
+                    for j in range(self.img_size):
+                        temp[i,j,z] = masked_output[i,j,0]     
+            
+            self.masked_filters[b].assign(temp)
+        return self.masked_filters  # tf.reshape(self.masked_filters, [-1, self.img_size, self.img_size, self.depth])  
+    '''
 
     def call(self, inputs):                         # the computation function
+
+        # tensori di 512 elementi contententi gli indici di riga e colonna dei massimi trovati sulle "fette"
+        # questo funziona usando matrici 3D, ma con i batch size in più forse axis incrementa di uno
+        # ma come gestire il batch size?
+        # nota che per visualizzare le matrici 14x14x512 correttamente, vanno trasposte con
+        #   tf.transpose()
+        rows = tf.math.argmax(tf.reduce_max(inputs[:]), axis=1)
+        cols = tf.math.argmax(tf.reduce_max(inputs[:]), axis=0)
+
+        # ora che abbiamo gli indici, dobbiamo creare un tensore di maschere centrate nei massimi
+        # la profondità della maschera è l'indice dell'array rows (o cols)
+        # mu[i] è centrato in (rows[i], cols[i])
+        # 
+        #  
+
+
+
+
+
+
+
         temp = np.zeros(shape=self.shape)
         for z in range(self.depth):
-            feature_map = tf.slice(inputs[0],[0,0,z],[self.img_size,self.img_size,1])   # select just one matrix of the 512
-            mu = self.__argmax(tf.reshape(feature_map, shape=[-1,1]))           # find max indices in the (flattened) feature map
+            feature_map = tf.slice(inputs,[0,0,0,z],[1,self.img_size,self.img_size,1])   # select just one matrix of the 512
+            mu = self.__argmax(tf.reshape(feature_map[0], shape=[-1,1]))           # find max indices in the (flattened) feature map
             mask = self.__compute_mask(mu, self.img_size)                       # compute mask centered in those indeces
             masked_output = tf.math.multiply(feature_map,mask).numpy()          # apply corresponding mask
             
             for i in range(self.img_size):                                      # copy masked feature map in the data structure
                 for j in range(self.img_size):
-                    temp[i,j,z] = masked_output[i,j,0]     
+                    temp[0,i,j,z] = masked_output[i,j,0]     
         
         self.masked_filters.assign(temp) 
-        return self.masked_filters      
-
+        return self.masked_filters
+    
     
     def compute_output_shape(self, input_shape):    # required!
         return input_shape                          # masking doesn not change the output shape
@@ -50,10 +90,10 @@ class MaskLayer(tf.keras.layers.Layer):
     def get_config(self):                           # to print new class attribute
         cfg = super().get_config()
         cfg['img_size'] = self.img_size
-        cfg['depth'] = self.depth
-        cfg['shape'] = self.shape
-        cfg['tau'] = self.tau
-        cfg['beta'] = self.beta
+        cfg['depth']    = self.depth
+        cfg['shape']    = self.shape
+        cfg['tau']      = self.tau
+        cfg['beta']     = self.beta
         return cfg
 
 
@@ -70,7 +110,7 @@ class MaskLayer(tf.keras.layers.Layer):
         mat = np.zeros(shape=(n,n,1))
         for i in range(n):
             for j in range(n):
-                mat[i,j] = self.tau * max(1-self.beta*(abs(i-i_max)+abs(j-j_max))/n, self.minimum)
+                mat[i,j] = self.tau * max(1-self.beta*(abs(i-i_max)+abs(j-j_max))/n, -1)
         return mat
 
 
