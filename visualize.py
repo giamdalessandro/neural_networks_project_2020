@@ -10,7 +10,7 @@ import numpy as np
 from mpl_toolkits.axes_grid1 import AxesGrid
 
 folder = '/media/luca/DATA2/uni/neural_networks_project_2020/dataset/detanimalpart/'
-fileid = 'n02355227_obj/img/img/00008.jpg'
+fileid = 'n02355227_obj/img/img/00012.jpg'
 path = folder+fileid
 
 
@@ -126,19 +126,17 @@ def print_feature_maps(x, masked=False, n_imgs=4, cmap="bone"):
 
     ax = []                     # ax enables access to manipulate each of subplots
     images = []                 # aux array to calculate min & max value for the color scale
-    ix = 1
 
     for i in range(cols*rows):
         ax.append(fig.add_subplot(rows, cols, i+1))   
         if masked: 
             ax[-1].set_title("masked x: " + str(int(i)))
-            images.append(plt.imshow(x[:, :, ix-1], cmap))
+            images.append(plt.imshow(x[:, :, i], cmap))
         else:
             ax[-1].set_title("raw x: " + str(int(i)))
-            images.append(plt.imshow(x[0, :, :, ix-1], cmap))
+            images.append(plt.imshow(x[0, :, :, i], cmap))
         
         ax[i].label_outer()
-        ix+=1
 
     vmin = min(image.get_array().min() for image in images)
     vmax = max(image.get_array().max() for image in images)
