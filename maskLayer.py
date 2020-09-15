@@ -27,8 +27,6 @@ class MaskLayer(tf.keras.layers.Layer):
             trainable=False)
 
 
-
-
     def call(self, inputs):                         # the computation function
         temp = np.zeros(shape=self.shape)
         for z in range(self.depth):
