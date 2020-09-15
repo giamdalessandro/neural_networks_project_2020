@@ -17,7 +17,7 @@ class MaskLayer(tf.keras.layers.Layer):
         self.shape = (img_size, img_size, depth)
         self.tau  = 0.5/(img_size*img_size)
         self.beta = 4
-        self.minimum = -1
+        #self.minimum = -1
         if visualize:      # these values are ONLY for visualizing heatmaps and featuremaps at the same scale as the original ones
             self.tau  = 1
             self.beta = 1
@@ -42,6 +42,20 @@ class MaskLayer(tf.keras.layers.Layer):
         self.masked_filters.assign(temp) 
         return self.masked_filters      
 
+    
+    def compute_output_shape(self, input_shape):    # required!
+        return input_shape                          # masking doesn not change the output shape
+
+
+    def get_config(self):                           # to print new class attribute
+        cfg = super().get_config()
+        cfg['img_size'] = self.img_size
+        cfg['depth'] = self.depth
+        cfg['shape'] = self.shape
+        cfg['tau'] = self.tau
+        cfg['beta'] = self.beta
+        return cfg
+
 
     def __argmax(self, flatten_feature_map):    
         mu = tf.math.argmax(flatten_feature_map, 0)
@@ -59,9 +73,6 @@ class MaskLayer(tf.keras.layers.Layer):
                 mat[i,j] = self.tau * max(1-self.beta*(abs(i-i_max)+abs(j-j_max))/n, self.minimum)
         return mat
 
-
-    def compute_output_shape(self, input_shape):    # required!
-        return input_shape                          # masking doesn not change the output shape
 
 '''
 ### Test per la classe MaskLayer
