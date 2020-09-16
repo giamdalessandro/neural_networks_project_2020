@@ -3,7 +3,7 @@ from tensorflow.keras.layers import Dense, Conv2D, MaxPool2D , Flatten, Dropout,
 from tensorflow.keras.optimizers import Adam
 from tensorflow.keras.losses import categorical_crossentropy
 from load_utils import load_keras
-from maskLayer import *
+from oldMaskLayer import *
 from visualize import *
 from matplotlib import pyplot as plt
 import matplotlib.image as mpimg
@@ -34,7 +34,7 @@ visualize = False       # False = use their parameters (but scale the masked x b
 scale = 100
 
 print("\n[2] Adding one mask layer...")
-model_masked.add(MaskLayer(visualize=visualize))
+model_masked.add(OldMaskLayer(visualize=visualize))
 print("[2]                        Added.")
 
 # ORSETTO LAVAROSSO VA IN CERCA DI FIORELLINI #
@@ -45,7 +45,7 @@ masked_x = model_masked.predict(load_def())
 if visualize == False:
     masked_x = scale*masked_x
 
-'''
+
 print("[2] Computing raw model feature maps...")
 print_feature_maps(raw_x, masked=False, n_imgs=4, cmap="rainbow")
 
@@ -56,18 +56,21 @@ print("[2] Computing model comparison...")
 print_comparison(raw_x, masked_x, n_imgs=2, cmap="rainbow")
 for i in range(20):
     print_comparison_step(raw_x, masked_x, n_imgs=4, cmap="rainbow", i=i)
-'''
+
 
 print("[2] Computing heatmaps...")
-raw_heatmap = compute_heatmap(x=raw_x, masked=False, mode="avg")
-masked_heatmap = compute_heatmap(x=masked_x, masked=True, mode="avg")
-#print_heatmap(raw_heatmap, masked_heatmap, scale="different", cmap="rainbow")
+raw_heatmap = compute_heatmap(x=raw_x, mode="avg")
+masked_heatmap = compute_heatmap(x=masked_x, mode="avg")
 print_heatmap(raw_heatmap, masked_heatmap, scale="same", cmap="rainbow")
 
 
 
 # TODO:
 #   - reshape della feature map alla stessa size dell'immagine di input (quadrata) e sovrapposizione per vedere che "zona" prende
+#   - aggiungere altri tipi di maschera:
+#       - L1 norm
+#       - L2 norm   (lenta)
+#       - ...
 
 
 '''

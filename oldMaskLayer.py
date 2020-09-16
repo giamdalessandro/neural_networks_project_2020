@@ -26,7 +26,26 @@ class OldMaskLayer(tf.keras.layers.Layer):
             initial_value=aux(shape=(8,14,14,512), dtype='float32'),
             trainable=False)
 
-    
+    '''
+    old call, takes ages
+    '''
+    def call(self, inputs):                         # the computation function
+        temp = np.zeros(shape=self.shape)
+        for b in range(1):
+            for z in range(self.depth):
+                feature_map = tf.slice(inputs[b],[0,0,z],[self.img_size,self.img_size,1])   # select just one matrix of the 512
+                mu = self.__argmax(tf.reshape(feature_map, shape=[-1,1]))           # find max indices in the (flattened) feature map
+                mask = self.__compute_mask(mu, self.img_size)                       # compute mask centered in those indeces
+                masked_output = tf.math.multiply(feature_map,mask).numpy()          # apply corresponding mask
+                
+                for i in range(self.img_size):                                      # copy masked feature map in the data structure
+                    for j in range(self.img_size):
+                        temp[i,j,z] = masked_output[i,j,0]     
+            
+            self.masked_filters[b].assign(temp)
+        return self.masked_filters  # tf.reshape(self.masked_filters, [-1, self.img_size, self.img_size, self.depth])  
+    '''
+
     def call(self, inputs):                         # the computation function
 
         # tensori di 512 elementi contententi gli indici di riga e colonna dei massimi trovati sulle "fette"
@@ -62,7 +81,7 @@ class OldMaskLayer(tf.keras.layers.Layer):
         
         self.masked_filters.assign(temp) 
         return self.masked_filters
-
+    '''
     
     def compute_output_shape(self, input_shape):    # required!
         return input_shape                          # masking doesn not change the output shape
