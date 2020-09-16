@@ -11,7 +11,7 @@ class MaskLayer(tf.keras.layers.Layer):
         - WARN:     this current version uses ugly for loops
     """
     def __init__(self, img_size=14, depth=512):
-        super(OldMaskLayer, self).__init__(trainable=False, dynamic=True)
+        super(MaskLayer, self).__init__(trainable=False, dynamic=True)
         self.img_size = img_size
         self.depth = depth
         self.shape = (img_size, img_size, depth)
@@ -23,12 +23,12 @@ class MaskLayer(tf.keras.layers.Layer):
         '''TODO'''
         aux = tf.zeros_initializer()
         self.masked_filters = tf.Variable(
-            initial_value=tf.zeros_initializer(),
+            initial_value=aux(shape=input_shape[1:], dtype='float32'),
             trainable=False,
             validate_shape=False
         )
         self.mask_tensor = tf.Variable(
-            initial_value=aux(shape=[-1] + list(input_shape[1:]), dtype='float32'), 
+            initial_value=aux(shape=input_shape[1:], dtype='float32'), 
             trainable=False
         )
         # to compute masks 
@@ -62,11 +62,11 @@ class MaskLayer(tf.keras.layers.Layer):
 
 
     def __compute_mask(self, row_idx, col_idx):
-        row_idx_tensor = tf.tile(row_idx, [14,14,1])
-        col_idx_tensor = tf.tile(col_idx, [14,14,1])
+        row_idx_tensor = tf.tile([[row_idx]], [14,14,1])
+        col_idx_tensor = tf.tile([[col_idx]], [14,14,1])
 
         abs_row = tf.math.abs(tf.math.subtract(self.row_mat,row_idx_tensor))
         abs_col = tf.math.abs(tf.math.subtract(self.col_mat,col_idx_tensor))
 
-        val = tf.math.subtract(1, (self.beta/self.img_size) * tf.math.add(abs_row+abs_col))
+        val = tf.math.subtract(1, (self.beta/self.img_size) * tf.math.add(abs_row,abs_col))
         return self.tau * tf.math.maximum(val,-1)

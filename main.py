@@ -4,6 +4,7 @@ from tensorflow.keras.optimizers import Adam
 from tensorflow.keras.losses import categorical_crossentropy
 from load_utils import load_keras
 from oldMaskLayer import *
+from maskLayer import *
 from visuallib import *
 from matplotlib import pyplot as plt
 import matplotlib.image as mpimg
@@ -30,7 +31,7 @@ model_masked = load_keras()
 '''
 
 print("\n[2] Adding one mask layer...")
-model_masked.add(OldMaskLayer())
+model_masked.add(MaskLayer())
 print("[2]                        Added.")
 
 raw_x = model_raw.predict(load_def())
@@ -38,7 +39,7 @@ masked_x = model_masked.predict(load_def())
 
 masked_x = scale*masked_x       # we use their parameters but scale the masked x before plotting for visual reason
 
-''' 
+
 
 # fiorellini
 
@@ -52,7 +53,7 @@ print("[2] Computing model comparison...")
 print_comparison(raw_x, masked_x, n_imgs=2, cmap="rainbow")
 for i in range(20):
     print_comparison_step(raw_x, masked_x, n_imgs=4, cmap="rainbow", i=i)
-'''
+
 
 print("[2] Computing heatmaps...")
 raw_heatmap = compute_heatmap(x=raw_x, mode="avg")
