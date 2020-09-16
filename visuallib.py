@@ -12,7 +12,7 @@ from mpl_toolkits.axes_grid1 import AxesGrid
 folder = '/media/luca/DATA2/uni/neural_networks_project_2020/dataset/detanimalpart/'
 fileid = 'n02355227_obj/img/img/00012.jpg'
 path = folder+fileid
-
+scale = 100
 
 def load_def():
     """
@@ -35,7 +35,10 @@ def compute_heatmap(x, mode="sum"):
         return x.mean(axis=3, dtype='float32')
 
 
-def print_heatmap(raw, masked, cmap="bone", scale="same"):
+def print_heatmap(raw, masked, cmap="bone"):
+    """
+    Prints the heatmap of the raw and the masked feature maps at the same time for an easy comparison
+    """
 
     fig = plt.figure()
     fig.suptitle('Heatmaps of preprocessed image'+fileid)
@@ -79,11 +82,12 @@ def print_heatmap(raw, masked, cmap="bone", scale="same"):
 
     plt.show()
 
-    #else:
-    #    print_heatmap_diff(raw, masked, cmap)
-
 
 def print_feature_maps(x, masked=False, n_imgs=4, cmap="bone"):
+    """
+    Prints the `(2n_imgs)^2` feature maps at the same time for an easy comparison
+    """
+
     rows = n_imgs*2
     cols = n_imgs*2
 
@@ -130,6 +134,9 @@ def print_feature_maps(x, masked=False, n_imgs=4, cmap="bone"):
 
 
 def print_comparison_step(raw_x, masked_x, n_imgs=4, cmap="bone", i=0):
+    """
+    Prints the `i-th` raw and masked feature maps at the same time for an easy comparison
+    """
     ax = []                     # ax enables access to manipulate each of subplots
     images = []                 # aux array to calculate min & max value for the color scale
 
@@ -169,9 +176,9 @@ def print_comparison_step(raw_x, masked_x, n_imgs=4, cmap="bone", i=0):
 
 
 def print_comparison(raw_x, masked_x, n_imgs=4, cmap="bone", step=False):
-    # code based on:
-    #   - https://matplotlib.org/3.1.1/gallery/images_contours_and_fields/multi_image.html#sphx-glr-gallery-images-contours-and-fields-multi-image-py
-    #   - https://stackoverflow.com/questions/46615554/how-to-display-multiple-images-in-one-figure-correctly/46616645
+    """
+    Prints `(2n_imgs)^2` raw and masked feature maps for a comparison
+    """
     rows = n_imgs*2
     cols = n_imgs*2
 
@@ -215,3 +222,11 @@ def print_comparison(raw_x, masked_x, n_imgs=4, cmap="bone", step=False):
         im.callbacksSM.connect('changed', update)
 
     plt.show()
+
+''' 
+code for printing with the same scale based on:
+
+https://matplotlib.org/3.1.1/gallery/images_contours_and_fields/multi_image.html#sphx-glr-gallery-images-contours-and-fields-multi-image-py
+
+https://stackoverflow.com/questions/46615554/how-to-display-multiple-images-in-one-figure-correctly/46616645
+'''
