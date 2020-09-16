@@ -1,7 +1,7 @@
 import tensorflow as tf
 import numpy as np
 
-class OldMaskLayer(tf.keras.layers.Layer):
+class MaskLayer(tf.keras.layers.Layer):
     """
     Class for mask layer, used to filter out noisy activation function.
         - img_size: size of the input feature maps (n*n)
@@ -10,21 +10,32 @@ class OldMaskLayer(tf.keras.layers.Layer):
         - call():   performs the masking task
         - WARN:     this current version uses ugly for loops
     """
-    def __init__(self, img_size=14, depth=512, visualize=False):
+    def __init__(self, img_size=14, depth=512):
         super(OldMaskLayer, self).__init__(trainable=False, dynamic=True)
         self.img_size = img_size
         self.depth = depth
         self.shape = (img_size, img_size, depth)
         self.tau  = 0.5/(img_size*img_size)
         self.beta = 4
-        #self.minimum = -1
-        if visualize:      # these values are ONLY for visualizing heatmaps and featuremaps at the same scale as the original ones
-            self.tau  = 1
-            self.beta = 1
+
+
+    def build(self, input_shape): 
+        '''TODO'''
         aux = tf.zeros_initializer()
         self.masked_filters = tf.Variable(
-            initial_value=aux(shape=(8,14,14,512), dtype='float32'),
-            trainable=False)
+            initial_value=tf.zeros_initializer(),
+            trainable=False,
+            validate_shape=False
+        )
+        self.mask_tensor = tf.Variable(
+            initial_value=aux(shape=[-1] + list(input_shape[1:]), dtype='float32'), 
+            trainable=False
+        )
+        # to compute masks 
+        x = tf.convert_to_tensor([np.arange(0,self.img_size,1) for i in range(self.img_size)])
+        y = tf.transpose(x)
+        self.col_mat = tf.stack([x]*512, axis=2)
+        self.row_mat = tf.stack([y]*512, axis=2)
 
     
     def call(self, inputs):                         # the computation function
@@ -34,19 +45,14 @@ class OldMaskLayer(tf.keras.layers.Layer):
         # ma come gestire il batch size?
         # nota che per visualizzare le matrici 14x14x512 correttamente, vanno trasposte con
         #   tf.transpose()
-        rows = tf.math.argmax(tf.reduce_max(inputs[:]), axis=1)
-        cols = tf.math.argmax(tf.reduce_max(inputs[:]), axis=0)
+        rows_idx = tf.math.argmax(tf.reduce_max(inputs[:]), axis=1)
+        cols_ids = tf.math.argmax(tf.reduce_max(inputs[:]), axis=0)
 
         # ora che abbiamo gli indici, dobbiamo creare un tensore di maschere centrate nei massimi
         # la profondità della maschera è l'indice dell'array rows (o cols)
         # mu[i] è centrato in (rows[i], cols[i])
         # 
         #  
-
-
-
-
-
 
 
         temp = np.zeros(shape=self.shape)
@@ -85,6 +91,9 @@ class OldMaskLayer(tf.keras.layers.Layer):
         return row, col
 
 
+    def __compute_mask(self, row_idx, col_idx, n):
+        
+    '''
     def __compute_mask(self, mu, n, tau=1, beta=1):
         i_max = mu[0]
         j_max = mu[1]
@@ -92,7 +101,7 @@ class OldMaskLayer(tf.keras.layers.Layer):
         for i in range(n):
             for j in range(n):
                 mat[i,j] = self.tau * max(1-self.beta*(abs(i-i_max)+abs(j-j_max))/n, -1)
-        return mat
+        return mat'''
 
 
 '''
