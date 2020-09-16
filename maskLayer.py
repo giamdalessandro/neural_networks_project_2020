@@ -39,35 +39,12 @@ class MaskLayer(tf.keras.layers.Layer):
 
     
     def call(self, inputs):                         # the computation function
+        rows_idx = tf.math.argmax(tf.reduce_max(inputs[0], axis=1))
+        cols_idx = tf.math.argmax(tf.reduce_max(inputs[0], axis=0))
 
-        # tensori di 512 elementi contententi gli indici di riga e colonna dei massimi trovati sulle "fette"
-        # questo funziona usando matrici 3D, ma con i batch size in più forse axis incrementa di uno
-        # ma come gestire il batch size?
-        # nota che per visualizzare le matrici 14x14x512 correttamente, vanno trasposte con
-        #   tf.transpose()
-        rows_idx = tf.math.argmax(tf.reduce_max(inputs[:]), axis=1)
-        cols_ids = tf.math.argmax(tf.reduce_max(inputs[:]), axis=0)
+        self.mask_tensor.assign(self.__compute_mask(rows_idx,cols_idx))
 
-        # ora che abbiamo gli indici, dobbiamo creare un tensore di maschere centrate nei massimi
-        # la profondità della maschera è l'indice dell'array rows (o cols)
-        # mu[i] è centrato in (rows[i], cols[i])
-        # 
-        #  
-
-
-        temp = np.zeros(shape=self.shape)
-        for z in range(self.depth):
-            feature_map = tf.slice(inputs,[0,0,0,z],[1,self.img_size,self.img_size,1])   # select just one matrix of the 512
-            mu = self.__argmax(tf.reshape(feature_map[0], shape=[-1,1]))           # find max indices in the (flattened) feature map
-            mask = self.__compute_mask(mu, self.img_size)                       # compute mask centered in those indeces
-            masked_output = tf.math.multiply(feature_map,mask).numpy()          # apply corresponding mask
-            
-            for i in range(self.img_size):                                      # copy masked feature map in the data structure
-                for j in range(self.img_size):
-                    temp[0,i,j,z] = masked_output[i,j,0]     
-        
-        self.masked_filters.assign(temp) 
-        return self.masked_filters
+        return tf.math.multiply(self.mask_tensor,inputs[0])
 
     
     def compute_output_shape(self, input_shape):    # required!
@@ -84,37 +61,12 @@ class MaskLayer(tf.keras.layers.Layer):
         return cfg
 
 
-    def __argmax(self, flatten_feature_map):    
-        mu = tf.math.argmax(flatten_feature_map, 0)
-        row = mu // self.img_size
-        col = mu % self.img_size
-        return row, col
+    def __compute_mask(self, row_idx, col_idx):
+        row_idx_tensor = tf.tile(row_idx, [14,14,1])
+        col_idx_tensor = tf.tile(col_idx, [14,14,1])
 
+        abs_row = tf.math.abs(tf.math.subtract(self.row_mat,row_idx_tensor))
+        abs_col = tf.math.abs(tf.math.subtract(self.col_mat,col_idx_tensor))
 
-    def __compute_mask(self, row_idx, col_idx, n):
-        
-    '''
-    def __compute_mask(self, mu, n, tau=1, beta=1):
-        i_max = mu[0]
-        j_max = mu[1]
-        mat = np.zeros(shape=(n,n,1))
-        for i in range(n):
-            for j in range(n):
-                mat[i,j] = self.tau * max(1-self.beta*(abs(i-i_max)+abs(j-j_max))/n, -1)
-        return mat'''
-
-
-'''
-### Test per la classe MaskLayer
-
-import tensorflow as tf
-import numpy as np
-n = 5
-depth = 3
-maskedLayer = MaskLayer(n,depth)
-r = tf.random.uniform(shape=(n,n,depth), seed=42, maxval=5, dtype='int32')
-l = maskedLayer.call(r)
-print(r)
-print(l)
-
-'''
+        val = tf.math.subtract(1, (self.beta/self.img_size) * tf.math.add(abs_row+abs_col))
+        return self.tau * tf.math.maximum(val,-1)
