@@ -20,10 +20,6 @@ class MaskLayer(tf.keras.layers.Layer):
 
 
     def build(self, input_shape):
-        aux = tf.zeros_initializer()
-        self.masked_filters = tf.Variable(
-            initial_value=aux(shape=(8,14,14,512), dtype='float32'),
-            trainable=False) 
         # to compute masks
         x = tf.constant([np.arange(0,self.img_size,1) for i in range(self.img_size)])
         y = tf.transpose(x)
@@ -37,7 +33,7 @@ class MaskLayer(tf.keras.layers.Layer):
         """
         batch_size = tf.shape(inputs)[0]
         output = np.zeros([batch_size,14,14,512])
-        for b in range(8):
+        for b in range(batch_size):
             # finds the row and col indices of the maximum value across the depth of the tensor
             rows_idx = tf.math.argmax(tf.reduce_max(inputs[b], axis=1), output_type=tf.int32)
             cols_idx = tf.math.argmax(tf.reduce_max(inputs[b], axis=0), output_type=tf.int32)

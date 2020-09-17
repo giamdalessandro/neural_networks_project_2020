@@ -1,13 +1,16 @@
 import tensorflow as tf
+import matplotlib.image as mpimg
+
 from tensorflow.keras.layers import Dense, Conv2D, MaxPool2D , Flatten, Dropout, Activation
 from tensorflow.keras.optimizers import Adam
 from tensorflow.keras.losses import categorical_crossentropy
-from load_utils import load_keras
-from oldMaskLayer import *
-from maskLayer import *
-from visuallib import *
+
 from matplotlib import pyplot as plt
-import matplotlib.image as mpimg
+
+from maskLayer import *
+
+from utils.visuallib import *
+from utils.load_utils import load_keras
 
 # GPU check
 # print(tf.test.is_gpu_available())
@@ -55,7 +58,7 @@ print_comparison_step(raw_x, masked_x, n_imgs=4, cmap="rainbow", i=29)
 
 print("[2] Computing heatmaps...")
 raw_heatmap = compute_heatmap(x=raw_x, mode="avg")
-masked_heatmap = compute_heatmap(x=masked_x, mode="avg", masked=True)
+masked_heatmap = compute_heatmap(x=masked_x, mode="avg")
 print_heatmap(raw_heatmap, 2*masked_heatmap, cmap="rainbow")
 
 

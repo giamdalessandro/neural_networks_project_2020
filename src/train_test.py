@@ -1,9 +1,16 @@
 import tensorflow as tf
-from tensorflow.keras.layers import Dense, Conv2D, MaxPool2D , Flatten, Dropout
+import matplotlib.image as mpimg
+
+from tensorflow.keras.layers import Dense, Conv2D, MaxPool2D , Flatten, Dropout, Activation
 from tensorflow.keras.optimizers import Adam
 from tensorflow.keras.losses import categorical_crossentropy
-from load_utils import load_keras, load_dataeset
+
+from matplotlib import pyplot as plt
+
 from maskLayer import *
+
+from utils.visuallib import *
+from utils.load_utils import load_keras, load_dataset
 
 TRAIN       =    True
 MASK_LAYER  =    True
@@ -61,7 +68,7 @@ model.compile(
 )
 
 if TRAIN:
-    train_generator, validation_generator = load_dataeset(dataset='imagenet')
+    train_generator, validation_generator = load_dataset(dataset='imagenet')
     model.fit(
         train_generator,
         steps_per_epoch=50,
