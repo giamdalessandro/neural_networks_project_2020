@@ -20,8 +20,25 @@ class OldMaskLayer(tf.keras.layers.Layer):
         self.masked_filters = tf.Variable(
             initial_value=aux(shape=(8,14,14,512), dtype='float32'),
             trainable=False)
-
-
+    '''
+    vecchia build della nuova classe
+    def build(self, input_shape): 
+        aux = tf.zeros_initializer()
+        self.masked_filters = tf.Variable(
+            initial_value=aux(shape=input_shape[1:], dtype='float32'),
+            trainable=False,
+            validate_shape=False
+        )
+        self.mask_tensor = tf.Variable(
+            initial_value=aux(shape=input_shape[1:], dtype='float32'), 
+            trainable=False
+        )
+        # to compute masks 
+        x = tf.constant([np.arange(0,self.img_size,1) for i in range(self.img_size)])
+        y = tf.transpose(x)
+        self.col_mat = tf.stack([x]*512, axis=2)
+        self.row_mat = tf.stack([y]*512, axis=2)
+    '''
 
     def call(self, inputs):                         # the computation function
         temp = np.zeros(shape=self.shape)
