@@ -19,8 +19,12 @@ class MaskLayer(tf.keras.layers.Layer):
         self.beta = 4
 
 
-    def build(self, input_shape): 
-        # to compute masks 
+    def build(self, input_shape):
+        aux = tf.zeros_initializer()
+        self.masked_filters = tf.Variable(
+            initial_value=aux(shape=(8,14,14,512), dtype='float32'),
+            trainable=False) 
+        # to compute masks
         x = tf.constant([np.arange(0,self.img_size,1) for i in range(self.img_size)])
         y = tf.transpose(x)
         self.col_mat = tf.stack([x]*512, axis=2)
@@ -31,25 +35,29 @@ class MaskLayer(tf.keras.layers.Layer):
         """
         Creates a mask tensor and applies it to the output of the convolutional layer
         """
-        # finds the row and col indices of the maximum value across the depth of the tensor
-        rows_idx = tf.math.argmax(tf.reduce_max(inputs[0], axis=1), output_type=tf.int32)
-        cols_idx = tf.math.argmax(tf.reduce_max(inputs[0], axis=0), output_type=tf.int32)
+        batch_size = tf.shape(inputs)[0]
+        output = np.zeros([batch_size,14,14,512])
+        for b in range(8):
+            # finds the row and col indices of the maximum value across the depth of the tensor
+            rows_idx = tf.math.argmax(tf.reduce_max(inputs[b], axis=1), output_type=tf.int32)
+            cols_idx = tf.math.argmax(tf.reduce_max(inputs[b], axis=0), output_type=tf.int32)
 
-        # scales up the previous tensors from (1,1,512) to (14,14,512) mantaining the same values
-        rows_idx_tensor = tf.tile([[rows_idx]], [14,14,1])
-        cols_idx_tensor = tf.tile([[cols_idx]], [14,14,1])
+            # scales up the previous tensors from (1,1,512) to (14,14,512) mantaining the same values
+            rows_idx_tensor = tf.tile([[rows_idx]], [14,14,1])
+            cols_idx_tensor = tf.tile([[cols_idx]], [14,14,1])
 
-        # performs the absolute value between the tensor just created and another one with
-        # the values equal to the row (or col) index (self.row_mat and self.col_mat)
-        # these two are "dummy" tensor that serves only to perform this computation easily
-        abs_row = tf.math.abs(tf.math.subtract(self.row_mat,rows_idx_tensor))
-        abs_col = tf.math.abs(tf.math.subtract(self.col_mat,cols_idx_tensor))
+            # performs the absolute value between the tensor just created and another one with
+            # the values equal to the row (or col) index (self.row_mat and self.col_mat)
+            # these two are "dummy" tensor that serves only to perform this computation easily
+            abs_row = tf.math.abs(tf.math.subtract(self.row_mat,rows_idx_tensor))
+            abs_col = tf.math.abs(tf.math.subtract(self.col_mat,cols_idx_tensor))
 
-        # val = 1 - B*(abs_row + abs_col)/n
-        val = tf.math.subtract(1, (self.beta/self.img_size) * tf.dtypes.cast(tf.math.add(abs_row,abs_col),tf.float32))
-        
-        # return [T * max(val, -1)] * conv_output
-        return tf.math.multiply(self.tau * tf.math.maximum(val,-1), inputs[0])
+            # val = 1 - B*(abs_row + abs_col)/n
+            val = tf.math.subtract(1, (self.beta/self.img_size) * tf.dtypes.cast(tf.math.add(abs_row,abs_col),tf.float32))
+            
+            # output[b] = [T * max(val, -1)] * conv_output[b]
+            output[b]=(tf.math.multiply(self.tau * tf.math.maximum(val,-1), inputs[b]))
+        return tf.convert_to_tensor(output)
 
     
     def compute_output_shape(self, input_shape):    # required!
