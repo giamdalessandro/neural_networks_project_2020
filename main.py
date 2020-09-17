@@ -36,9 +36,7 @@ print("[2]                        Added.")
 
 raw_x = model_raw.predict(load_def())
 masked_x = model_masked.predict(load_def())
-
 masked_x = scale*masked_x       # we use their parameters but scale the masked x before plotting for visual reason
-
 
 
 # fiorellini
@@ -51,14 +49,14 @@ print_feature_maps(masked_x, masked=True, n_imgs=4, cmap="rainbow")
 
 print("[2] Computing model comparison...")
 print_comparison(raw_x, masked_x, n_imgs=2, cmap="rainbow")
-for i in range(20):
-    print_comparison_step(raw_x, masked_x, n_imgs=4, cmap="rainbow", i=i)
+#for i in range(20):
+print_comparison_step(raw_x, masked_x, n_imgs=4, cmap="rainbow", i=29)
 
 
 print("[2] Computing heatmaps...")
 raw_heatmap = compute_heatmap(x=raw_x, mode="avg")
-masked_heatmap = compute_heatmap(x=masked_x, mode="avg")
-print_heatmap(raw_heatmap, masked_heatmap, cmap="rainbow")
+masked_heatmap = compute_heatmap(x=masked_x, mode="avg", masked=True)
+print_heatmap(raw_heatmap, 2*masked_heatmap, cmap="rainbow")
 
 
 

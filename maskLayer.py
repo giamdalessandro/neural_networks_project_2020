@@ -20,31 +20,36 @@ class MaskLayer(tf.keras.layers.Layer):
 
 
     def build(self, input_shape): 
-        '''TODO'''
-        aux = tf.zeros_initializer()
-        self.masked_filters = tf.Variable(
-            initial_value=aux(shape=input_shape[1:], dtype='float32'),
-            trainable=False,
-            validate_shape=False
-        )
-        self.mask_tensor = tf.Variable(
-            initial_value=aux(shape=input_shape[1:], dtype='float32'), 
-            trainable=False
-        )
         # to compute masks 
-        x = tf.convert_to_tensor([np.arange(0,self.img_size,1) for i in range(self.img_size)])
+        x = tf.constant([np.arange(0,self.img_size,1) for i in range(self.img_size)])
         y = tf.transpose(x)
         self.col_mat = tf.stack([x]*512, axis=2)
         self.row_mat = tf.stack([y]*512, axis=2)
 
     
     def call(self, inputs):                         # the computation function
-        rows_idx = tf.math.argmax(tf.reduce_max(inputs[0], axis=1))
-        cols_idx = tf.math.argmax(tf.reduce_max(inputs[0], axis=0))
+        """
+        Creates a mask tensor and applies it to the output of the convolutional layer
+        """
+        # finds the row and col indices of the maximum value across the depth of the tensor
+        rows_idx = tf.math.argmax(tf.reduce_max(inputs[0], axis=1), output_type=tf.int32)
+        cols_idx = tf.math.argmax(tf.reduce_max(inputs[0], axis=0), output_type=tf.int32)
 
-        self.mask_tensor.assign(self.__compute_mask(rows_idx,cols_idx))
+        # scales up the previous tensors from (1,1,512) to (14,14,512) mantaining the same values
+        rows_idx_tensor = tf.tile([[rows_idx]], [14,14,1])
+        cols_idx_tensor = tf.tile([[cols_idx]], [14,14,1])
 
-        return tf.math.multiply(self.mask_tensor,inputs[0])
+        # performs the absolute value between the tensor just created and another one with
+        # the values equal to the row (or col) index (self.row_mat and self.col_mat)
+        # these two are "dummy" tensor that serves only to perform this computation easily
+        abs_row = tf.math.abs(tf.math.subtract(self.row_mat,rows_idx_tensor))
+        abs_col = tf.math.abs(tf.math.subtract(self.col_mat,cols_idx_tensor))
+
+        # val = 1 - B*(abs_row + abs_col)/n
+        val = tf.math.subtract(1, (self.beta/self.img_size) * tf.dtypes.cast(tf.math.add(abs_row,abs_col),tf.float32))
+        
+        # return [T * max(val, -1)] * conv_output
+        return tf.math.multiply(self.tau * tf.math.maximum(val,-1), inputs[0])
 
     
     def compute_output_shape(self, input_shape):    # required!
@@ -59,14 +64,3 @@ class MaskLayer(tf.keras.layers.Layer):
         cfg['tau']      = self.tau
         cfg['beta']     = self.beta
         return cfg
-
-
-    def __compute_mask(self, row_idx, col_idx):
-        row_idx_tensor = tf.tile([[row_idx]], [14,14,1])
-        col_idx_tensor = tf.tile([[col_idx]], [14,14,1])
-
-        abs_row = tf.math.abs(tf.math.subtract(self.row_mat,row_idx_tensor))
-        abs_col = tf.math.abs(tf.math.subtract(self.col_mat,col_idx_tensor))
-
-        val = tf.math.subtract(1, (self.beta/self.img_size) * tf.math.add(abs_row,abs_col))
-        return self.tau * tf.math.maximum(val,-1)

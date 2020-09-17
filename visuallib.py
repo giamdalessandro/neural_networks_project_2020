@@ -12,7 +12,7 @@ from mpl_toolkits.axes_grid1 import AxesGrid
 folder = '/media/luca/DATA2/uni/neural_networks_project_2020/dataset/detanimalpart/'
 fileid = 'n02355227_obj/img/img/00012.jpg'
 path = folder+fileid
-scale = 100
+scale = 400     # beta * 100
 
 def load_def():
     """
@@ -25,15 +25,20 @@ def load_def():
     return img
 
 
-def compute_heatmap(x, mode="sum"):
+def compute_heatmap(x, mode="sum", masked=False):
     """
     mode can be "sum" or "avg"
     """
     if mode=="sum":
-        return x.sum(axis=3, dtype='float32')
+        if masked:
+            return x.sum(axis=2, dtype='float32')
+        else:
+            return x.sum(axis=3, dtype='float32')
     else:
-        return x.mean(axis=3, dtype='float32')
-
+        if masked:
+            return x.mean(axis=2, dtype='float32')
+        else:
+            return x.mean(axis=3, dtype='float32')
 
 def print_heatmap(raw, masked, cmap="bone"):
     """
@@ -58,7 +63,7 @@ def print_heatmap(raw, masked, cmap="bone"):
 
     ax.append(fig.add_subplot(1,3,3))
     ax[-1].set_title("masked heatmap")
-    images.append(plt.imshow(masked[0,:, :], cmap))
+    images.append(plt.imshow(masked[:, :], cmap))
     ax[-1].label_outer()
 
     vmin = min(image.get_array().min() for image in images)
@@ -105,10 +110,10 @@ def print_feature_maps(x, masked=False, n_imgs=4, cmap="bone"):
         
         if masked: 
             ax[-1].set_title("masked x: " + str(int(i)))
+            images.append(plt.imshow(x[:, :, i], cmap))
         else:
             ax[-1].set_title("raw x: " + str(int(i)))
-        
-        images.append(plt.imshow(x[0, :, :, i], cmap))        
+            images.append(plt.imshow(x[0, :, :, i], cmap))        
         ax[i].label_outer()
 
     vmin = min(image.get_array().min() for image in images)
@@ -150,7 +155,7 @@ def print_comparison_step(raw_x, masked_x, n_imgs=4, cmap="bone", i=0):
 
     ax.append(fig.add_subplot(1, 2, 2))
     ax[-1].set_title("masked x: " + str(int(i)))
-    images.append(plt.imshow(masked_x[0,:,:,i], cmap))
+    images.append(plt.imshow(masked_x[:,:,i], cmap))
     ax[-1].label_outer()
 
     vmin = min(image.get_array().min() for image in images)
@@ -195,7 +200,7 @@ def print_comparison(raw_x, masked_x, n_imgs=4, cmap="bone", step=False):
             images.append(plt.imshow(raw_x[0,:,:,i], cmap))
         else:
             ax[-1].set_title("masked x: " + str(int(((i-1)/2)+1)))
-            images.append(plt.imshow(masked_x[0,:,:,i-1], cmap))   # i -1 perchè è un for perverso
+            images.append(plt.imshow(masked_x[:,:,i-1], cmap))   # i -1 perchè è un for perverso
         
         ax[i].label_outer()
 
