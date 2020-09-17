@@ -72,7 +72,9 @@ if TRAIN:
     model.fit(
         train_generator,
         steps_per_epoch=50,
-        epochs=10,
+        epochs=100,
         validation_data=validation_generator,
         validation_steps=100
     )
+
+model.save("epoch100.h5")
