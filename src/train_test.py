@@ -39,7 +39,9 @@ model = load_keras()
 '''
 if MASK_LAYER:
     model.add(MaskLayer())
-
+    model.add(Conv2D(512, [3, 3], padding="same",
+                     activation='relu', name="our_conv"))
+    model.add(MaskLayer())  
 
 '''
 4. add final pooling
