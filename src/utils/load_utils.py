@@ -66,17 +66,17 @@ def load_matlab():
 ILSRVC_2013 = "./dataset/detanimalpart/"
 CUB_200 = "./dataset/CUB_200_2011/"
 PASCAL_VOC = "./dataset/PascalVOC_2010_part/VOCdevkit/"
-BATCH_SIZE = 8
+BATCH_SIZE = 32
 
-def load_dataset(dataset='cub200', batch_size=BATCH_SIZE, agumentation=False):
+def load_dataset(dataset='imagenet', batch_size=BATCH_SIZE, aug=False):
     """
     Loading training dataset via ImageDataGenerator
         - dataset:      one of 'cub200', 'imagenet', 'voc2010'
         - batch_size:   data batch size for training
     """
-    if agumentation:
+    if aug:
         datagen = ImageDataGenerator(
-            rescale=1./255,             # data agumentation 
+            rescale=1./255,             # data aug 
             shear_range=0.2,
             zoom_range=0.2,       
             horizontal_flip=True,
