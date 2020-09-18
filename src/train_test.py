@@ -28,27 +28,30 @@ BATCH_SIZE  = 32
 '''
 
 
-fc = tf.keras.Sequential([
+fc = [
     MaxPool2D(name="max_pool", pool_size=(2, 2),strides=(2, 2), data_format="channels_last"),
     Flatten(),
     Dense(units=4096, activation="relu"),
     Dropout(rate=0.8),
     Dense(units=4096, activation="relu"),
     Dropout(rate=0.8), 
-    Dense(units=31, activation="softmax")])
+    Dense(units=31, activation="softmax")]
 
 ### MODEL RAW ###
 model_raw = load_keras()
 model_raw.trainable = False
-model_raw.add(fc)
-
+for i in fc:
+    model_raw.add(i)
+model_raw.summary()
 
 
 ### MODEL MASKED 1 ###
 model_masked1 = load_keras()
 model_masked1.add(MaskLayer())
 model_masked1.trainable = False
-model_masked1.add(fc)
+for i in fc:
+    model_masked1.add(i)
+model_masked1.summary()
 
 
 
@@ -58,7 +61,9 @@ model_masked2.add(MaskLayer())
 model_masked2.trainable = False
 model_masked2.add(Conv2D(512, [3, 3], padding="same", activation='relu', name="our_conv"))
 model_masked2.add(MaskLayer())
-model_masked2.add(fc)
+for i in fc:
+    model_masked2.add(i)
+model_masked2.summary()
 
 
 '''
@@ -95,7 +100,7 @@ print("[END TIME]: ", dt.now())
 
 
 print("[START TIME]: ", dt.now())
-train_generator, validation_generator = load_dataset(dataset='imagenet')
+#train_generator, validation_generator = load_dataset(dataset='imagenet')
 model_masked2.fit(
     train_generator,
     steps_per_epoch=EPOCH_STEPS,
@@ -107,7 +112,7 @@ print("[END TIME]: ", dt.now())
 
 
 print("[START TIME]: ", dt.now())
-train_generator, validation_generator = load_dataset(dataset='imagenet')
+#train_generator, validation_generator = load_dataset(dataset='imagenet')
 model_masked2.fit(
     train_generator,
     steps_per_epoch=EPOCH_STEPS,
@@ -131,7 +136,7 @@ model_masked1.save("msk1_multi_" + str(NUM_EPOCHS) + "_epochs_" +
             str(dt.now().hour)   + "_" +    # serve?
             str(dt.now().minute) + ".h5")   # serve?
 
-model_msked2.save("msk2_multi_" + str(NUM_EPOCHS) + "_epochs_" +
+model_masked2.save("msk2_multi_" + str(NUM_EPOCHS) + "_epochs_" +
                str(dt.now().day) + "_" +
                str(dt.now().month) + "_" +
                str(dt.now().year) + "_" +
