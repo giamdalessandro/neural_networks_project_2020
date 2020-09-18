@@ -13,15 +13,10 @@ from maskLayer import *
 from utils.visuallib import *
 from utils.load_utils import load_keras, load_dataset
 
-TRAIN       = True
-MASK_LAYER  = True
-NUM_EPOCHS  = 50
+NUM_EPOCHS  = 100
 EPOCH_STEPS = 50
 BATCH_SIZE  = 32
-#FILTER_LOSS =    False
 
-# GPU check
-# print(tf.config.list_physical_devices('GPU'))
 
 '''
 1. loading pre-trained net from keras.Applications model, because VGG16_vd .mat file is not working...
@@ -53,7 +48,7 @@ for i in fc:
     model_masked1.add(i)
 model_masked1.summary()
 
-
+'''
 
 ### MODEL MASKED 2 ###
 model_masked2 = load_keras()
@@ -65,6 +60,7 @@ for i in fc:
     model_masked2.add(i)
 model_masked2.summary()
 
+'''
 
 '''
 6. Compiling and training the model
@@ -80,13 +76,14 @@ model_masked1.compile(
     loss= categorical_crossentropy,
     metrics=["accuracy"]
 )
-
+'''
 model_masked2.compile(
     optimizer= Adam(learning_rate=0.001),
     loss= categorical_crossentropy,
     metrics=["accuracy"]
 )
-
+start = dt.now()
+'''
 print("[START TIME]: ",dt.now())
 train_generator, validation_generator = load_dataset(dataset='imagenet')
 model_raw.fit(
@@ -110,7 +107,7 @@ model_masked2.fit(
 )
 print("[END TIME]: ", dt.now())
 
-
+'''
 print("[START TIME]: ", dt.now())
 #train_generator, validation_generator = load_dataset(dataset='imagenet')
 model_masked2.fit(
@@ -121,6 +118,12 @@ model_masked2.fit(
     validation_steps=100
 )
 print("[END TIME]: ", dt.now())
+'''
+end = dt.now()
+
+print ("ELAPSED TIME: ", end - start)
+print(start)
+print(end)
 
 model_raw.save("raw_multi_" + str(NUM_EPOCHS) + "_epochs_" +
             str(dt.now().day)    + "_" +
@@ -135,10 +138,11 @@ model_masked1.save("msk1_multi_" + str(NUM_EPOCHS) + "_epochs_" +
             str(dt.now().year)   + "_" +
             str(dt.now().hour)   + "_" +    # serve?
             str(dt.now().minute) + ".h5")   # serve?
-
+'''
 model_masked2.save("msk2_multi_" + str(NUM_EPOCHS) + "_epochs_" +
                str(dt.now().day) + "_" +
                str(dt.now().month) + "_" +
                str(dt.now().year) + "_" +
                str(dt.now().hour) + "_" +    # serve?
                str(dt.now().minute) + ".h5")   # serve?
+'''
