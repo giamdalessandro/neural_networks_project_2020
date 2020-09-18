@@ -6,67 +6,27 @@ from tensorflow.keras import Sequential
 from tensorflow.keras.applications import VGG16
 from tensorflow.keras.preprocessing.image import ImageDataGenerator
 
-def load_keras():
+ILSRVC_2013 = "./dataset/detanimalpart/"
+CUB_200 = "./dataset/CUB_200_2011/"
+PASCAL_VOC = "./dataset/PascalVOC_2010_part/VOCdevkit/"
+
+# ne fa 100 all'ora
+NUM_EPOCHS = 100
+EPOCH_STEPS = 50
+BATCH_SIZE = 32
+
+def load_keras(name="our_interpretable_cnn"):
     print("\n[1] Loading vgg16 from keras...")
     pretrained = VGG16(
         include_top=False, weights='imagenet', input_tensor=None, input_shape=(224, 224, 3),
         pooling=None, classes=1000, classifier_activation='softmax'
     )
-    model = Sequential(name="Interpretable_vgg16")
+    model = Sequential(name=name)
     for layer in pretrained.layers[:-1]:  # just exclude last layer from copying
         model.add(layer)
     print("[1]                        Loaded.")
     return model
 
-
-
-def load_matlab():
-    # c'è il casino da fare per tirare fuori i pesi
-    # si può fare forse se si converte il .mat nel formato più nuovo (da matlab), ma per ora
-    # non penso che serva
-    from scipy.io import loadmat
-    print("\n[1] Loading vgg16-verydeep from mat file...")
-    net = loadmat("./dataset/imagenet-vgg-verydeep-16.mat") # load .mat file as a dict
-    print("[1] {}".format(net.keys()))
-    print("[1] loaded layers: {}".format(net["layers"].shape[1]))
-
-
-    print("\n[1] Loading vgg16 from keras...")
-
-    VGG16 = keras.applications.VGG16(
-        include_top=True, weights='imagenet', input_tensor=None, input_shape=None,
-        pooling=None, classes=1000, classifier_activation='softmax')
-
-    model = keras.Sequential(VGG16.layers[:-1])
-    print(model.summary())
-
-    print("[1] Model loaded.")
-    #net_list = net["layers"][0].tolist()
-
-    #import tables
-    #file = tables.open_file("./dataset/imagenet-vgg-verydeep-16.mat", mode="r+")
-    #print(len(file.root.layers[:]))
-    
-    # zavve-subgull & co. #
-    
-    for ar in net_list:
-        layer = ar.tolist()
-        print("zavve, {}, len: {}".format(type(ar),len(layer)))
-        for l in layer:
-            print("\tcol, {}, len: {}".format(type(l),len(l)))
-            for i in l:
-                print("\t\t", i)
-                print("\t\tsubgull, {}, len: {}".format(type(i),len(i)))
-                break
-            break
-        break
-
-
-
-ILSRVC_2013 = "./dataset/detanimalpart/"
-CUB_200 = "./dataset/CUB_200_2011/"
-PASCAL_VOC = "./dataset/PascalVOC_2010_part/VOCdevkit/"
-BATCH_SIZE = 32
 
 def load_dataset(dataset='imagenet', batch_size=BATCH_SIZE, aug=False):
     """
@@ -116,3 +76,5 @@ def load_dataset(dataset='imagenet', batch_size=BATCH_SIZE, aug=False):
     )
 
     return train_generator, validation_generator
+
+
