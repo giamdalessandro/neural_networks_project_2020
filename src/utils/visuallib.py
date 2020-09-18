@@ -10,9 +10,11 @@ import numpy as np
 from mpl_toolkits.axes_grid1 import AxesGrid
 
 folder = '/media/luca/DATA2/uni/neural_networks_project_2020/dataset/detanimalpart/'
-fileid = 'n02355227_obj/img/img/00012.jpg'
+fileid = 'n02355227_obj/img/img/00008.jpg'
 path = folder+fileid
-scale = 400     # beta * 100
+scale1 = 400     # beta * 100
+scale2 = 2*scale1*1000  
+
 
 def load_def():
     """
@@ -34,7 +36,7 @@ def compute_heatmap(x, mode="sum"):
     else:
             return x.mean(axis=3, dtype='float32')
 
-def print_heatmap(raw, masked, cmap="bone"):
+def print_heatmap(a, cmap="bone"):
     """
     Prints the heatmap of the raw and the masked feature maps at the same time for an easy comparison
     """
@@ -44,21 +46,33 @@ def print_heatmap(raw, masked, cmap="bone"):
 
     ax = []                     # ax enables access to manipulate each of subplots
     images = []                 # aux array to calculate min & max value for the color scale
+    cols = len(a) + 1           # min: 3, max: 4
 
-    ax.append(fig.add_subplot(1,3,1))
+    ax.append(fig.add_subplot(1, cols,1))
     ax[-1].set_title("preprocessed img")
     images.append(plt.imshow(load_def()[0, :, :, :], cmap))
     ax[-1].label_outer()
 
-    ax.append(fig.add_subplot(1,3,2))
-    ax[-1].set_title("raw heatmap")
-    images.append(plt.imshow(raw[0, :, :], cmap))
+    ax.append(fig.add_subplot(1, cols, 2))
+    ax[-1].set_title("conv1 heatmap")
+    images.append(plt.imshow(a[0][0, :, :], cmap))
     ax[-1].label_outer()
 
-    ax.append(fig.add_subplot(1,3,3))
-    ax[-1].set_title("masked heatmap")
-    images.append(plt.imshow(masked[0, :, :], cmap))
+    ax.append(fig.add_subplot(1, cols, 3))
+    ax[-1].set_title("masked1 heatmap")
+    images.append(plt.imshow(a[1][0, :, :], cmap))
     ax[-1].label_outer()
+
+    if cols > 3:
+        ax.append(fig.add_subplot(1, cols, 4))
+        ax[-1].set_title("conv2 heatmap")
+        images.append(plt.imshow(a[2][0, :, :], cmap))
+        ax[-1].label_outer()
+
+        ax.append(fig.add_subplot(1, cols, 5))
+        ax[-1].set_title("masked2 heatmap")
+        images.append(plt.imshow(a[3][0, :, :], cmap))
+        ax[-1].label_outer()
 
     vmin = min(image.get_array().min() for image in images)
     vmax = max(image.get_array().max() for image in images)
@@ -82,7 +96,7 @@ def print_heatmap(raw, masked, cmap="bone"):
     plt.show()
 
 
-def print_feature_maps(x, masked=False, n_imgs=4, cmap="bone"):
+def print_feature_maps(x, title, n_imgs=4, cmap="bone"):
     """
     Prints the `(2n_imgs)^2` feature maps at the same time for an easy comparison
     """
@@ -91,23 +105,15 @@ def print_feature_maps(x, masked=False, n_imgs=4, cmap="bone"):
     cols = n_imgs*2
 
     fig = plt.figure()
-    if masked:
-        fig.suptitle('Masked feature map of '+fileid)
-    else:
-        fig.suptitle('Raw feature map of '+fileid)
+    fig.suptitle(title+' feature map of '+fileid)
 
     ax = []                     # ax enables access to manipulate each of subplots
     images = []                 # aux array to calculate min & max value for the color scale
 
     for i in range(cols*rows):
         ax.append(fig.add_subplot(rows, cols, i+1))   
-        
-        if masked: 
-            ax[-1].set_title("masked x: " + str(int(i)))
-            images.append(plt.imshow(x[0, :, :, i], cmap))
-        else:
-            ax[-1].set_title("raw x: " + str(int(i)))
-            images.append(plt.imshow(x[0, :, :, i], cmap))        
+        ax[-1].set_title(title+" x: " + str(int(i)))
+        images.append(plt.imshow(x[0, :, :, i], cmap))      
         ax[i].label_outer()
 
     vmin = min(image.get_array().min() for image in images)
@@ -132,7 +138,7 @@ def print_feature_maps(x, masked=False, n_imgs=4, cmap="bone"):
     plt.show()
 
 
-def print_comparison_step(raw_x, masked_x, n_imgs=4, cmap="bone", i=0):
+def print_comparison2_step(raw_x, masked_x, n_imgs=4, cmap="bone", i=0):
     """
     Prints the `i-th` raw and masked feature maps at the same time for an easy comparison
     """
@@ -140,7 +146,7 @@ def print_comparison_step(raw_x, masked_x, n_imgs=4, cmap="bone", i=0):
     images = []                 # aux array to calculate min & max value for the color scale
 
     fig = plt.figure()
-    fig.suptitle('Raw feature maps | Masked feature map')
+    fig.suptitle('Raw feature maps | Masked(1) feature map | Masked(2) feature map')
 
     ax.append(fig.add_subplot(1, 2, 1))
     ax[-1].set_title("raw x: " + str(int(i)))
@@ -173,6 +179,58 @@ def print_comparison_step(raw_x, masked_x, n_imgs=4, cmap="bone", i=0):
 
     plt.show()
 
+
+def print_comparison_step(x, n_imgs=4, cmap="bone", i=0):
+    """
+    Prints the `i-th` raw and masked feature maps at the same time for an easy comparison
+    """
+    ax = []                     # ax enables access to manipulate each of subplots
+    images = []                 # aux array to calculate min & max value for the color scale
+
+    fig = plt.figure()
+    cols = len(x)
+
+    ax.append(fig.add_subplot(1, cols, 1))
+    ax[-1].set_title("Conv(1): " + str(int(i)))
+    images.append(plt.imshow(x[0][0, :, :, i], cmap))
+    ax[-1].label_outer()
+
+    ax.append(fig.add_subplot(1, cols, 2))
+    ax[-1].set_title("Masked(1) x: " + str(int(i)))
+    images.append(plt.imshow(x[1][0, :, :, i], cmap))
+    ax[-1].label_outer()
+
+    if cols > 2:
+        ax.append(fig.add_subplot(1, cols, 3))
+        ax[-1].set_title("Conv(2) x: " + str(int(i)))
+        images.append(plt.imshow(x[2][0, :, :, i], cmap))
+        ax[-1].label_outer()
+
+        ax.append(fig.add_subplot(1, cols, 4))
+        ax[-1].set_title("Masked(2) x: " + str(int(i)))
+        images.append(plt.imshow(x[3][0, :, :, i], cmap))
+        ax[-1].label_outer()
+
+    vmin = min(image.get_array().min() for image in images)
+    vmax = max(image.get_array().max() for image in images)
+    norm = clr.Normalize(vmin=vmin, vmax=vmax)
+
+    for im in images:
+        im.set_norm(norm)
+
+    fig.colorbar(images[-1], ax=ax, orientation='horizontal', fraction=.1)
+
+    def update(changed_image):
+        for im in images:
+            if (changed_image.get_cmap() != im.get_cmap()
+                    or changed_image.get_clim() != im.get_clim()):
+                im.set_cmap(changed_image.get_cmap())
+                im.set_clim(changed_image.get_clim())
+
+    for im in images:
+        im.callbacksSM.connect('changed', update)
+
+    plt.show()
 
 def print_comparison(raw_x, masked_x, n_imgs=4, cmap="bone", step=False):
     """

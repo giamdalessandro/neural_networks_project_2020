@@ -12,54 +12,65 @@ from maskLayer import *
 from utils.visuallib import *
 from utils.load_utils import load_keras
 
-# GPU check
-# print(tf.test.is_gpu_available())
 
-'''
-1. loading pre-trained net from keras.Applications model, because VGG16_vd .mat file is not working...
-'''
+model_raw1 = load_keras()
 
-model_raw = load_keras()
-model_masked = load_keras()
+model_masked1 = load_keras()
+model_masked1.add(MaskLayer())
+
+model_raw2 = load_keras()
+model_raw2.add(MaskLayer())
+model_raw2.add(Conv2D(512, [3, 3], padding="same",
+                  activation='relu', name="our_conv"))
+
+model_masked2 = load_keras()
+model_masked2.add(MaskLayer())
+model_masked2.add(Conv2D(512, [3, 3], padding="same",
+                  activation='relu', name="our_conv"))
+model_masked2.add(MaskLayer())
 
 
-'''
-2. add loss for each of the 512 filters
-'''
+raw_x1 = model_raw1.predict(load_def())
+raw_x2 = model_raw2.predict(load_def())
+raw_x2 = 1000 * raw_x2
 
-# skippata per ora
+masked_x1 = model_masked1.predict(load_def())  # we use their parameters but scale the masked x before plotting for visual reason
+masked_x1 = scale1*masked_x1
 
-''' 
-3. add masks to ouput filter
-'''
+masked_x2 = model_masked2.predict(load_def())
+masked_x2 = scale2*masked_x2
 
-print("\n[2] Adding one mask layer...")
-model_masked.add(MaskLayer())
-print("[2]                        Added.")
-
-raw_x = model_raw.predict(load_def())
-masked_x = model_masked.predict(load_def())
-masked_x = scale*masked_x       # we use their parameters but scale the masked x before plotting for visual reason
 
 
 # fiorellini
-
+'''
 print("[2] Computing raw model feature maps...")
-print_feature_maps(raw_x, masked=False, n_imgs=4, cmap="rainbow")
+print_feature_maps(raw_x, title="Conv1", n_imgs=4, cmap="rainbow")
 
 print("[2] Computing masked model feature maps...")
-print_feature_maps(masked_x, masked=True, n_imgs=4, cmap="rainbow")
+print_feature_maps(masked_x, title="Masked(1)", n_imgs=4, cmap="rainbow")
+
+print("[2] Computing masked final model feature maps...")
+print_feature_maps(masked_x_final, title="Masked(2)", n_imgs=4, cmap="rainbow")
 
 print("[2] Computing model comparison...")
 print_comparison(raw_x, masked_x, n_imgs=2, cmap="rainbow")
-#for i in range(20):
-print_comparison_step(raw_x, masked_x, n_imgs=4, cmap="rainbow", i=29)
 
+print("[2] Computing model comparison...")
+print_comparison(masked_x, masked_x_final, n_imgs=2, cmap="rainbow")
+'''
+for i in range(5):
+    print_comparison_step([raw_x1, masked_x1, raw_x2, masked_x2], n_imgs=4, cmap="rainbow", i=i)
+print_comparison_step([raw_x1, masked_x1, raw_x2, masked_x2], n_imgs=4, cmap="rainbow", i=29)
 
 print("[2] Computing heatmaps...")
-raw_heatmap = compute_heatmap(x=raw_x, mode="avg")
-masked_heatmap = compute_heatmap(x=masked_x, mode="avg")
-print_heatmap(raw_heatmap, 2*masked_heatmap, cmap="rainbow")
+raw_heatmap1 = compute_heatmap(x=raw_x1, mode="avg")
+masked_heatmap1 = compute_heatmap(x=masked_x1, mode="avg")
+
+raw_heatmap2 = compute_heatmap(x=raw_x2, mode="avg")
+masked_heatmap2 = compute_heatmap(x=masked_x2, mode="avg")
+
+print_heatmap([raw_heatmap1, 2*masked_heatmap1, raw_heatmap2/2, masked_heatmap2/2], cmap="rainbow")
 
 
 
