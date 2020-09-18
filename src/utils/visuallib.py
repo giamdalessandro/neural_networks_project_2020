@@ -10,10 +10,10 @@ import numpy as np
 from mpl_toolkits.axes_grid1 import AxesGrid
 
 folder = '/media/luca/DATA2/uni/neural_networks_project_2020/dataset/detanimalpart/'
-fileid = 'n02355227_obj/img/img/00042.jpg'
+fileid = 'n02355227_obj/img/img/00008.jpg'
 path = folder+fileid
-scale1 = 1# 400     # beta * 100
-scale2 = 2*scale1  
+scale1 = 400     # beta * 100
+scale2 = 2*scale1*1000  
 
 
 def load_def():

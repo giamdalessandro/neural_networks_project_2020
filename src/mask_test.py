@@ -13,26 +13,32 @@ from utils.visuallib import *
 from utils.load_utils import load_keras
 
 
-model1 = load_keras()
-model2 = load_keras()
-model3 = load_keras()
-model4 = load_keras()
-model.add(MaskLayer())
-model.add(Conv2D(512, [3, 3], padding="same", activation='relu', name="our_conv"))
-model.add(MaskLayer())
+model_raw1 = load_keras()
+
+model_masked1 = load_keras()
+model_masked1.add(MaskLayer())
+
+model_raw2 = load_keras()
+model_raw2.add(MaskLayer())
+model_raw2.add(Conv2D(512, [3, 3], padding="same",
+                  activation='relu', name="our_conv"))
+
+model_masked2 = load_keras()
+model_masked2.add(MaskLayer())
+model_masked2.add(Conv2D(512, [3, 3], padding="same",
+                  activation='relu', name="our_conv"))
+model_masked2.add(MaskLayer())
 
 
+raw_x1 = model_raw1.predict(load_def())
+raw_x2 = model_raw2.predict(load_def())
+raw_x2 = 1000 * raw_x2
 
+masked_x1 = model_masked1.predict(load_def())  # we use their parameters but scale the masked x before plotting for visual reason
+masked_x1 = scale1*masked_x1
 
-masked_x2 = model.predict(load_def())
+masked_x2 = model_masked2.predict(load_def())
 masked_x2 = scale2*masked_x2
-
-raw_x1 = model.get_layer("conv")
-
-masked_x1 = model.
-masked_x1 = scale1*masked_x1       # we use their parameters but scale the masked x before plotting for visual reason
-
-raw_x2 = model.
 
 
 
@@ -55,6 +61,7 @@ print_comparison(masked_x, masked_x_final, n_imgs=2, cmap="rainbow")
 '''
 for i in range(5):
     print_comparison_step([raw_x1, masked_x1, raw_x2, masked_x2], n_imgs=4, cmap="rainbow", i=i)
+print_comparison_step([raw_x1, masked_x1, raw_x2, masked_x2], n_imgs=4, cmap="rainbow", i=29)
 
 print("[2] Computing heatmaps...")
 raw_heatmap1 = compute_heatmap(x=raw_x1, mode="avg")
@@ -63,7 +70,7 @@ masked_heatmap1 = compute_heatmap(x=masked_x1, mode="avg")
 raw_heatmap2 = compute_heatmap(x=raw_x2, mode="avg")
 masked_heatmap2 = compute_heatmap(x=masked_x2, mode="avg")
 
-print_heatmap([raw_heatmap1, 2*masked_heatmap1, raw_heatmap2, masked_heatmap2/2], cmap="rainbow")
+print_heatmap([raw_heatmap1, 2*masked_heatmap1, raw_heatmap2/2, masked_heatmap2/2], cmap="rainbow")
 
 
 
