@@ -1,5 +1,6 @@
 import tensorflow as tf
 import matplotlib.image as mpimg
+import datetime
 
 from tensorflow.keras.layers import Dense, Conv2D, MaxPool2D , Flatten, Dropout, Activation
 from tensorflow.keras.optimizers import Adam
@@ -17,7 +18,7 @@ MASK_LAYER  =    True
 #FILTER_LOSS =    False
 
 # GPU check
-# print(tf.test.is_gpu_available())
+# print(tf.config.list_physical_devices('GPU'))
 
 '''
 1. loading pre-trained net from keras.Applications model, because VGG16_vd .mat file is not working...
@@ -66,15 +67,18 @@ model.compile(
     loss= categorical_crossentropy,
     metrics=["accuracy"]
 )
-
+print("[START TIME]: ",datetime.datetime.now())
 if TRAIN:
     train_generator, validation_generator = load_dataset(dataset='imagenet')
     model.fit(
         train_generator,
         steps_per_epoch=50,
-        epochs=100,
+        epochs=10,
         validation_data=validation_generator,
         validation_steps=100
     )
+print("[END TIME]: ", datetime.datetime.now())
 
-model.save("epoch100.h5")
+#model.save("epoch100.h5")   
+# Epoch 100/100 in 4h (using only CPU)
+# 50/50 [==============================] - 153s 3s/step - loss: 0.3543 - accuracy: 0.9075 - val_loss: 2.5576 - val_accuracy: 0.4112
