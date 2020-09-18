@@ -1,6 +1,6 @@
 import tensorflow as tf
 import matplotlib.image as mpimg
-import datetime
+from datetime import datetime as dt
 
 from tensorflow.keras.layers import Dense, Conv2D, MaxPool2D , Flatten, Dropout, Activation
 from tensorflow.keras.optimizers import Adam
@@ -13,8 +13,11 @@ from maskLayer import *
 from utils.visuallib import *
 from utils.load_utils import load_keras, load_dataset
 
-TRAIN       =    True
-MASK_LAYER  =    True
+TRAIN       = True
+MASK_LAYER  = True
+NUM_EPOCHS  = 10
+EPOCH_STEPS = 50
+BATCH_SIZE  = 32
 #FILTER_LOSS =    False
 
 # GPU check
@@ -67,18 +70,23 @@ model.compile(
     loss= categorical_crossentropy,
     metrics=["accuracy"]
 )
-print("[START TIME]: ",datetime.datetime.now())
+print("[START TIME]: ",dt.now())
+
 if TRAIN:
     train_generator, validation_generator = load_dataset(dataset='imagenet')
     model.fit(
         train_generator,
-        steps_per_epoch=50,
-        epochs=10,
+        steps_per_epoch=EPOCH_STEPS,
+        epochs=NUM_EPOCHS,
         validation_data=validation_generator,
         validation_steps=100
     )
-print("[END TIME]: ", datetime.datetime.now())
+print("[END TIME]: ", dt.now())
 
-#model.save("epoch100.h5")   
-# Epoch 100/100 in 4h (using only CPU)
-# 50/50 [==============================] - 153s 3s/step - loss: 0.3543 - accuracy: 0.9075 - val_loss: 2.5576 - val_accuracy: 0.4112
+model.save("model_multi_" + str(NUM_EPOCHS) + "_epochs_" +
+            str(dt.now().day)    + "_" +
+            str(dt.now().month)  + "_" +
+            str(dt.now().year)   + "_" +
+            str(dt.now().hour)   + "_" +    # serve?
+            str(dt.now().minute) + ".h5")   # serve?
+
