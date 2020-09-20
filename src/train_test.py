@@ -76,7 +76,7 @@ for m in model_list:
         validation_steps=100)
     
     print("[END TIME]: ", dt.now())
-    m.save( str(m.name)     +   "_multi_"  + 
+    m.save( m.name + "_multi_"  + 
             str(NUM_EPOCHS) +   "_epochs_" +
             str(dt.now().day)    + "_" +
             str(dt.now().month)  + "_" +

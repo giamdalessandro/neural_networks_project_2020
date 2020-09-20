@@ -51,8 +51,8 @@ class MaskLayer(tf.keras.layers.Layer):
             # val = 1 - B*(abs_row + abs_col)/n
             val = tf.math.subtract(1, (self.beta/self.img_size) * tf.dtypes.cast(tf.math.add(abs_row,abs_col),tf.float32))
             
-            # output[b] = [T * max(val, -1)] * conv_output[b]
-            output[b]=(tf.math.multiply(self.tau * tf.math.maximum(val,-1), inputs[b]))
+            # output[b] = max( [T * max(val, -1)] * conv_output[b], 0)
+            output[b]=tf.math.maximum((tf.math.multiply(self.tau * tf.math.maximum(val,-1), inputs[b])), 0)
         return tf.convert_to_tensor(output)
 
     
