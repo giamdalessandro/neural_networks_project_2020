@@ -85,8 +85,11 @@ def load_dataset(dataset="imagenet", batch_size=BATCH_SIZE, aug=False):
 
 def load_voc_2010(dest_path=TRAIN_VAL_PATH):
     '''
-        Copies PASCAL_VOC only bird images to train_val/ directory
+        Copies PASCAL_VOC and CUB_200 bird images to 'train_val/bird/' directory,
+        and PASCAL_VOC non-bird images to 'train_val/not_bird/' directory
     '''
+
+    # PASCAL_VOC images, spillting birds from the others
     bird_imgs = []
     bird_ids = os.path.join(PASCAL_VOC, "ImageSets", "Main", "bird_trainval.txt")
     with open(bird_ids, "r") as f:
@@ -111,14 +114,8 @@ def load_voc_2010(dest_path=TRAIN_VAL_PATH):
 
     print("... copied {} non-bird images ...".format(not_b))
     print("... copied {} bird images ...DONE.".format(b))
+
+    # CUB_200, just a symbolic link to the images directory
+    os.system("cd dataset/train_val/bird/")
+    os.system("ln -s ../../raw_data/CUB_200_2011/images/ cub_200_images")
     return None
-
-    
-
-def load_cub_200(dest_path=TRAIN_VAL_PATH):
-    '''
-        Copies CUB_200 images to train_val/ directory
-    '''
-    cub_imgs = os.path.join(CUB_200, "images")
-    for img in os.listdir(cub_imgs):
-        copy(src=os.path.join(cub_imgs, img), dst=os.path.join(dest_path, "bird"))
