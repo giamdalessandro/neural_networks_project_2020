@@ -23,13 +23,15 @@ fc=[MaxPool2D(name="max_pool", pool_size=(2, 2),strides=(2, 2), data_format="cha
     Dropout(rate=0.8), 
     Dense(units=31, activation="softmax")]
 
-''' MODEL RAW '''
+
+''' MODEL RAW
 model_raw = load_keras(name="raw")
 model_raw.trainable = False
 for i in fc:
     model_raw.add(i)
 model_raw.summary()
 model_list.append(model_raw)
+'''
 
 ''' MODEL MASKED 1 '''
 model_masked1 = load_keras(name="masked1")
@@ -40,8 +42,8 @@ for i in fc:
 model_masked1.summary()
 model_list.append(model_masked1)
 
-'''
 
+'''
 ###  MODEL MASKED 2 ###
 model_masked2 = load_keras(name="masked2")
 model_masked2.add(MaskLayer())
@@ -76,7 +78,7 @@ for m in model_list:
         validation_steps=100)
     
     print("[END TIME]: ", dt.now())
-    m.save( m.name + "_multi_"  + 
+    m.save( m.name + "_binary_"  + 
             str(NUM_EPOCHS) +   "_epochs_" +
             str(dt.now().day)    + "_" +
             str(dt.now().month)  + "_" +
