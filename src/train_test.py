@@ -86,7 +86,7 @@ train_generator, validation_generator = load_dataset(dataset='imagenet')
 
 for m in model_list:
     print("[START TIME]: ", dt.now())
-    hystory = m.fit(
+    history = m.fit(
         train_generator,
         steps_per_epoch=EPOCH_STEPS,
         epochs=NUM_EPOCHS,
@@ -102,7 +102,7 @@ for m in model_list:
             str(dt.now().hour)   + "_" +    # serve?
             str(dt.now().minute) + ".h5")   # serve?
 
-    hystory =
+    pretty_little_flower(history)
 
 end = dt.now()
 

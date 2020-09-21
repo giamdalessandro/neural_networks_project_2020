@@ -2,6 +2,7 @@ import os
 import json
 import tensorflow as tf
 import numpy as np
+
 from shutil import copy
 from tensorflow import keras
 from tensorflow.keras import Sequential
@@ -83,7 +84,7 @@ def load_dataset(dataset="imagenet", batch_size=BATCH_SIZE, aug=False):
     return train_generator, validation_generator
 
 
-def load_voc_2010(dest_path=TRAIN_VAL_PATH):
+def prepare_bin_dataset(dest_path=TRAIN_VAL_PATH):
     '''
         Copies PASCAL_VOC and CUB_200 bird images to 'train_val/bird/' directory,
         and PASCAL_VOC non-bird images to 'train_val/not_bird/' directory
@@ -101,7 +102,7 @@ def load_voc_2010(dest_path=TRAIN_VAL_PATH):
         f.close()
     print("... loaded {} bird images".format(len(bird_imgs)))
 
-    b, not_b = 0
+    b = not_b = 0
     voc_imgs = os.path.join(PASCAL_VOC, "JPEGImages")
     for img in os.listdir(voc_imgs):
         if img in bird_imgs:

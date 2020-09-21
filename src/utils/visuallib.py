@@ -287,3 +287,32 @@ https://matplotlib.org/3.1.1/gallery/images_contours_and_fields/multi_image.html
 
 https://stackoverflow.com/questions/46615554/how-to-display-multiple-images-in-one-figure-correctly/46616645
 '''
+
+
+def pretty_little_flower(history):
+    #PRINT LOSS FUNCTION HISTORY during EPOCHS
+    '''
+    loss = history.history['loss']
+    val_loss = history.history['val_loss']
+    epochs = range(1, len(loss) + 1)
+    plt.plot(epochs, loss, 'y', label='Training loss')
+    plt.plot(epochs, val_loss, 'r', label='Validation loss')
+    plt.title('Training and validation loss')
+    plt.xlabel('Epochs')
+    plt.ylabel('Loss')
+    plt.legend()
+    plt.grid(True)
+    plt.show()
+    '''
+    #PRINT ACCURACY FUNCTION during EPOCHS
+    acc = history.history['accuracy']
+    val_acc = history.history['val_accuracy']
+    epochs = range(1, len(acc) + 1)
+    plt.plot(epochs, acc, 'y', label='Training acc')
+    plt.plot(epochs, val_acc, 'r', label='Validation acc')
+    plt.title('Training and validation accuracy')
+    plt.xlabel('Epochs')
+    plt.ylabel('Accuracy')
+    plt.legend()
+    plt.grid(True)
+    plt.show()
