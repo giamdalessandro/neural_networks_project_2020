@@ -87,6 +87,6 @@ for m in model_list:
             str(dt.now().minute) + ".h5")   # serve?
 end = dt.now()
 
-print ("ELAPSED TIME: ", end - start)
+print("ELAPSED TIME: ", end - start)
 print(start)
 print(end)
