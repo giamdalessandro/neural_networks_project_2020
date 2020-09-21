@@ -15,14 +15,23 @@ from utils.load_utils import *
 
 model_list = []
 
-fc=[MaxPool2D(name="max_pool", pool_size=(2, 2),strides=(2, 2), data_format="channels_last"),
+fc_no_dropout=[
+    MaxPool2D(name="max_pool", pool_size=(2, 2),strides=(2, 2), data_format="channels_last"),
+    Flatten(),
+    Dense(units=4096, activation="relu"),
+    #Dropout(rate=0.8),
+    Dense(units=4096, activation="relu"),
+    #Dropout(rate=0.8), 
+    Dense(units=31, activation="softmax")]
+
+fc= [
+    MaxPool2D(name="max_pool", pool_size=(2, 2),strides=(2, 2), data_format="channels_last"),
     Flatten(),
     Dense(units=4096, activation="relu"),
     Dropout(rate=0.8),
     Dense(units=4096, activation="relu"),
-    Dropout(rate=0.8), 
+    Dropout(rate=0.8),
     Dense(units=31, activation="softmax")]
-
 
 ''' MODEL RAW
 model_raw = load_keras(name="raw")
@@ -33,7 +42,16 @@ model_raw.summary()
 model_list.append(model_raw)
 '''
 
-''' MODEL MASKED 1 '''
+''' MODEL MASKED 1 NO DROPOUT '''
+model_masked1_no_dropout = load_keras(name="masked1_no_dropout")
+model_masked1_no_dropout.add(MaskLayer())
+model_masked1_no_dropout.trainable = False
+for i in fc_no_dropout:
+    model_masked1_no_dropout.add(i)
+model_masked1_no_dropout.summary()
+model_list.append(model_masked1_no_dropout)
+
+''' MODEL MASKED 1 WITH DROPOUT '''
 model_masked1 = load_keras(name="masked1")
 model_masked1.add(MaskLayer())
 model_masked1.trainable = False
@@ -41,7 +59,6 @@ for i in fc:
     model_masked1.add(i)
 model_masked1.summary()
 model_list.append(model_masked1)
-
 
 '''
 ###  MODEL MASKED 2 ###
@@ -58,7 +75,6 @@ model_list.append(model_masked2)
 '''
 
 for m in model_list:
-
     m.compile(
         optimizer= Adam(learning_rate=0.001),
         loss= categorical_crossentropy,
@@ -70,7 +86,7 @@ train_generator, validation_generator = load_dataset(dataset='imagenet')
 
 for m in model_list:
     print("[START TIME]: ", dt.now())
-    m.fit(
+    hystory = m.fit(
         train_generator,
         steps_per_epoch=EPOCH_STEPS,
         epochs=NUM_EPOCHS,
@@ -85,6 +101,9 @@ for m in model_list:
             str(dt.now().year)   + "_" +
             str(dt.now().hour)   + "_" +    # serve?
             str(dt.now().minute) + ".h5")   # serve?
+
+    hystory =
+
 end = dt.now()
 
 print("ELAPSED TIME: ", end - start)
