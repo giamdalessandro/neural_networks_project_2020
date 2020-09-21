@@ -34,10 +34,10 @@ def load_keras(name="our_interpretable_cnn"):
     return model
 
 
-def load_dataset(dataset="imagenet", batch_size=BATCH_SIZE, aug=False):
+def load_dataset(dataset="binary", batch_size=BATCH_SIZE, aug=False):
     """
     Loading training dataset via ImageDataGenerator
-        - dataset:      one of 'cub200', 'imagenet', 'voc2010'
+        - dataset:      one of 'binary', 'multi'
         - batch_size:   data batch size for training
     """
     if aug:
@@ -55,12 +55,10 @@ def load_dataset(dataset="imagenet", batch_size=BATCH_SIZE, aug=False):
         )
 
     data_path = ''
-    if dataset == 'imagenet':
-        data_path = ILSRVC_2013
-    elif dataset == 'cub200':
-        data_path = CUB_200
-    elif dataset == 'voc2010':
-        data_path = PASCAL_VOC
+    if dataset == 'binary':
+        data_path = TRAIN_VAL_PATH
+    elif dataset == 'multi':
+        # TODO
     print("\nUsing " + dataset + " dataset for training...")
     
 
