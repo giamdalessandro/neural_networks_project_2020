@@ -1,14 +1,19 @@
+import os
 import json
 import tensorflow as tf
 import numpy as np
+from shutil import copy
 from tensorflow import keras
 from tensorflow.keras import Sequential
 from tensorflow.keras.applications import VGG16
 from tensorflow.keras.preprocessing.image import ImageDataGenerator
 
-ILSRVC_2013 = "./dataset/detanimalpart/"
-CUB_200 = "./dataset/CUB_200_2011/"
-PASCAL_VOC = "./dataset/PascalVOC_2010_part/VOCdevkit/"
+DATASET = "./dataset/" 
+
+TRAIN_VAL_PATH = DATASET + "train_val/"
+ILSRVC_2013 = DATASET + "raw_data/detanimalpart/"
+CUB_200 = DATASET + "raw_data/CUB_200_2011/"
+PASCAL_VOC = DATASET + "raw_data/PascalVOC_2010_part/VOCdevkit/VOC2010/"
 
 # ne fa 100 all'ora
 NUM_EPOCHS = 100
@@ -28,7 +33,7 @@ def load_keras(name="our_interpretable_cnn"):
     return model
 
 
-def load_dataset(dataset='imagenet', batch_size=BATCH_SIZE, aug=False):
+def load_dataset(dataset="imagenet", batch_size=BATCH_SIZE, aug=False):
     """
     Loading training dataset via ImageDataGenerator
         - dataset:      one of 'cub200', 'imagenet', 'voc2010'
@@ -78,3 +83,42 @@ def load_dataset(dataset='imagenet', batch_size=BATCH_SIZE, aug=False):
     return train_generator, validation_generator
 
 
+def load_voc_2010(dest_path=TRAIN_VAL_PATH):
+    '''
+        Copies PASCAL_VOC only bird images to train_val/ directory
+    '''
+    bird_imgs = []
+    bird_ids = os.path.join(PASCAL_VOC, "ImageSets", "Main", "bird_trainval.txt")
+    with open(bird_ids, "r") as f:
+        for row in f.readlines():
+            row_list = row.strip().split(' ')
+            if len(row_list) == 3 and row_list[2] == "1":
+                bird_imgs.append("{}.jpg".format(row_list[0]))
+
+        f.close()
+    print("... loaded {} bird images".format(len(bird_imgs)))
+
+    b, not_b = 0
+    voc_imgs = os.path.join(PASCAL_VOC, "JPEGImages")
+    for img in os.listdir(voc_imgs):
+        if img in bird_imgs:
+            b += 1
+            copy(src=os.path.join(voc_imgs, img), dst=os.path.join(dest_path, "bird"))
+        
+        else:
+            not_b += 1
+            copy(src=os.path.join(voc_imgs, img), dst=os.path.join(dest_path, "not_bird"))
+
+    print("... copied {} non-bird images ...".format(not_b))
+    print("... copied {} bird images ...DONE.".format(b))
+    return None
+
+    
+
+def load_cub_200(dest_path=TRAIN_VAL_PATH):
+    '''
+        Copies CUB_200 images to train_val/ directory
+    '''
+    cub_imgs = os.path.join(CUB_200, "images")
+    for img in os.listdir(cub_imgs):
+        copy(src=os.path.join(cub_imgs, img), dst=os.path.join(dest_path, "bird"))
