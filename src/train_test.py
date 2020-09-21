@@ -22,7 +22,7 @@ fc_no_dropout=[
     #Dropout(rate=0.8),
     Dense(units=4096, activation="relu"),
     #Dropout(rate=0.8), 
-    Dense(units=31, activation="softmax")]
+    Dense(units=2, activation="softmax")]
 
 fc= [
     MaxPool2D(name="max_pool", pool_size=(2, 2),strides=(2, 2), data_format="channels_last"),
@@ -31,7 +31,7 @@ fc= [
     Dropout(rate=0.8),
     Dense(units=4096, activation="relu"),
     Dropout(rate=0.8),
-    Dense(units=31, activation="softmax")]
+    Dense(units=2, activation="softmax")]
 
 ''' MODEL RAW
 model_raw = load_keras(name="raw")
