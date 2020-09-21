@@ -82,7 +82,7 @@ for m in model_list:
     )
 
 start = dt.now()
-train_generator, validation_generator = load_dataset(dataset='imagenet')
+train_generator, validation_generator = load_dataset(dataset='binary')
 
 for m in model_list:
     print("[START TIME]: ", dt.now())
