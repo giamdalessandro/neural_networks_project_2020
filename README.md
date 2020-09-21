@@ -9,6 +9,8 @@ Repo for the project of NN 2020 based on the paper "Interpreting CNNs via Decisi
 - ~VGG-S~
 - VGG-16
 
+- sudo apt-get install python3-h5py
+
 All of them were pre-trained on *ImageNet ILSVRC 2012* with a loss for 1000-category classification.
 
 They used 3 combined datasets to evaluate the new CNN:
