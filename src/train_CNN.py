@@ -42,13 +42,10 @@ model_raw.summary()
 model_list.append(model_raw)
 '''
 
-custom_mask = MaskLayer()
-#custom_objects = {'mask_layer':custom_mask}
-#with tf.keras.utils.CustomObjectScope(custom_objects):
 
 ''' MODEL MASKED 1 NO DROPOUT '''
 model_masked1_no_dropout = load_keras(name="masked1_no_dropout")
-model_masked1_no_dropout.add(custom_mask)
+model_masked1_no_dropout.add(MaskLayer())
 model_masked1_no_dropout.trainable = False
 for i in fc_no_dropout:
     model_masked1_no_dropout.add(i)
@@ -57,7 +54,7 @@ model_list.append(model_masked1_no_dropout)
 
 ''' MODEL MASKED 1 WITH DROPOUT '''
 model_masked1 = load_keras(name="masked1")
-model_masked1.add(custom_mask)
+model_masked1.add(MaskLayer())
 model_masked1.trainable = False
 for i in fc:
     model_masked1.add(i)
@@ -104,7 +101,7 @@ for m in model_list:
             str(dt.now().month)  + "_" +
             str(dt.now().year)   + "_" +
             str(dt.now().hour)   + "_" +    # serve?
-            str(dt.now().minute))   # serve?
+            str(dt.now().minute), save_format="h5")   # serve?
 
     pretty_little_flower(history)
 
