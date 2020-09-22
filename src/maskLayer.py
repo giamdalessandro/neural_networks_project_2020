@@ -32,7 +32,6 @@ class MaskLayer(tf.keras.layers.Layer):
         self.col_mat = tf.stack([x]*512, axis=2)
         self.row_mat = tf.stack([y]*512, axis=2)
 
-
     def call(self, inputs):                         # the computation function
         """
         Creates a mask tensor and applies it to the output of the convolutional layer
