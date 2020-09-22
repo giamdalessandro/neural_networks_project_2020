@@ -10,7 +10,7 @@ class MaskLayer(tf.keras.layers.Layer):
         - WARN:     this current version uses ugly for loops
     """
     def __init__(self, img_size=14, depth=512, shape=None, tau=0.5, beta=4,
-                trainable=True, name=None, dtype=None, dynamic=False, **kwargs):
+                trainable=False, name=None, dtype=None, dynamic=True, **kwargs):
         super(MaskLayer, self).__init__(
             trainable=trainable,
             name=name,

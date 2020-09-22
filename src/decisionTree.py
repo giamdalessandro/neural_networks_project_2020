@@ -98,7 +98,7 @@ class DecisionTree(tl.Tree):
         g,a,b = self.find_gab(n1, n2)
         l = LAMBDA_0*sqrt(len(self.leaves(n1)) + len(self.leaves(n2)))
         tag = n1 + n2
-        node = self.create_node(tag=tag, identifier=None, parent='root',
+        node = self.create_node(tag=tag, identifier=tag, parent='root',
                          alpha=a, g=g, b=b, l=l, image=None)
         self.move_node(n1, node.identifier)
         self.move_node(n2, node.identifier)
@@ -116,12 +116,13 @@ root = t.create_node(tag="root", identifier='root')
 n1 = t.create_node(tag="n1", identifier='n1', parent='root')
 n2 = t.create_node(tag="n2", identifier='n2', parent='root')
 n3 = t.create_node(tag="n3", identifier='n3', parent='root')
-n = t.merge('n1','n2')
-m = t.merge(n1.identifier, n.identifier)
-
 print("\n\n")
 t.show()
-root.print_info()
-n1.print_info()
-n2.print_info()
-n.print_info()
+
+n = t.merge('n1','n2')
+t.show()
+
+m = t.merge(n3.identifier, n.identifier)
+t.show()
+for i in t.all_nodes():
+    i.print_info()
