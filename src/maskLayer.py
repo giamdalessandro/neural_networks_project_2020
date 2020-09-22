@@ -60,7 +60,7 @@ class MaskLayer(tf.keras.layers.Layer):
         return input_shape                          # masking doesn not change the output shape
 
 
-    def get_config(self):                           # to print new class attribute
+    def get_config(self):                           # required!
         cfg = super(MaskLayer, self).get_config()
         cfg.update({
             "img_size": self.img_size,
