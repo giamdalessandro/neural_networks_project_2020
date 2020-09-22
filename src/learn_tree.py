@@ -15,7 +15,7 @@ MASKED1 = "./models/masked1_binary_2_epochs_22_9_2020_12_18"
 MASKED2 = "masked1_binary_50_epochs_21_9_2020_19_0.h5"
 
 
-mdl1 = tf.keras.models.load_model(MASKED1, custom_objects={'MaskLayer':MaskLayer()})
+mdl1 = tf.keras.models.load_model(MASKED1, custom_objects={'mask_layer':MaskLayer()})
 print(mdl1.summary)
 
 # we need to use these lines to update the custom object scope
