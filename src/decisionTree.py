@@ -15,6 +15,7 @@ class DecisionNode(Node):
         - l = 10^-6 --- lambda = 10^-6 * sqrt(||omega_node||)
         - beta  = 1
         - gamma = (E[y_i])^-1 forall i in Omega+ --- CONST forall nodes
+        - image = path to the image that generated the node
     """
 
     def __init__(self, alpha=np.zeros(shape=(NUM_FILTERS)), g=np.zeros(shape=(NUM_FILTERS)), b=0, image=None):
@@ -32,6 +33,10 @@ class DecisionNode(Node):
 #####################################################################################################################
 
 class DecisionTree(Tree):
-    def __init__(self, arg1):
+    """
+    Class for the decision tree
+        - gamma = (E[y_i])^-1, parameter computed on the set of all positive images
+    """
+    def __init__(self, gamma):
         super(DecisionTree, self).__init__(node_class=DecisionNode)
-        self.arg1 = arg1
+        self.gamma = gamma
