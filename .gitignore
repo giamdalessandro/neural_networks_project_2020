@@ -3,4 +3,4 @@ __pycache__/
 dataset/
 src/__pycache__/
 src/utils/__pycache__/
-*.h5
+models/

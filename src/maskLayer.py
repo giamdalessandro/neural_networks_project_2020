@@ -71,7 +71,8 @@ class MaskLayer(tf.keras.layers.Layer):
         })
         return cfg
 
-
+    '''
     @classmethod
     def from_config(cls, config):
-        return cls(**config)
+        return get_config()
+    '''

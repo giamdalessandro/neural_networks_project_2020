@@ -98,13 +98,13 @@ for m in model_list:
         validation_steps=100)
     
     print("[END TIME]: ", dt.now())
-    m.save( m.name + "_binary_"  + 
+    m.save( "./models/" + m.name + "_binary_"  + 
             str(NUM_EPOCHS) +   "_epochs_" +
             str(dt.now().day)    + "_" +
             str(dt.now().month)  + "_" +
             str(dt.now().year)   + "_" +
             str(dt.now().hour)   + "_" +    # serve?
-            str(dt.now().minute) + ".h5")   # serve?
+            str(dt.now().minute))   # serve?
 
     pretty_little_flower(history)
 
