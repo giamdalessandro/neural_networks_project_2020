@@ -17,9 +17,9 @@ CUB_200 = DATASET + "raw_data/CUB_200_2011/"
 PASCAL_VOC = DATASET + "raw_data/PascalVOC_2010_part/VOCdevkit/VOC2010/"
 
 # ne fa 100 all'ora
-NUM_EPOCHS = 50
-EPOCH_STEPS = 25
-BATCH_SIZE = 16
+NUM_EPOCHS = 2
+EPOCH_STEPS = 5
+BATCH_SIZE = 8
 
 def load_keras(name="our_interpretable_cnn"):
     print("\n[1] Loading vgg16 from keras...")

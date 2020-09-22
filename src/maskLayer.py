@@ -70,3 +70,8 @@ class MaskLayer(tf.keras.layers.Layer):
             "beta"    : self.beta
         })
         return cfg
+
+
+    @classmethod
+    def from_config(cls, config):
+        return cls(**config)
