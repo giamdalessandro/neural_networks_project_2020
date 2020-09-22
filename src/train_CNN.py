@@ -104,7 +104,7 @@ for m in model_list:
             str(dt.now().month)  + "_" +
             str(dt.now().year)   + "_" +
             str(dt.now().hour)   + "_" +    # serve?
-            str(dt.now().minute))   # serve?
+            str(dt.now().minute), save_format='h5')   # serve?
 
     pretty_little_flower(history)
 

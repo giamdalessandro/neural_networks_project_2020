@@ -1,10 +1,12 @@
 import numpy as np
 import tensorflow as tf
-import treelib 
+import treelib as tl
+from math import sqrt
 
 NUM_FILTERS = 512
+LAMBDA_0 = 0.000001
 
-class DecisionNode(treelib.Node):
+class DecisionNode(tl.Node):
     """
     Class for the node of a decision tree
         - alpha = boolean vector to determine which weights are used
@@ -22,7 +24,7 @@ class DecisionNode(treelib.Node):
                  identifier=None,
                  parent=None,
                  data=None,
-                 b=0,
+                 b=0, l=LAMBDA_0,
                  alpha=np.ones(shape=(NUM_FILTERS)),
                  g=np.zeros(shape=(NUM_FILTERS)),
                  image=None):
@@ -32,7 +34,7 @@ class DecisionNode(treelib.Node):
         self.w = tf.math.multiply(self.alpha, self.g)
         self.beta = 1
         self.b = b
-        self.l = 0          # lambda
+        self.l = l          # initial lambda
         self.image = image  # path to the image that generated the node if the node is leaf, else is None
                             # and the images need to be searched in all children nodes
 
@@ -44,22 +46,24 @@ class DecisionNode(treelib.Node):
 
     def print_info(self):
         print("[NODE] -- tag:   ", self.tag)
-        print("[NODE] -- alpha: ", self.alpha.shape)
-        print("[NODE] -- g:     ", self.g.shape)
-        print("[NODE] -- w:     ", self.w.shape)
-        print("[NODE] -- b:     ", self.b)
-        print("[NODE] -- lamba: ", self.l)
+        #print("       -- alpha: ", self.alpha.shape)
+        #print("       -- g:     ", self.g.shape)
+        #print("       -- w:     ", self.w.shape)
+        #print("       -- b:     ", self.b)
+        print("       -- lamba: ", self.l)
         if self.is_leaf():
-            print("[NODE] -- leaf of image : ", self.image)
+            print("       -- leaf of image : ", self.image)
         elif self.is_root():
-            print("[NODE] -- root")
+            print("       -- root")
         else:
-            print("[NODE] -- generic node")
+            print("       -- generic node")
+        print("------------------------------")
+
 
 
 #####################################################################################################################
 
-class DecisionTree(treelib.Tree):
+class DecisionTree(tl.Tree):
     """
     Class for the decision tree
         - gamma = (E[y_i])^-1, parameter computed on the set of all positive images 
@@ -68,15 +72,15 @@ class DecisionTree(treelib.Tree):
         super().__init__(node_class=DecisionNode)
         self.gamma = gamma
 
-    # override
+    # OVERRIDE
     def create_node(self, tag=None, identifier=None, parent=None, g=np.zeros(shape=(NUM_FILTERS)),
-                    alpha=np.ones(shape=(NUM_FILTERS)), b=0, image=None):
+                    alpha=np.ones(shape=(NUM_FILTERS)), b=0, image=None, l=LAMBDA_0):
         """
         Create a child node for given @parent node. If ``identifier`` is absent,
         a UUID will be generated automatically.
         """
         node = self.node_class(tag=tag, identifier=identifier,
-                               data=None, g=g, alpha=alpha, b=b, image=image)
+                               data=None, g=g, alpha=alpha, b=b, l=l, image=image)
         self.add_node(node, parent)
         return node
 
@@ -92,11 +96,13 @@ class DecisionTree(treelib.Tree):
         Merges nodes n1 and n2 to create a parent n, to whom n1 and n2 become children 
         """
         g,a,b = self.find_gab(n1, n2)
-        node = self.create_node(tag=None, identifier=None, parent='root',
-                         alpha=a, g=g, b=b, image=None)
-        node.print_info()
+        l = LAMBDA_0*sqrt(len(self.leaves(n1)) + len(self.leaves(n2)))
+        tag = n1 + n2
+        node = self.create_node(tag=tag, identifier=None, parent='root',
+                         alpha=a, g=g, b=b, l=l, image=None)
         self.move_node(n1, node.identifier)
         self.move_node(n2, node.identifier)
+        return node
     
     def grow(self):
         """
@@ -106,13 +112,16 @@ class DecisionTree(treelib.Tree):
 
 
 t = DecisionTree(gamma=2)
+root = t.create_node(tag="root", identifier='root')
+n1 = t.create_node(tag="n1", identifier='n1', parent='root')
+n2 = t.create_node(tag="n2", identifier='n2', parent='root')
+n3 = t.create_node(tag="n3", identifier='n3', parent='root')
+n = t.merge('n1','n2')
+m = t.merge(n1.identifier, n.identifier)
+
 print("\n\n")
-
-t.create_node(tag="root", identifier='root')
-t.create_node(tag="n1", identifier='n1', parent='root')
-t.create_node(tag="n2", identifier='n2', parent='root')
-
 t.show()
-
-t.merge('n1','n2')
-t.show()
+root.print_info()
+n1.print_info()
+n2.print_info()
+n.print_info()
