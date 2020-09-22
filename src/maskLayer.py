@@ -9,8 +9,15 @@ class MaskLayer(tf.keras.layers.Layer):
         - visualize:    if you want fiorellini, put True
         - WARN:     this current version uses ugly for loops
     """
-    def __init__(self, img_size=14, depth=512, shape=None, tau=0.5, beta=4):
-        super(MaskLayer, self).__init__(trainable=False, dynamic=True)
+    def __init__(self, img_size=14, depth=512, shape=None, tau=0.5, beta=4,
+                trainable=True, name=None, dtype=None, dynamic=False, **kwargs):
+        super(MaskLayer, self).__init__(
+            trainable=trainable,
+            name=name,
+            dtype=dtype, 
+            dynamic=dynamic, 
+            **kwargs
+        )
         self.img_size = img_size
         self.depth = depth
         self.shape = ((img_size, img_size, depth) if shape is None else shape)
@@ -25,7 +32,6 @@ class MaskLayer(tf.keras.layers.Layer):
         self.col_mat = tf.stack([x]*512, axis=2)
         self.row_mat = tf.stack([y]*512, axis=2)
 
-    #@tf.function
     def call(self, inputs):                         # the computation function
         """
         Creates a mask tensor and applies it to the output of the convolutional layer
@@ -72,6 +78,5 @@ class MaskLayer(tf.keras.layers.Layer):
 
 
     @classmethod
-    def from_config(cls, config):
-        return cls(**config)
-        #return cls(**config.update(cls.get_config()))
+    def from_config(cls, config):                   # required to load
+        return cls(**config)                        # default implementation
