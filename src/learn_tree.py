@@ -1,22 +1,13 @@
 import os
 import tensorflow as tf
-import matplotlib.image as mpimg
-from datetime import datetime as dt
-
-from tensorflow.keras.layers import Dense, Conv2D, MaxPool2D, Flatten, Dropout, Activation
-from tensorflow.keras.optimizers import Adam
-from tensorflow.keras.losses import categorical_crossentropy
-
-from matplotlib import pyplot as plt
-
 from maskLayer import *
 
-MASKED1 = "./models/masked1_binary_2_epochs_22_9_2020_12_18"
-MASKED2 = "masked1_binary_50_epochs_21_9_2020_19_0.h5"
+MASKED1 = "./models/test_1"
 
+#tf.keras.utils.register_keras_serializable(package="MaskLayer", name=None)
 
-mdl1 = tf.keras.models.load_model(MASKED1, custom_objects={'MaskLayer':MaskLayer()})
-print(mdl1.summary)
+imported = tf.keras.models.load_model(MASKED1) #, custom_objects={'MaskLayer':MaskLayer()})
+print(imported.summary())
 
 # we need to use these lines to update the custom object scope
 ''' 
