@@ -11,3 +11,4 @@ class DecisionNode(Node):
     def __init__(self, alpha=np.zeros(shape=(512))):
         super(DecisionNode, self).__init__()
         self.alpha = alpha
+        
