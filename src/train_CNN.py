@@ -43,27 +43,27 @@ model_list.append(model_raw)
 '''
 
 custom_mask = MaskLayer()
-custom_objects = {'MaskLayer':custom_mask}
-with tf.keras.utils.CustomObjectScope(custom_objects):
+#custom_objects = {'mask_layer':custom_mask}
+#with tf.keras.utils.CustomObjectScope(custom_objects):
 
-    ''' MODEL MASKED 1 NO DROPOUT '''
-    model_masked1_no_dropout = load_keras(name="masked1_no_dropout")
-    model_masked1_no_dropout.add(custom_mask)
-    model_masked1_no_dropout.trainable = False
-    for i in fc_no_dropout:
-        model_masked1_no_dropout.add(i)
-    model_masked1_no_dropout.summary()
-    model_list.append(model_masked1_no_dropout)
-    
-    ''' MODEL MASKED 1 WITH DROPOUT '''
-    model_masked1 = load_keras(name="masked1")
-    model_masked1.add(custom_mask)
-    model_masked1.trainable = False
-    for i in fc:
-        model_masked1.add(i)
-    model_masked1.summary()
-    model_list.append(model_masked1)
-    
+''' MODEL MASKED 1 NO DROPOUT '''
+model_masked1_no_dropout = load_keras(name="masked1_no_dropout")
+model_masked1_no_dropout.add(custom_mask)
+model_masked1_no_dropout.trainable = False
+for i in fc_no_dropout:
+    model_masked1_no_dropout.add(i)
+model_masked1_no_dropout.summary()
+model_list.append(model_masked1_no_dropout)
+
+''' MODEL MASKED 1 WITH DROPOUT '''
+model_masked1 = load_keras(name="masked1")
+model_masked1.add(custom_mask)
+model_masked1.trainable = False
+for i in fc:
+    model_masked1.add(i)
+model_masked1.summary()
+model_list.append(model_masked1)
+
 '''
 ###  MODEL MASKED 2 ###
 model_masked2 = load_keras(name="masked2")

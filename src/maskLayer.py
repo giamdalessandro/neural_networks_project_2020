@@ -7,16 +7,15 @@ class MaskLayer(tf.keras.layers.Layer):
         - img_size: size of the input feature maps (n*n)
         - depth:    input's depth (# of feature maps)
         - visualize:    if you want fiorellini, put True
-        - call():   performs the masking task
         - WARN:     this current version uses ugly for loops
     """
-    def __init__(self, img_size=14, depth=512):
+    def __init__(self, img_size=14, depth=512, shape=None, tau=0.5, beta=4):
         super(MaskLayer, self).__init__(trainable=False, dynamic=True)
         self.img_size = img_size
         self.depth = depth
-        self.shape = (img_size, img_size, depth)
-        self.tau  = 0.5/(img_size*img_size)
-        self.beta = 4
+        self.shape = ((img_size, img_size, depth) if shape is None else shape)
+        self.tau  = tau/(img_size*img_size)
+        self.beta = beta
 
 
     def build(self, input_shape):
@@ -26,13 +25,13 @@ class MaskLayer(tf.keras.layers.Layer):
         self.col_mat = tf.stack([x]*512, axis=2)
         self.row_mat = tf.stack([y]*512, axis=2)
 
-    
+    @tf.function
     def call(self, inputs):                         # the computation function
         """
         Creates a mask tensor and applies it to the output of the convolutional layer
         """
         batch_size = tf.shape(inputs)[0]
-        output = np.zeros([batch_size,14,14,512])
+        output = np.zeros((batch_size,14,14,512))
         for b in range(batch_size):
             # finds the row and col indices of the maximum value across the depth of the tensor
             rows_idx = tf.math.argmax(tf.reduce_max(inputs[b], axis=1), output_type=tf.int32)
@@ -71,8 +70,8 @@ class MaskLayer(tf.keras.layers.Layer):
         })
         return cfg
 
-    '''
+
     @classmethod
     def from_config(cls, config):
-        return get_config()
-    '''
+        return cls(**config)
+        #return cls(**config.update(cls.get_config()))
