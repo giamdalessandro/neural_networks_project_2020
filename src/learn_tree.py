@@ -19,7 +19,7 @@ with tf.device("/CPU:0"):
 # to retrieve prediction mask_layer output 
 intermediate_layer_model = Model(inputs=m_trained.input, outputs=m_trained.get_layer("mask_layer_1").output)
 mask_output = intermediate_layer_model.predict(load_def())
-print(mask_output)
+print(intermediate_layer_model.summary())
 
 ''' HOW TO OBTAIN s
 POSITIVE_IMAGE_SET = "./dataset/train_val/bird"
