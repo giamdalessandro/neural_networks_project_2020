@@ -11,7 +11,7 @@ from matplotlib import pyplot as plt
 from maskLayer import *
 
 from utils.visuallib import *
-from utils.load_utils import *
+from utils.dataset_utils import *
 
 model_list = []
 
@@ -103,7 +103,7 @@ for m in model_list:
             str(dt.now().hour)   + "_" +    # serve?
             str(dt.now().minute) + ".h5", save_format="h5")   # serve?
 
-    pretty_little_flower(history)
+    #pretty_little_flower(history)
 
 end = dt.now()
 
