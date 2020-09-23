@@ -9,17 +9,17 @@ import matplotlib.image as mpimg
 import numpy as np
 from mpl_toolkits.axes_grid1 import AxesGrid
 
-folder = '/media/luca/DATA2/uni/neural_networks_project_2020/dataset/detanimalpart/'
-fileid = 'n02355227_obj/img/img/00008.jpg'
-path = folder+fileid
+FOLDER = '/media/zascerta/DATA/Universalis/eng_computer_science/neuralNetworks/project/neural_networks_project_2020/dataset/raw_data/detanimalpart/'
+FILE_ID = 'n02355227_obj/img/img/00008.jpg'
 scale1 = 400     # beta * 100
 scale2 = 2*scale1*1000  
 
 
-def load_def():
+def load_def(folder=FOLDER, fileid=FILE_ID):
     """
     loads and preprocesses default img specified in 'visualize.py' in variable 'path'
     """
+    path = folder + fileid
     img = load_img(path, target_size=(224, 224))      # test image
     img = img_to_array(img)
     img = np.expand_dims(img, axis=0)
