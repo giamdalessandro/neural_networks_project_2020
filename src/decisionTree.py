@@ -124,5 +124,7 @@ t.show()
 
 m = t.merge(n3.identifier, n.identifier)
 t.show()
-for i in t.all_nodes():
-    i.print_info()
+l = t.children(t.root)
+print(l)
+# for i in t.all_nodes():
+#    i.print_info()
