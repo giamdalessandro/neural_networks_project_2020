@@ -16,10 +16,8 @@ with tf.device("/CPU:0"):
     print("Classification score: {}".format(pred))
 
 
-# to retrieve prediction mask_layer output 
 #intermediate_layer_model = Model(inputs=m_trained.input, outputs=m_trained.get_layer("max_pool").output)
 #mask_output = intermediate_layer_model.predict(load_def())
-#print(intermediate_layer_model.summary())
 
 temp_model = Model(inputs=m_trained.input, outputs=m_trained.get_layer("flatten_1").output)
 flatten_output = temp_model.predict(load_def(fileid="n02355227_obj/img/img/00010.jpg"))
@@ -31,21 +29,21 @@ def compute_g(model, inputs):
             - model: the pretrained modell on witch g will be computed;
             - imputs: x, the output of the top conv layer after the mask operation.
     '''
-    fc_1 = model.get_layer("dense_3")
-    fc_2 = model.get_layer("dense_4")
-    #fc_3 = model.get_layer("dense_5")
+    fc_1 = model.get_layer("fc1")
+    fc_2 = model.get_layer("fc2")
+    fc_3 = model.get_layer("fc3")
 
     with tf.GradientTape(watch_accessed_variables=False) as tape:
         tape.watch(fc_1.variables)      
 
-        y = fc_2(fc_1(inputs))
+        y = fc_3(fc_2(fc_1(inputs)))
         gradient = tape.gradient(y, fc_1.variables)
 
     return tf.reduce_sum(gradient[0], axis=None)
 
 print(compute_g(m_trained, flatten_output))
 
-'''
+''' ...credits to Scardapane:
 with tf.GradientTape() as tape:
    fc_output = network_up_to_fc(x)
    y = fully_connected_layer(fc)
