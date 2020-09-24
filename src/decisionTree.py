@@ -146,8 +146,8 @@ class DecisionTree(tl.Tree):
         """
         xx = tf.divide(self.__depth_vectorify(x), self.s)
         ss = tf.math.scalar_mul(1/L, self.s)
-        gg = tf.multiply(ss, g)                                 ### ???
-        return xx
+        gg = tf.multiply(ss, self.__depth_vectorify(g))  # ???
+        return xx, gg
 
 
     def __depth_vectorify(self, x):
@@ -174,13 +174,13 @@ def choose_pair(curr_tree, tree_0):
     e_0 = e_func(tree_0, tree_0)
 
     # set of all second layer's node
-    leaves_set = curr_tree.children(curr_tree.root)
-    for (v1, v2) in leaves_set:
+    second_layer = curr_tree.children(curr_tree.root)
+    for (v1, v2) in second_layer:
         
         aux_tree = curr_tree.try_merge(v1, v2)  # returns a tree with v1 and v2 merged
         e = e_func(aux_tree, tree_0)
         
-        if log(e - e_0) >= curr_max:
+        if log(e) - log(e_0) >= curr_max:
             curr_max = e
             new_tree = aux_tree
     
@@ -193,11 +193,11 @@ def grow(tree_0):
     """
     curr_tree = tree_0
     e_0 = e_func(tree_0, tree_0)
-    while True:
+    e = 10
+    while log(e) - log(e_0) <= 0:
         curr_tree = choose_pair(curr_tree, tree_0)
         e = e_func(curr_tree, tree_0)
-        if log(e - e_0) <= 0:
-            return curr_tree
+    return curr_tree
 
 
 def initialize_leaves(model, tree, pos_image_folder=POSITIVE_IMAGE_SET):
