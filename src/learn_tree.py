@@ -6,7 +6,7 @@ from tensorflow.keras.models import Model
 from maskLayer import *
 from utils.visuallib import load_def
 
-MASKED1 = "./models/masked1_binary_25_epochs_22_9_2020_20_6.h5"
+MASKED1 = "./models/masked1_no_dropout_binary_50_epochs_24_9_2020_14_7.h5"
 
 with tf.device("/CPU:0"):
     m_trained = tf.keras.models.load_model(MASKED1, custom_objects={"MaskLayer":MaskLayer()})
