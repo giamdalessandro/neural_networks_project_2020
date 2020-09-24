@@ -5,6 +5,7 @@ import tensorflow as tf
 
 from math import sqrt, log
 
+POSITIVE_IMAGE_SET = "./dataset/train_val/bird"
 NUM_FILTERS = 512
 LAMBDA_0 = 0.000001
 DTYPE = tf.int32
@@ -199,7 +200,7 @@ def grow(tree_0):
             return curr_tree
 
 
-def initialize_leaves(model, tree, pos_image_folder):
+def initialize_leaves(model, tree, pos_image_folder=POSITIVE_IMAGE_SET):
         """
         Initializes a root's child for every image in the positive image folder 
         """
@@ -218,6 +219,17 @@ def initialize_leaves(model, tree, pos_image_folder):
         # gamma = (# of images)/gamme
 
 
+''' HOW TO OBTAIN s
+POSITIVE_IMAGE_SET = "./dataset/train_val/bird"
+l = []  # len(POSITIVE_IMAGE_SET) x 512
+for i in POSITIVE_IMAGE_SET:
+    imported.predict(load_image())
+    val = vectorify_on_depth(x)
+    val = val / 14*14 (?????????)
+    l.append(val)
+val = avg(list, axis=0)
+val = val / len(list)
+'''
 
 
 ''' TEST vectorify on depth 

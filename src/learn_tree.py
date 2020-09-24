@@ -53,14 +53,4 @@ with tf.GradientTape() as tape:
    gradient = tape.gradient(y, fc_output)
 '''
 
-''' HOW TO OBTAIN s
-POSITIVE_IMAGE_SET = "./dataset/train_val/bird"
-l = []  # len(POSITIVE_IMAGE_SET) x 512
-for i in POSITIVE_IMAGE_SET:
-    imported.predict(load_image())
-    val = vectorify_on_depth(x)
-    val = val / 14*14 (?????????)
-    l.append(val)
-val = avg(list, axis=0)
-val = val / len(list)
-'''
+
