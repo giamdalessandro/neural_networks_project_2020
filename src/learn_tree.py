@@ -3,7 +3,7 @@ import numpy as np
 import tensorflow as tf
 from tensorflow.keras.models import Model
 
-from src.classes.maskLayer import *
+from src.classes.maskLayer import MaskLayer
 from src.utils.visuallib import load_test_image
 
 MODELS  = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'models'))
