@@ -11,7 +11,6 @@ LAMBDA_0 = 0.000001
 DTYPE = tf.int32
 L = 14*14
 
-# class 
 
 class DecisionNode(tl.Node):
     """
@@ -31,7 +30,7 @@ class DecisionNode(tl.Node):
                  identifier=None,
                  parent=None,
                  data=None,
-                 b=0, l=LAMBDA_0,
+                 b=0, l=LAMBDA_0, x=0,
                  alpha=np.ones(shape=(NUM_FILTERS)),
                  g=np.zeros(shape=(NUM_FILTERS))):
         super().__init__(tag=tag, identifier=identifier)
@@ -43,10 +42,11 @@ class DecisionNode(tl.Node):
             self.g = g
         else:
             self.g = tf.convert_to_tensor(g)
-        self.w = tf.math.multiply(self.alpha, self.g)
+        self.w = None
         self.beta = 1
         self.b = b
         self.l = l          # initial lambda
+        self.x = x
         
     def compute_h(self, x):
         """
@@ -57,7 +57,7 @@ class DecisionNode(tl.Node):
     def print_info(self):
         if self.is_root():
             print("[ROOT] -- root")
-            print("       -- s:     ", self.b)
+            print("       -- s:     ", self.b.shape)
             print("       -- gamma: ", self.l)
         else:
             if self.is_leaf():
@@ -66,9 +66,11 @@ class DecisionNode(tl.Node):
                 print("[NODE] -- tag:   ", self.tag)
             print("       -- alpha: ", self.alpha.shape)
             print("       -- g:     ", self.g.shape)
-            print("       -- w:     ", self.w.shape)
+            print("       -- x:     ", self.x.shape)
+            print("       -- w:     ", self.w.shape if self.w is not None else self.w)
             print("       -- b:     ", self.b)
             print("       -- lamba: ", self.l)
+            
 
         print("------------------------------")
 
@@ -88,21 +90,16 @@ class DecisionTree(tl.Tree):
 
     # OVERRIDE #
     def create_node(self, tag=None, identifier=None, parent=None, g=np.zeros(shape=(NUM_FILTERS)),
-                    alpha=np.ones(shape=(NUM_FILTERS)), b=0, l=LAMBDA_0):
+                    alpha=np.ones(shape=(NUM_FILTERS)), b=0, l=LAMBDA_0, x=0):
         """
         Create a child node for given @parent node. If ``identifier`` is absent,
         a UUID will be generated automatically.
         """
         node = self.node_class(tag=tag, identifier=identifier,
-                               data=None, g=g, alpha=alpha, b=b, l=l)
+                               data=None, g=g, alpha=alpha, b=b, l=l, x=x)
         self.add_node(node, parent)
         return node
 
-    def create_root(self, tag=None, identifier=None, gamma=0, s=None):
-        node = self.node_class(tag=tag, identifier=identifier,
-                               data=None, gamma=gamma, s=s)
-        self.add_node(node, None)
-        return node
 
     # OVERLOAD #
     def _clone(self, identifier=None, with_tree=False, deep=False):
@@ -122,40 +119,37 @@ class DecisionTree(tl.Tree):
         return g,alpha,b
     
     
-    def merge_nodes(self, nid1, nid2):
+    def merge_nodes(self, nid1, nid2, tag=None):
         """
         Merges nodes nid1 and nid2 to create a parent n, to whom nid1 and nid2 become children 
         """
         g,a,b = self.find_gab(nid1, nid2)
         l = LAMBDA_0*sqrt(len(self.leaves(nid1)) + len(self.leaves(nid2)))
-        tag = nid1 + nid2
-        node = self.create_node(tag=tag, identifier=tag, parent='root',
-                         alpha=a, g=g, b=b, l=l)
+        tag = nid1 + nid2 if tag is None else tag
+        node = self.create_node(tag=tag, parent='root',
+                         alpha=a, g=g, b=b, l=l, x=None)
         self.move_node(nid1, node.identifier)
         self.move_node(nid2, node.identifier)
         return node
     
     
-    def try_merge(self, nid1, nid2):
+    def try_merge(self, nid1, nid2, i=None):
         """
         Returns a new tree with nid1 and nid2 merged
         """
         new_tree = DecisionTree(self.subtree(self.root), deep=True)       # returns a deep copy of the current tree
-        new_tree.merge_nodes(nid1, nid2)                     # merges the nodes in the new tree
+        new_tree.merge_nodes(nid1, nid2, tag=i)                     # merges the nodes in the new tree
         return new_tree
 
 
-    def vectorify(self, x, g):
+    def vectorify(self):
         """
-        Takes x and g tensors and returns two vectors based on the following rules
-            - xx[d] = sum(x[h,w,d])/s_d
-            - gg[d] = s_d/L^2 * sum(dy/dx[h,w,d])
+        Forall leaf in self, vectorifies x and g (using the prev computed s) and updates w = g°x
         """
-        xx = tf.divide(self.__depth_vectorify(x), self.s)
-        ss = tf.math.scalar_mul(1/L, self.s)
-        gg = tf.multiply(ss, self.__depth_vectorify(g))  # ???
-        return xx, gg
-
+        for node in self.leaves():
+            node.g = tf.multiply(tf.math.scalar_mul(1/L, self.s), self.__depth_vectorify(node.g))  # ???
+            node.x = tf.divide(self.__depth_vectorify(node.x), self.s)
+            node.w = tf.math.multiply(node.alpha, node.g)
 
     def __depth_vectorify(self, x):
         """
@@ -168,51 +162,6 @@ class DecisionTree(tl.Tree):
 
 ##############################################
 
-def e_func(p, q):
-    return rd.randint(0, 5)
-
-
-def choose_pair(curr_tree, tree_0):
-    """
-    Chooses the pair that creates a new tree P s.t. maximizes E(P,Q)-E(Q,Q) with Q being the tree at step 0
-    """
-    curr_max = 0
-    new_tree = None                     # return value
-    e_0 = e_func(tree_0, tree_0)
-
-    # set of all second layer's node
-    second_layer = curr_tree.children(curr_tree.root)
-    for (v1, v2) in second_layer:
-        
-        aux_tree = curr_tree.try_merge(v1, v2)  # returns a tree with v1 and v2 merged
-        e = e_func(aux_tree, tree_0)
-        
-        if log(e) - log(e_0) >= curr_max:
-            curr_max = e
-            new_tree = aux_tree
-    
-    return new_tree
-
-
-def grow(tree_0):
-    """
-    Grows the tree merging nodes until the condition is met
-    """
-    curr_tree = tree_0
-    e_0 = e_func(tree_0, tree_0)
-    e = 10
-    while log(e) - log(e_0) <= 0:
-        curr_tree = choose_pair(curr_tree, tree_0)
-        e = e_func(curr_tree, tree_0)
-    return curr_tree
-
-
-
-def load_json_tree(jsonfile):
-    """
-    Loads a tree from a JSON file
-    """
-    raise NotImplementedError
 
 
 
