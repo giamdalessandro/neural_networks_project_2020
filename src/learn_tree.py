@@ -4,21 +4,22 @@ import tensorflow as tf
 from tensorflow.keras.models import Model
 
 from src.classes.maskLayer import *
-from src.utils.visuallib import load_def
+from src.utils.visuallib import load_test_image
 
-MASKED1 = "./models/masked1_no_dropout_binary_50_epochs_24_9_2020_14_7.h5"
+MODELS  = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'models'))
+MASKED1 = os.path.join(MODELS, "masked1_no_dropout_binary_50_epochs_24_9_2020_14_7.h5")
+
 
 with tf.device("/CPU:0"):
     m_trained = tf.keras.models.load_model(MASKED1, custom_objects={"MaskLayer":MaskLayer()})
     print(m_trained.summary())
 
-pred = m_trained.predict(load_def(
-    folder="/media/luca/DATA2/uni/neural_networks_project_2020/dataset/train_val/bird/001.Black_footed_Albatross/", fileid="Black_Footed_Albatross_0001_796111.jpg"))
+pred = m_trained.predict(load_test_image())
 print("Classification score: {}".format(pred))
 
 
 temp_model = Model(inputs=m_trained.input, outputs=m_trained.get_layer("flatten").output)
-flatten_output = temp_model.predict(load_def(fileid="n02355227_obj/img/img/00010.jpg"))
+flatten_output = temp_model.predict(load_test_image())
 
 def compute_g(model, inputs):
     '''

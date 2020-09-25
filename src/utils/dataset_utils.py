@@ -7,7 +7,8 @@ from shutil import copy
 from tensorflow import keras
 from tensorflow.keras import Sequential
 from tensorflow.keras.applications import VGG16
-from tensorflow.keras.preprocessing.image import ImageDataGenerator
+from tensorflow.keras.applications.vgg16 import preprocess_input
+from tensorflow.keras.preprocessing.image import ImageDataGenerator, load_img, img_to_array
 
 DATASET         = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', 'dataset')) 
 TRAIN_VAL_PATH  = os.path.join(DATASET, "train_val")
@@ -18,6 +19,21 @@ PASCAL_VOC      = os.path.join(DATASET, "raw_data", "PascalVOC_2010_part", "VOCd
 NUM_EPOCHS  = 50
 EPOCH_STEPS = 25
 BATCH_SIZE  = 16
+
+POSITIVE_IMAGE_SET = os.path.join(TRAIN_VAL_PATH, 'bird')
+FILE_ID = '2010_006084.jpg'
+
+
+def load_test_image(folder=POSITIVE_IMAGE_SET, fileid=FILE_ID):
+    """
+    loads and preprocesses default img specified in 'visualize.py' in variable 'path'
+    """
+    path = os.path.join(folder, fileid)
+    img = load_img(path, target_size=(224, 224))      # test image
+    img = img_to_array(img)
+    img = np.expand_dims(img, axis=0)
+    img = preprocess_input(img)
+    return img
 
 def load_keras(name="our_interpretable_cnn"):
     print("\n[1] Loading vgg16 from keras...")

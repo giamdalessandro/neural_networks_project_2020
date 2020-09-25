@@ -1,7 +1,5 @@
+import os
 import tensorflow as tf
-from tensorflow.keras.applications.vgg16 import preprocess_input
-from tensorflow.keras.preprocessing.image import load_img
-from tensorflow.keras.preprocessing.image import img_to_array
 
 from matplotlib import pyplot as plt
 from matplotlib import colors as clr
@@ -9,22 +7,12 @@ import matplotlib.image as mpimg
 import numpy as np
 from mpl_toolkits.axes_grid1 import AxesGrid
 
-FOLDER = '/media/zascerta/DATA/Universalis/eng_computer_science/neuralNetworks/project/neural_networks_project_2020/dataset/raw_data/detanimalpart/'
-FILE_ID = 'n02355227_obj/img/img/00008.jpg'
+from dataset_utils import load_test_image, FILE_ID
+
+
 scale1 = 400     # beta * 100
 scale2 = 2*scale1*1000  
 
-
-def load_def(folder=FOLDER, fileid=FILE_ID):
-    """
-    loads and preprocesses default img specified in 'visualize.py' in variable 'path'
-    """
-    path = folder + fileid
-    img = load_img(path, target_size=(224, 224))      # test image
-    img = img_to_array(img)
-    img = np.expand_dims(img, axis=0)
-    img = preprocess_input(img)
-    return img
 
 
 def compute_heatmap(x, mode="sum"):
@@ -42,7 +30,7 @@ def print_heatmap(a, cmap="bone"):
     """
 
     fig = plt.figure()
-    fig.suptitle('Heatmaps of preprocessed image'+fileid)
+    fig.suptitle('Heatmaps of preprocessed image'+FILE_ID)
 
     ax = []                     # ax enables access to manipulate each of subplots
     images = []                 # aux array to calculate min & max value for the color scale
@@ -50,7 +38,7 @@ def print_heatmap(a, cmap="bone"):
 
     ax.append(fig.add_subplot(1, cols,1))
     ax[-1].set_title("preprocessed img")
-    images.append(plt.imshow(load_def()[0, :, :, :], cmap))
+    images.append(plt.imshow(load_test_image()[0, :, :, :], cmap))
     ax[-1].label_outer()
 
     ax.append(fig.add_subplot(1, cols, 2))
@@ -105,7 +93,7 @@ def print_feature_maps(x, title, n_imgs=4, cmap="bone"):
     cols = n_imgs*2
 
     fig = plt.figure()
-    fig.suptitle(title+' feature map of '+fileid)
+    fig.suptitle(title+' feature map of '+FILE_ID)
 
     ax = []                     # ax enables access to manipulate each of subplots
     images = []                 # aux array to calculate min & max value for the color scale

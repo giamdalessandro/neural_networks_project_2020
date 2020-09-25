@@ -19,9 +19,7 @@ fc_no_dropout=[
     MaxPool2D(name="final_max_pool", pool_size=(2, 2),strides=(2, 2), data_format="channels_last"),
     Flatten(),
     Dense(units=4096, activation="relu", name="fc1"),
-    #Dropout(rate=0.8),
     Dense(units=4096, activation="relu", name="fc2"),
-    #Dropout(rate=0.8), 
     Dense(units=2, activation=None, name="fc3"),
     Activation('softmax')]
 
