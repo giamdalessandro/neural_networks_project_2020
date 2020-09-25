@@ -7,7 +7,7 @@ from tensorflow.keras.losses import categorical_crossentropy
 
 from matplotlib import pyplot as plt
 
-from maskLayer import *
+from classes.maskLayer import *
 
 from utils.visuallib import *
 from utils.dataset_utils import load_keras

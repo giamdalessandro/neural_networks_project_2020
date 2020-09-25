@@ -218,6 +218,14 @@ def initialize_leaves(model, tree, pos_image_folder=POSITIVE_IMAGE_SET):
         # sum on s to obtain s(1,1,512)
         # gamma = (# of images)/gamme
 
+def load_json_tree(jsonfile):
+    """
+    Loads a tree from a JSON file
+    """
+    raise NotImplementedError
+
+
+
 
 ''' HOW TO OBTAIN s
 POSITIVE_IMAGE_SET = "./dataset/train_val/bird"

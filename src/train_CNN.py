@@ -8,10 +8,10 @@ from tensorflow.keras.losses import categorical_crossentropy
 
 from matplotlib import pyplot as plt
 
-from maskLayer import *
+from src.classes.maskLayer import *
 
-from utils.visuallib import *
-from utils.dataset_utils import *
+from src.utils.visuallib import *
+from src.utils.dataset_utils import *
 
 model_list = []
 

@@ -9,16 +9,15 @@ from tensorflow.keras import Sequential
 from tensorflow.keras.applications import VGG16
 from tensorflow.keras.preprocessing.image import ImageDataGenerator
 
-DATASET = "./dataset/" 
+DATASET         = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', 'dataset')) 
+TRAIN_VAL_PATH  = os.path.join(DATASET, "train_val")
+ILSRVC_2013     = os.path.join(DATASET, "raw_data", "detanimalpart")
+CUB_200         = os.path.join(DATASET, "raw_data", "CUB_200_2011")
+PASCAL_VOC      = os.path.join(DATASET, "raw_data", "PascalVOC_2010_part", "VOCdevkit", "VOC2010")
 
-TRAIN_VAL_PATH = DATASET + "train_val/"
-ILSRVC_2013 = DATASET + "raw_data/detanimalpart/"
-CUB_200 = DATASET + "raw_data/CUB_200_2011/"
-PASCAL_VOC = DATASET + "raw_data/PascalVOC_2010_part/VOCdevkit/VOC2010/"
-
-NUM_EPOCHS = 50
+NUM_EPOCHS  = 50
 EPOCH_STEPS = 25
-BATCH_SIZE = 16
+BATCH_SIZE  = 16
 
 def load_keras(name="our_interpretable_cnn"):
     print("\n[1] Loading vgg16 from keras...")

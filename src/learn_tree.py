@@ -3,8 +3,8 @@ import numpy as np
 import tensorflow as tf
 from tensorflow.keras.models import Model
 
-from maskLayer import *
-from utils.visuallib import load_def
+from src.classes.maskLayer import *
+from src.utils.visuallib import load_def
 
 MASKED1 = "./models/masked1_no_dropout_binary_50_epochs_24_9_2020_14_7.h5"
 
