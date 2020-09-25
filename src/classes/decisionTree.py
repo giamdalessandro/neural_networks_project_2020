@@ -11,6 +11,8 @@ LAMBDA_0 = 0.000001
 DTYPE = tf.int32
 L = 14*14
 
+# class 
+
 class DecisionNode(tl.Node):
     """
     Class for the node of a decision tree
@@ -31,8 +33,7 @@ class DecisionNode(tl.Node):
                  data=None,
                  b=0, l=LAMBDA_0,
                  alpha=np.ones(shape=(NUM_FILTERS)),
-                 g=np.zeros(shape=(NUM_FILTERS)),
-                 image=None):
+                 g=np.zeros(shape=(NUM_FILTERS))):
         super().__init__(tag=tag, identifier=identifier)
         if tf.is_tensor(alpha):
             self.alpha = alpha
@@ -46,9 +47,7 @@ class DecisionNode(tl.Node):
         self.beta = 1
         self.b = b
         self.l = l          # initial lambda
-        self.image = image  # path to the image that generated the node if the node is leaf, else is None
-                            # and the images need to be searched in all children nodes
-
+        
     def compute_h(self, x):
         """
         Compute the node's hypotesis on x
@@ -56,18 +55,21 @@ class DecisionNode(tl.Node):
         return tf.matmul(tf.transpose(self.w), x) + self.b
 
     def print_info(self):
-        print("[NODE] -- tag:   ", self.tag)
-        #print("       -- alpha: ", self.alpha.shape)
-        #print("       -- g:     ", self.g.shape)
-        #print("       -- w:     ", self.w.shape)
-        #print("       -- b:     ", self.b)
-        print("       -- lamba: ", self.l)
-        if self.is_leaf():
-            print("       -- leaf of image : ", self.image)
-        elif self.is_root():
-            print("       -- root")
+        if self.is_root():
+            print("[ROOT] -- root")
+            print("       -- s:     ", self.b)
+            print("       -- gamma: ", self.l)
         else:
-            print("       -- generic node")
+            if self.is_leaf():
+                print("[LEAF] -- tag:   ", self.tag)
+            else:
+                print("[NODE] -- tag:   ", self.tag)
+            print("       -- alpha: ", self.alpha.shape)
+            print("       -- g:     ", self.g.shape)
+            print("       -- w:     ", self.w.shape)
+            print("       -- b:     ", self.b)
+            print("       -- lamba: ", self.l)
+
         print("------------------------------")
 
 ##############################################
@@ -86,16 +88,21 @@ class DecisionTree(tl.Tree):
 
     # OVERRIDE #
     def create_node(self, tag=None, identifier=None, parent=None, g=np.zeros(shape=(NUM_FILTERS)),
-                    alpha=np.ones(shape=(NUM_FILTERS)), b=0, image=None, l=LAMBDA_0):
+                    alpha=np.ones(shape=(NUM_FILTERS)), b=0, l=LAMBDA_0):
         """
         Create a child node for given @parent node. If ``identifier`` is absent,
         a UUID will be generated automatically.
         """
         node = self.node_class(tag=tag, identifier=identifier,
-                               data=None, g=g, alpha=alpha, b=b, l=l, image=image)
+                               data=None, g=g, alpha=alpha, b=b, l=l)
         self.add_node(node, parent)
         return node
 
+    def create_root(self, tag=None, identifier=None, gamma=0, s=None):
+        node = self.node_class(tag=tag, identifier=identifier,
+                               data=None, gamma=gamma, s=s)
+        self.add_node(node, None)
+        return node
 
     # OVERLOAD #
     def _clone(self, identifier=None, with_tree=False, deep=False):
@@ -123,7 +130,7 @@ class DecisionTree(tl.Tree):
         l = LAMBDA_0*sqrt(len(self.leaves(nid1)) + len(self.leaves(nid2)))
         tag = nid1 + nid2
         node = self.create_node(tag=tag, identifier=tag, parent='root',
-                         alpha=a, g=g, b=b, l=l, image=None)
+                         alpha=a, g=g, b=b, l=l)
         self.move_node(nid1, node.identifier)
         self.move_node(nid2, node.identifier)
         return node
@@ -200,23 +207,6 @@ def grow(tree_0):
     return curr_tree
 
 
-def initialize_leaves(model, tree, pos_image_folder=POSITIVE_IMAGE_SET):
-        """
-        Initializes a root's child for every image in the positive image folder 
-        """
-        # s = None
-        # gamma = 0
-        # for image in imagepath
-        #       y = predict - softmax
-        #       compute g = ...
-        #       compute b = y - g°x
-        #       compute s_i
-        #       s.append(s_i)
-        #       compute gamma += y
-        #       add leaf with g, alpha=1, b
-        #   
-        # sum on s to obtain s(1,1,512)
-        # gamma = (# of images)/gamme
 
 def load_json_tree(jsonfile):
     """
@@ -248,7 +238,7 @@ print(vectorify_on_depth(x))
 '''
 
 ### TEST ###
-
+'''
 t = DecisionTree(gamma=2)
 root = t.create_node(tag="root", identifier='root')
 n1 = t.create_node(tag="n1", identifier='n1', parent='root')
@@ -269,3 +259,4 @@ m.show()
 # print(l)
 # for i in t.all_nodes():
 #    i.print_info()
+'''
