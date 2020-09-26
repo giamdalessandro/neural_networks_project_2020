@@ -5,7 +5,7 @@ import tensorflow as tf
 from tensorflow.keras.models import Model
 
 from classes.maskLayer import MaskLayer
-from classes.decisionTree import *
+from classes.interpretableTree import *
 from utils.dataset_utils import load_test_image
 
 MODELS  = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'models'))
@@ -132,11 +132,9 @@ with tf.device("/CPU:0"):
     m_trained = tf.keras.models.load_model(MASKED1, custom_objects={"MaskLayer":MaskLayer()})
     # print(m_trained.summary())
 
-tree = DecisionTree()
+tree = InterpretableTree()
 initialize_leaves(m_trained, tree)      # initializes a leaf forall image in the positive set with the right parameters
 tree.show()
-for i in tree.all_nodes():
-    i.print_info()
 
 tree.vectorify()            # updates value (must be called after initialize_leaves())
 for i in tree.all_nodes():
@@ -155,8 +153,11 @@ for i in tree.all_nodes():
 
 
 TODO
-
--   usare zip
-
+    - verificare gamma
+    - verificare bias
+    - scrivere "find_gab"
+    - scrivere "e_func"
+    - aggiungere logaritmi
+    - calcolare matrice A
 '''
 
