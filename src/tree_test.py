@@ -155,7 +155,6 @@ for i in tree.all_nodes():
 TODO
 
 -   usare zip
--   normalizzare y, g e b
 
 '''
 

@@ -140,18 +140,22 @@ class DecisionTree(tl.Tree):
         new_tree = DecisionTree(self.subtree(self.root), deep=True)       # returns a deep copy of the current tree
         new_tree.merge_nodes(nid1, nid2, tag=i)                     # merges the nodes in the new tree
         return new_tree
-
+        
 
     def vectorify(self):
         """
         Forall leaf in self, vectorifies x and g (using the prev computed s) and updates w = g°x
+        It also normlizes g and b
         """
         for node in self.leaves():
-            node.g = tf.multiply(tf.math.scalar_mul(1/L, self.s), self.__depth_vectorify(node.g))  # ???
-            node.x = tf.divide(self.__depth_vectorify(node.x), self.s)
+            norm = tf.norm(node.g, ord=1)
+            node.b = tf.divide(node.b, norm)
+            node.g = tf.divide(tf.multiply(tf.math.scalar_mul(1/L, self.s), self.__vectorify_on_depth(node.g)), norm)  # ???
+            node.x = tf.divide(self.__vectorify_on_depth(node.x), self.s)
             node.w = tf.math.multiply(node.alpha, node.g)
 
-    def __depth_vectorify(self, x):
+
+    def __vectorify_on_depth(self, x):
         """
         xx = tf.ones(shape=(2,2,5))
         x = tf.reduce_sum(xx, axis=[0,1])
