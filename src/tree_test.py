@@ -34,7 +34,7 @@ def compute_g(model, inputs):
 
 def initialize_leaves(trained_model, tree, pos_image_folder=POSITIVE_IMAGE_SET):
     """
-    Initializes a root's child for every image in the positive image folder 
+    Initializes a root's child for every image in the positive image folder and returns the list of all predictions done
     """
     root = tree.create_node(tag="root", identifier='root')
 
@@ -42,30 +42,36 @@ def initialize_leaves(trained_model, tree, pos_image_folder=POSITIVE_IMAGE_SET):
     flat_model = Model(inputs=trained_model.input,outputs=trained_model.get_layer("flatten").output)
     fc3_model = Model(inputs=trained_model.input,outputs=trained_model.get_layer("fc3").output)
 
+    y_dict = {}
     s_list = []
-    gamma = 0
     pos_image_folder = os.path.join(pos_image_folder, 'test')   # we test only on a subset of images (10 images)
     
     for img in os.listdir(pos_image_folder):
         if img.endswith('.jpg'):
             test_image  = load_test_image(folder=pos_image_folder, fileid=img)
             flat_output = flat_model.predict(test_image)
-            fc3_output  = fc3_model.predict(test_image)
+            fc3_output  = fc3_model.predict(test_image)[0][0]      # we take only the positive prediction score
 
+            y_dict.update({img[:-4]:fc3_output})
+            
             g = compute_g(fc3_model, flat_output)
             x = tf.reshape(flat_output, shape=(7,7,512))
             b = tf.subtract(fc3_output, tf.reduce_sum(tf.math.multiply(g, x), axis=None))   # inner product between g, x
             
             s = tf.math.reduce_mean(x, axis=[0,1])
             s_list.append(s)
-            gamma += fc3_output[0]
             tree.create_node(tag=img[:-4], identifier=img[:-4], parent='root', g=g, alpha=tf.ones(shape=512), b=b, x=x)
-    
+
+            # TEST IF g and b ARE ACCURATE ENOUGH - IS WORKING! #
+            # print("\nORIGINAL y -- CALULATED y")
+            # print(fc3_output, " = ", tf.add(tf.reduce_sum(tf.math.multiply(g, x), axis=None), b).numpy())
+
+
     cardinality = len(fnmatch.filter(os.listdir(pos_image_folder), '*.jpg'))    # number of images in the positive set
     root.b = tf.reduce_sum(s_list, axis=0)/cardinality                          # sum on s to obtain s(1,1,512)
-    root.l = cardinality/gamma
     tree.s = root.b
     tree.gamma = root.l
+    return y_dict
 
 
 def e_func(p, q):
@@ -83,11 +89,10 @@ def choose_pair(curr_tree, tree_0, p):
     # set of all second layer's node
     second_layer = curr_tree.children(curr_tree.root)
     it = 1
-    z = 1  # qui usare zip per prendere le coppie
+    z = 1
     for v1 in second_layer:
         if z < len(second_layer):
             for v2 in second_layer[z:]:
-                #if v1.identifier != v2.identifier:
                 # returns a tree with v1 and v2 merged
                 aux_tree = curr_tree.try_merge(v1.identifier, v2.identifier, 'p_'+str(p)+'it_'+str(it))
                 e = e_func(aux_tree, tree_0)
@@ -133,10 +138,10 @@ with tf.device("/CPU:0"):
     # print(m_trained.summary())
 
 tree = InterpretableTree()
-initialize_leaves(m_trained, tree)      # initializes a leaf forall image in the positive set with the right parameters
-tree.show()
+y_dict = initialize_leaves(m_trained, tree)   # initializes a leaf forall image in the positive set with the right parameters
+#tree.show()
 
-tree.vectorify()            # updates value (must be called after initialize_leaves())
+tree.vectorify(y_dict)            # updates value (must be called after initialize_leaves())
 for i in tree.all_nodes():
     i.print_info()
 
@@ -153,8 +158,6 @@ for i in tree.all_nodes():
 
 
 TODO
-    - verificare gamma
-    - verificare bias
     - scrivere "find_gab"
     - scrivere "e_func"
     - aggiungere logaritmi

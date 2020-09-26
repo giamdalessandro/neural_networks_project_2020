@@ -34,14 +34,9 @@ class InterpretableNode(tl.Node):
                  alpha=np.ones(shape=(NUM_FILTERS)),
                  g=np.zeros(shape=(NUM_FILTERS))):
         super().__init__(tag=tag, identifier=identifier)
-        if tf.is_tensor(alpha):
-            self.alpha = alpha
-        else: 
-            self.alpha = tf.convert_to_tensor(alpha)
-        if tf.is_tensor(g):
-            self.g = g
-        else:
-            self.g = tf.convert_to_tensor(g)
+        
+        self.alpha = alpha if tf.is_tensor(alpha) else tf.convert_to_tensor(alpha)
+        self.g = g if tf.is_tensor(g) else tf.convert_to_tensor(g)  
         self.w = None
         self.beta = 1
         self.b = b
@@ -69,7 +64,7 @@ class InterpretableNode(tl.Node):
             print("       -- ||g||: ", tf.norm(self.g, ord=2).numpy())
             print("       -- x:     ", self.x.shape)
             print("       -- w:     ", self.w.shape if self.w is not None else self.w)
-            print("       -- b:     ", self.b.numpy()[0])
+            print("       -- b:     ", self.b.numpy())
             print("       -- lamba: ", self.l)
             
 
@@ -152,11 +147,12 @@ class InterpretableTree(tl.Tree):
         return tf.reduce_sum(x, axis=[0, 1])
 
 
-    def vectorify(self):
+    def vectorify(self, y_dict):
         """
         Forall leaf in self, vectorifies x and g (using the prev computed s) and updates w = g°x
         It also normlizes g and b
         """
+        gamma = 0
         for node in self.leaves():
             node.g = tf.multiply(tf.math.scalar_mul(1/L, self.s), self.__vectorify_on_depth(node.g))  # ???
             node.x = tf.divide(self.__vectorify_on_depth(node.x), self.s)
@@ -164,7 +160,15 @@ class InterpretableTree(tl.Tree):
             norm_g = tf.norm(node.g, ord=2)
             node.b = tf.divide(node.b, norm_g)
             node.g = tf.divide(node.g, norm_g)
+            # computation of w
             node.w = tf.math.multiply(node.alpha, node.g)
+            # computation of gamma using normalized y_i
+            gamma += y_dict[node.tag]/norm_g
+        
+        cardinality = len(self.leaves())
+        self.get_node(self.root).l = cardinality/gamma
+
+        
             
 
 
