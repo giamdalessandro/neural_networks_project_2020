@@ -82,20 +82,22 @@ def choose_pair(curr_tree, tree_0, p):
 
     # set of all second layer's node
     second_layer = curr_tree.children(curr_tree.root)
-    t = 1
-    # qui usare zip per prendere le coppie
+    it = 1
+    z = 1  # qui usare zip per prendere le coppie
     for v1 in second_layer:
-        for v2 in second_layer:
-            if v1.identifier != v2.identifier:
+        if z < len(second_layer):
+            for v2 in second_layer[z:]:
+                #if v1.identifier != v2.identifier:
                 # returns a tree with v1 and v2 merged
-                aux_tree = curr_tree.try_merge(v1.identifier, v2.identifier, 'p_'+str(p)+'t_'+str(t))
+                aux_tree = curr_tree.try_merge(v1.identifier, v2.identifier, 'p_'+str(p)+'it_'+str(it))
                 e = e_func(aux_tree, tree_0)
 
                 if e-e_0 >= curr_max:
                     curr_max = e
                     new_tree = aux_tree
                 
-                t += 1
+                it += 1
+        z += 1
     return new_tree
 
 
@@ -126,9 +128,9 @@ def load_json_tree(jsonfile):
 #####################################################################################
 
 
-#with tf.device("/CPU:0"):
-m_trained = tf.keras.models.load_model(MASKED1, custom_objects={"MaskLayer":MaskLayer()})
-# print(m_trained.summary())
+with tf.device("/CPU:0"):
+    m_trained = tf.keras.models.load_model(MASKED1, custom_objects={"MaskLayer":MaskLayer()})
+    # print(m_trained.summary())
 
 tree = DecisionTree()
 initialize_leaves(m_trained, tree)      # initializes a leaf forall image in the positive set with the right parameters
