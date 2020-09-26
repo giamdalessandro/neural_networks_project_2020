@@ -156,7 +156,6 @@ for i in tree.all_nodes():
 
 
 
-
 TODO
     - scrivere "find_gab"
     - scrivere "e_func"
