@@ -74,7 +74,7 @@ def initialize_leaves(trained_model, tree, pos_image_folder=POSITIVE_IMAGE_SET):
             tree.create_node(tag=img[:-4], identifier=img[:-4], parent='root', g=g, alpha=tf.ones(shape=512), b=b, x=x)
             
             i += 1
-            if i%(STOP/10) == 0:
+            if i % 10 == 0:
                 print(">> created", i, "nodes")
             if i==STOP:
                 break
@@ -145,7 +145,9 @@ def grow(tree_0):
 
 #with tf.device("/CPU:0"):
 m_trained = tf.keras.models.load_model(MASKED1, custom_objects={"MaskLayer":MaskLayer()})
+
 STOP = 1000
+#STOP = 12454
 
 tree = InterpretableTree()
 y_dict = initialize_leaves(m_trained, tree)   # initializes a leaf forall image in the positive set with the right parameters

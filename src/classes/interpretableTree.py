@@ -223,6 +223,8 @@ class InterpretableTree(tl.Tree):
 
                     auxtree.__shallow_unmerge(v1.identifier, v2.identifier)
                     it += 1
+                    if it%1000 == 0:
+                        print("       >>        >> tested couples:", it)
             z += 1
         print("       >> generated couples: ", it-1)
         # merges the chosen nodes and returns the tree (deep copied at the beginning)
