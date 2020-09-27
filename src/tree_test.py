@@ -90,34 +90,6 @@ def initialize_leaves(trained_model, tree, pos_image_folder=POSITIVE_IMAGE_SET):
     print("[TIME] -- initialize leaves took ", dt.now()-start)
     return y_dict
 
-'''
-def choose_pair(curr_tree, tree_0, p):
-    """
-    Chooses the pair that creates a new tree P s.t. maximizes E(P,Q)-E(Q,Q) with Q being the tree at step 0
-    """
-    curr_max = 0
-    new_tree = None                     # return value
-    e_0 = e_func(tree_0, tree_0)
-
-    # set of all second layer's node
-    second_layer = curr_tree.children(curr_tree.root)
-    it = 1
-    z = 1
-    for v1 in second_layer:
-        if z < len(second_layer):
-            for v2 in second_layer[z:]:
-                # returns a tree with v1 and v2 merged
-                aux_tree = curr_tree.try_merge(v1.identifier, v2.identifier, 'p_'+str(p)+'it_'+str(it))
-                e = e_func(aux_tree, tree_0)
-
-                if e-e_0 >= curr_max:
-                    curr_max = e
-                    new_tree = aux_tree
-                
-                it += 1
-        z += 1
-    return new_tree
-'''
 
 def grow(tree_0):
     """
@@ -158,12 +130,15 @@ new_tree = grow(tree)
 new_tree.info()
 if STOP < 20:
     new_tree.show()
+saved = new_tree.save2json(save_name="test_tree")
+loaded = InterpretableTree.from_json("./forest/test_tree.json")
+
 
 '''
 TODO
     - scrivere "find_gab"       - ro
     - scrivere "e_func"         - balthier
     - calcolare matrice A       - ???
-    - leggere albero da file    - spacefrogg
+    X leggere albero da file    - spacefrogg
 '''
 

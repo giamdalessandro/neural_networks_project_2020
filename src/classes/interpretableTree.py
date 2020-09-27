@@ -1,3 +1,5 @@
+import os
+import json
 import numpy as np
 import random as rd
 import treelib as tl
@@ -128,31 +130,7 @@ class InterpretableTree(tl.Tree):
         alpha = tf.random.uniform(shape=[NUM_FILTERS], minval=1, maxval=5, dtype=DTYPE)
         b = 0
         return g,alpha,b
-    
-    '''
-    def merge_nodes(self, nid1, nid2, tag=None):
-        """
-        Merges nodes nid1 and nid2 to create a parent n, to whom nid1 and nid2 become children 
-        """
-        g,a,b = self.find_gab(nid1, nid2)
-        l = LAMBDA_0*sqrt(len(self.leaves(nid1)) + len(self.leaves(nid2)))
-        tag = nid1 + nid2 if tag is None else tag
-        node = self.create_node(tag=tag, parent='root', alpha=a, g=g, b=b, l=l, x=None)
-        self.move_node(nid1, node.identifier)
-        self.move_node(nid2, node.identifier)
-        return node
-    
-    
-    def try_merge(self, nid1, nid2, i=None):
-        """
-        Returns a new tree with nid1 and nid2 merged
-        """
-        # returns a deep copy of the current tree
-        new_tree = InterpretableTree(self.subtree(self.root), deep=True, gamma=self.gamma, s=self.s)
-        # merges the nodes in the new tree
-        new_tree.merge_nodes(nid1, nid2, tag=i)
-        return new_tree
-    '''
+
 
     def __parentify(self, nid1, nid2, pid):
         """
@@ -263,9 +241,66 @@ class InterpretableTree(tl.Tree):
         
         cardinality = len(self.leaves())
         self.gamma = cardinality/gamma              # gamma viene usata solo per calcolare E
-
         print("[TIME] -- vectorify took         ", dt.now()-start)
 
+        
+    def save2json(self, save_name, save_folder="./forest"):
+        """
+        Saves a tree to a JSON file
+            - save_name  : save file name (w/o '.json')
+            - save_folder: folder where to save JSON trees
+        """
+        json_tree = json.loads(self.to_json())
+
+        file_path = os.path.join(save_folder, save_name + ".json")
+        with open(file_path, "w") as f:
+            json.dump(json_tree, f, indent=2)
+            f.close()
+
+        print("Tree saved in ", file_path)
+        return file_path            
+
+
+    @classmethod
+    def __parse_json_tree(self, tree, current, parent=None):
+        """
+        Parse a tree from a JSON object returned by from_json()
+            - json_tree: JSON object representing the tree
+            - tree     : tree instance to witch the parsed json_tree will be saved 
+        """
+        par_tag = list(parent.keys())[0] if parent is not None else parent
+        curr_tag = current if isinstance(current,str) else list(current.keys())[0]
+        print("<On node ->", curr_tag)
+
+        if isinstance(current,str):
+            print(" | -- on leaf ", curr_tag)
+            tree.create_node(tag=curr_tag, identifier=curr_tag, parent=par_tag)
+            return 
+
+        else:
+            tree.create_node(tag=curr_tag, identifier=curr_tag, parent=par_tag)
+            for child in current[curr_tag]["children"]:
+                print("-- on child ", child)
+
+                self.__parse_json_tree(tree, current=child, parent=current)
+                
+        return
+
+
+    @classmethod
+    def from_json(self, save_path):
+        """
+        Loads a tree from a JSON file
+        """
+        with open(save_path, "r") as f:
+            dict_tree = json.load(f)
+            #print(dict_tree)
+
+        res_tree = InterpretableTree()
+        self.__parse_json_tree(res_tree, dict_tree, parent=None)
+
+        res_tree.show()
+        return res_tree
 
 def e_func(p, q):
     return log(rd.randint(1, 5))
