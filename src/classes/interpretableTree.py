@@ -1,3 +1,5 @@
+import os
+import json
 import numpy as np
 import random as rd
 import treelib as tl
@@ -169,9 +171,19 @@ class InterpretableTree(tl.Tree):
         self.get_node(self.root).l = cardinality/gamma
 
         
-            
+    def save2json(self, save_name, save_folder="./forest"):
+        json_tree = json.loads(self.to_json())
+
+        file_path = os.path.join(save_folder, save_name + ".json")
+        with open(file_path, "w") as f:
+            json.dump(json_tree, f, indent=2)
+            f.close()
+
+        return file_path            
 
 
+    def from_json():
+        return NotImplementedError
 
 
 

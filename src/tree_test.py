@@ -146,6 +146,7 @@ for i in tree.all_nodes():
     i.print_info()
 
 new_tree = grow(tree)
+new_tree.save2json(save_name="test_tree")
 '''
 tree.show()
 tree.merge_nodes('2010_005968', '2010_005993', 'merge1')
@@ -153,15 +154,13 @@ tree.merge_nodes('2010_005725', '2010_005651', 'merge2')
 tree.show()
 for i in tree.all_nodes():
     i.print_info()
-'''
 
-'''
+
+
 TODO
     - scrivere "find_gab"
     - scrivere "e_func"
     - aggiungere logaritmi
     - calcolare matrice A
-    - leggere albero da file
-    - scrivere una print info dell'albero con numero nodi, profondità, ecc
 '''
 
