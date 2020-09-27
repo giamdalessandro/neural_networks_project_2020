@@ -199,15 +199,38 @@ class InterpretableTree(tl.Tree):
         return file_path            
 
 
-    def from_json(save_path):
+    @classmethod
+    def __parse_json_tree(tree, dict_tree, current, parent=None):
+        """
+            Parse a tree from a JSON object returned by from_json()
+                - json_tree: JSON object representing the tree
+                - tree     : tree instance to witch the parsed json_tree will be saved 
+        """
+        if current["children"] is None:
+            tree.create_node(tag=current, identifier=current, parent=parent.keys()[0])
+            return 
+
+        else:
+            for child in current["children"]:
+                tree.create_node(tag=kid, indentifier=child, parent=current.keys()[0])
+                parse_json_tree(tree, child, current=child, parent=current)
+
+        return
+
+    @classmethod
+    def from_json(self, save_path):
         """
             Loads a tree from a JSON file
         """
         with open(save_path, "r") as f:
-            loaded = json.load(f)
+            dict_tree = json.load(f)
+            #print(dict_tree)
 
-        print(loaded)
-        return None
+        res_tree = InterpretableTree()
+        self.__parse_json_tree(res_tree, dict_tree, current=dict_tree)
+
+        res_tree.show()
+        return res_tree
 
 
 

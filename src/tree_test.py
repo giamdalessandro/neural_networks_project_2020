@@ -123,19 +123,12 @@ def grow(tree_0):
     return curr_tree
 
 
-def load_json_tree(jsonfile):
-    """
-    Loads a tree from a JSON file
-    """
-    raise NotImplementedError
-
-
 #####################################################################################
 
 
-#with tf.device("/CPU:0"):
-m_trained = tf.keras.models.load_model(MASKED1, custom_objects={"MaskLayer":MaskLayer()})
-# print(m_trained.summary())
+with tf.device("/CPU:0"):
+    m_trained = tf.keras.models.load_model(MASKED1, custom_objects={"MaskLayer":MaskLayer()})
+    # print(m_trained.summary())
 
 tree = InterpretableTree()
 y_dict = initialize_leaves(m_trained, tree)   # initializes a leaf forall image in the positive set with the right parameters
@@ -147,7 +140,9 @@ for i in tree.all_nodes():
 
 new_tree = grow(tree)
 new_tree.info()
-new_tree.save2json(save_name="test_tree")
+saved = new_tree.save2json(save_name="test_tree")
+
+loaded = InterpretableTree.from_json(saved)
 '''
 tree.show()
 tree.merge_nodes('2010_005968', '2010_005993', 'merge1')
