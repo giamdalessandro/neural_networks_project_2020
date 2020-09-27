@@ -13,7 +13,7 @@ from utils.dataset_utils import load_test_image
 
 MODELS  = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'models'))
 MASKED1 = os.path.join(MODELS, "masked1_no_dropout_binary_50_epochs_24_9_2020_14_7.h5")
-TEST = True
+TEST = False
 
 def compute_g(model, inputs):
     '''
@@ -74,6 +74,8 @@ def initialize_leaves(trained_model, tree, pos_image_folder=POSITIVE_IMAGE_SET):
             
             i += 1
             print(">> created", i, "nodes")
+            if i==1000:
+                break
             
             # TEST IF g and b ARE ACCURATE ENOUGH - IS WORKING! #
             # print("\nORIGINAL y -- CALULATED y")
@@ -86,9 +88,6 @@ def initialize_leaves(trained_model, tree, pos_image_folder=POSITIVE_IMAGE_SET):
     print("[TIME] -- initialize leaves took ", dt.now()-start)
     return y_dict
 
-
-def e_func(p, q):
-    return log(rd.randint(1, 5))
 
 
 def choose_pair(curr_tree, tree_0, p):

@@ -129,7 +129,7 @@ class InterpretableTree(tl.Tree):
         b = 0
         return g,alpha,b
     
-    
+    '''
     def merge_nodes(self, nid1, nid2, tag=None):
         """
         Merges nodes nid1 and nid2 to create a parent n, to whom nid1 and nid2 become children 
@@ -137,8 +137,7 @@ class InterpretableTree(tl.Tree):
         g,a,b = self.find_gab(nid1, nid2)
         l = LAMBDA_0*sqrt(len(self.leaves(nid1)) + len(self.leaves(nid2)))
         tag = nid1 + nid2 if tag is None else tag
-        node = self.create_node(tag=tag, parent='root',
-                         alpha=a, g=g, b=b, l=l, x=None)
+        node = self.create_node(tag=tag, parent='root', alpha=a, g=g, b=b, l=l, x=None)
         self.move_node(nid1, node.identifier)
         self.move_node(nid2, node.identifier)
         return node
@@ -153,6 +152,76 @@ class InterpretableTree(tl.Tree):
         # merges the nodes in the new tree
         new_tree.merge_nodes(nid1, nid2, tag=i)
         return new_tree
+    '''
+
+    def __parentify(self, nid1, nid2, pid):
+        """
+        Gives hope to two orphan children
+        """
+        self.add_node(pid, parent=self.root)
+        self.move_node(nid1, pid.identifier)
+        self.move_node(nid2, pid.identifier)
+    
+
+    def __shallow_merge(self, nid1, nid2, tag=None):
+        """
+        Merges nodes nid1 and nid2 to create a parent n, to whom nid1 and nid2 become children
+        """
+        g,a,b = self.find_gab(nid1, nid2)
+        l = LAMBDA_0*sqrt(len(self.leaves(nid1)) + len(self.leaves(nid2)))
+        tag = nid1 + nid2 if tag is None else tag
+        node = self.create_node(tag=tag, parent='root', alpha=a, g=g, b=b, l=l, x=None)
+        self.move_node(nid1, node.identifier)
+        self.move_node(nid2, node.identifier)
+        return node
+        
+    
+    def __shallow_divide(self, nid1, nid2):
+        raise NotImplementedError
+
+    
+    def choose_pair(self, tree_0, p):
+        """
+        Copies one time the tree and then executes all merging operation on this new tree
+        After a merge operation, it calculates delta E and then reverts back the tree to its previous form
+        Note: need to return the max value of E and the two nodes which merged can generate the tree on which we can compute E
+        """
+        curr_max = 0                    # current max
+        e_0 = e_func(tree_0, tree_0)    # E(Q,Q)
+
+        # value to be used later when returning final tree
+        n1  = None
+        n2  = None
+        pid = None
+
+        # copy current tree (just one time)
+        auxtree = InterpretableTree(self.subtree(self.root), deep=True, gamma=self.gamma, s=self.s)
+        
+        # set of all second layer's node
+        second_layer = self.children(self.root)
+        
+        z = 1
+        it = 1
+        for v1 in second_layer:
+            if z < len(second_layer):
+                for v2 in second_layer[z:]:
+
+                    node = auxtree.__shallow_merge(v1.identifier, v2.identifier, 'p_'+str(p)+'it_'+str(it))
+                    e = e_func(auxtree, tree_0)
+
+                    if e-e_0 >= curr_max:       # save node with children for future merge
+                        curr_max = e
+                        pid = node
+                        n1 = v1.identifier
+                        n2 = v2.identifier
+
+                    auxtree.__shallow_divide(v1.identifier, v2.identifier)
+                    it += 1
+            z += 1
+        # merges the chosen nodes and returns the tree (deep copied at the beginning)
+        auxtree.__parentify(n1, n2, pid)
+        return auxtree
+
 
 
     def __vectorify_on_depth(self, x):
@@ -187,3 +256,7 @@ class InterpretableTree(tl.Tree):
         self.gamma = cardinality/gamma              # gamma viene usata solo per calcolare E
 
         print("[TIME] -- vectorify took         ", dt.now()-start)
+
+
+def e_func(p, q):
+    return log(rd.randint(1, 5))
