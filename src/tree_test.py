@@ -133,9 +133,9 @@ def load_json_tree(jsonfile):
 #####################################################################################
 
 
-with tf.device("/CPU:0"):
-    m_trained = tf.keras.models.load_model(MASKED1, custom_objects={"MaskLayer":MaskLayer()})
-    # print(m_trained.summary())
+#with tf.device("/CPU:0"):
+m_trained = tf.keras.models.load_model(MASKED1, custom_objects={"MaskLayer":MaskLayer()})
+# print(m_trained.summary())
 
 tree = InterpretableTree()
 y_dict = initialize_leaves(m_trained, tree)   # initializes a leaf forall image in the positive set with the right parameters
@@ -146,6 +146,7 @@ for i in tree.all_nodes():
     i.print_info()
 
 new_tree = grow(tree)
+new_tree.info()
 '''
 tree.show()
 tree.merge_nodes('2010_005968', '2010_005993', 'merge1')
