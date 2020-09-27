@@ -3,7 +3,8 @@ import random as rd
 import treelib as tl
 import tensorflow as tf
 
-from math import sqrt, log
+from math import sqrt
+from datetime import datetime as dt
 
 POSITIVE_IMAGE_SET = "./dataset/train_val/bird"
 NUM_FILTERS = 512
@@ -60,8 +61,7 @@ class InterpretableNode(tl.Node):
             else:
                 print("[NODE] -- tag:   ", self.tag)
             print("       -- alpha: ", self.alpha.shape)
-            print("       -- g:     ", self.g.shape)
-            print("       -- ||g||: ", tf.norm(self.g, ord=2).numpy())
+            print("       -- g:     ", self.g.shape, "  ||g|| = ", tf.norm(self.g, ord=2).numpy())
             print("       -- x:     ", self.x.shape)
             print("       -- w:     ", self.w.shape if self.w is not None else self.w)
             print("       -- b:     ", self.b.numpy())
@@ -85,15 +85,17 @@ class InterpretableTree(tl.Tree):
 
     
     def info(self):
+        """
+        Prints useful info
+        """
         size = self.size()
         leaves = len(self.leaves())
-        print("[TREE] --  nodes:         ", size)
-        print("       --  generic nodes: ", size - leaves - 1)
-        print("       --  leaves:        ", leaves)
-        print("       --  s:             ", self.s)
-        print("       --  gamma:         ", self.gamma)
+        print("[TREE] -- nodes:...........", size)
+        print("       -- generic nodes:...", size - leaves - 1)
+        print("       -- leaves:..........", leaves)
+        print("       -- s:...............", self.s.shape)
+        print("       -- gamma:...........", self.gamma.numpy())
         
-
 
     # OVERRIDE #
     def create_node(self, tag=None, identifier=None, parent=None, g=np.zeros(shape=(NUM_FILTERS)),
@@ -144,8 +146,10 @@ class InterpretableTree(tl.Tree):
         """
         Returns a new tree with nid1 and nid2 merged
         """
-        new_tree = InterpretableTree(self.subtree(self.root), deep=True)       # returns a deep copy of the current tree
-        new_tree.merge_nodes(nid1, nid2, tag=i)                     # merges the nodes in the new tree
+        # returns a deep copy of the current tree
+        new_tree = InterpretableTree(self.subtree(self.root), deep=True, gamma=self.gamma, s=self.s)
+        # merges the nodes in the new tree
+        new_tree.merge_nodes(nid1, nid2, tag=i)
         return new_tree
 
 
@@ -161,8 +165,9 @@ class InterpretableTree(tl.Tree):
     def vectorify(self, y_dict):
         """
         Forall leaf in self, vectorifies x and g (using the prev computed s) and updates w = g°x
-        It also normlizes g and b
+        It also normalizes g and b and computes gamma
         """
+        start = dt.now()
         gamma = 0
         for node in self.leaves():
             node.g = tf.multiply(tf.math.scalar_mul(1/L, self.s), self.__vectorify_on_depth(node.g))  # ???
@@ -177,12 +182,6 @@ class InterpretableTree(tl.Tree):
             gamma += y_dict[node.tag]/norm_g
         
         cardinality = len(self.leaves())
-        self.get_node(self.root).l = cardinality/gamma
+        self.gamma = cardinality/gamma              # gamma viene usata solo per calcolare E
 
-        
-            
-
-
-
-
-
+        print("[TIME] -- vectorify took         ", dt.now()-start)

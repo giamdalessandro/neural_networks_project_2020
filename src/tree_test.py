@@ -2,6 +2,9 @@ import os
 import fnmatch
 import numpy as np
 import tensorflow as tf
+
+from math import log
+from datetime import datetime as dt
 from tensorflow.keras.models import Model
 
 from classes.maskLayer import MaskLayer
@@ -36,8 +39,8 @@ def initialize_leaves(trained_model, tree, pos_image_folder=POSITIVE_IMAGE_SET):
     """
     Initializes a root's child for every image in the positive image folder and returns the list of all predictions done
     """
+    start = dt.now()
     root = tree.create_node(tag="root", identifier='root')
-
 
     flat_model = Model(inputs=trained_model.input,outputs=trained_model.get_layer("flatten").output)
     fc3_model = Model(inputs=trained_model.input,outputs=trained_model.get_layer("fc3").output)
@@ -68,14 +71,14 @@ def initialize_leaves(trained_model, tree, pos_image_folder=POSITIVE_IMAGE_SET):
 
 
     cardinality = len(fnmatch.filter(os.listdir(pos_image_folder), '*.jpg'))    # number of images in the positive set
-    root.b = tf.reduce_sum(s_list, axis=0)/cardinality                          # sum on s to obtain s(1,1,512)
-    tree.s = root.b
-    tree.gamma = root.l
+    tree.s = tf.reduce_sum(s_list, axis=0)/cardinality                          # sum on s to obtain s(1,1,512)
+    
+    print("[TIME] -- initialize leaves took ", dt.now()-start)
     return y_dict
 
 
 def e_func(p, q):
-    return rd.randint(0, 5)
+    return log(rd.randint(1, 5))
 
 
 def choose_pair(curr_tree, tree_0, p):
@@ -110,24 +113,20 @@ def grow(tree_0):
     """
     Grows the tree merging nodes until the condition is met
     """
+    start = dt.now()
     curr_tree = tree_0
     e_0 = e_func(tree_0, tree_0)
-    e = 10
-    p = 0
-    while e - e_0 > 0:
+    print("E_0 = ", e_0)
+    e = log(10)
+    p = 0                                               # index of the tree (P_i in the paper)
+    while e-e_0 > 0:
         curr_tree = choose_pair(curr_tree, tree_0, p)
-        curr_tree.show()
+        #curr_tree.show()
         e = e_func(curr_tree, tree_0)
-        print(e-e_0)
+        print("       >> delta E = ", e-e_0)
         p += 1
+    print("[TIME] -- growing took           ", dt.now()-start)
     return curr_tree
-
-
-def load_json_tree(jsonfile):
-    """
-    Loads a tree from a JSON file
-    """
-    raise NotImplementedError
 
 
 #####################################################################################
@@ -137,24 +136,13 @@ def load_json_tree(jsonfile):
 m_trained = tf.keras.models.load_model(MASKED1, custom_objects={"MaskLayer":MaskLayer()})
 # print(m_trained.summary())
 
+
 tree = InterpretableTree()
 y_dict = initialize_leaves(m_trained, tree)   # initializes a leaf forall image in the positive set with the right parameters
-#tree.show()
-
 tree.vectorify(y_dict)            # updates value (must be called after initialize_leaves())
-for i in tree.all_nodes():
-    i.print_info()
-
 new_tree = grow(tree)
 new_tree.info()
-'''
-tree.show()
-tree.merge_nodes('2010_005968', '2010_005993', 'merge1')
-tree.merge_nodes('2010_005725', '2010_005651', 'merge2')
-tree.show()
-for i in tree.all_nodes():
-    i.print_info()
-'''
+
 
 '''
 TODO
@@ -163,6 +151,5 @@ TODO
     - aggiungere logaritmi
     - calcolare matrice A
     - leggere albero da file
-    - scrivere una print info dell'albero con numero nodi, profondità, ecc
 '''
 
