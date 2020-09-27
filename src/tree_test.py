@@ -118,7 +118,7 @@ def grow(tree_0):
 #with tf.device("/CPU:0"):
 m_trained = tf.keras.models.load_model(MASKED1, custom_objects={"MaskLayer":MaskLayer()})
 
-STOP = 1000
+STOP = 10
 #STOP = 12454
 
 tree = InterpretableTree()

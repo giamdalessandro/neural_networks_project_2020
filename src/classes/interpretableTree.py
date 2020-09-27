@@ -270,17 +270,17 @@ class InterpretableTree(tl.Tree):
         """
         par_tag = list(parent.keys())[0] if parent is not None else parent
         curr_tag = current if isinstance(current,str) else list(current.keys())[0]
-        print("<On node ->", curr_tag)
+        # print("<On node ->", curr_tag)
 
         if isinstance(current,str):
-            print(" | -- on leaf ", curr_tag)
+            # print(" | -- on leaf ", curr_tag)
             tree.create_node(tag=curr_tag, identifier=curr_tag, parent=par_tag)
             return 
 
         else:
             tree.create_node(tag=curr_tag, identifier=curr_tag, parent=par_tag)
             for child in current[curr_tag]["children"]:
-                print("-- on child ", child)
+                # print("-- on child ", child)
 
                 self.__parse_json_tree(tree, current=child, parent=current)
                 
