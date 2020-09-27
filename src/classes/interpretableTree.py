@@ -183,6 +183,11 @@ class InterpretableTree(tl.Tree):
 
         
     def save2json(self, save_name, save_folder="./forest"):
+        """
+            Saves a tree to a JSON file
+                - save_name  : save file name (w/o '.json')
+                - save_folder: folder where to save JSON trees
+        """
         json_tree = json.loads(self.to_json())
 
         file_path = os.path.join(save_folder, save_name + ".json")
@@ -190,11 +195,19 @@ class InterpretableTree(tl.Tree):
             json.dump(json_tree, f, indent=2)
             f.close()
 
+        print("Tree saved in ", file_path)
         return file_path            
 
 
-    def from_json():
-        return NotImplementedError
+    def from_json(save_path):
+        """
+            Loads a tree from a JSON file
+        """
+        with open(save_path, "r") as f:
+            loaded = json.load(f)
+
+        print(loaded)
+        return None
 
 
 
