@@ -3,7 +3,7 @@ import random as rd
 import treelib as tl
 import tensorflow as tf
 
-from math import sqrt
+from math import sqrt, log
 from datetime import datetime as dt
 
 POSITIVE_IMAGE_SET = "./dataset/train_val/"
@@ -168,16 +168,22 @@ class InterpretableTree(tl.Tree):
         Merges nodes nid1 and nid2 to create a parent n, to whom nid1 and nid2 become children
         """
         g,a,b = self.find_gab(nid1, nid2)
-        l = LAMBDA_0*sqrt(len(self.leaves(nid1)) + len(self.leaves(nid2)))
+        l = LAMBDA_0 * sqrt(len(self.leaves(nid1)) + len(self.leaves(nid2)))
         tag = nid1 + nid2 if tag is None else tag
-        node = self.create_node(tag=tag, parent='root', alpha=a, g=g, b=b, l=l, x=None)
+        node = self.create_node(tag=tag, parent='root', alpha=a, g=g, b=b, l=l, x=None, identifier=tag)
         self.move_node(nid1, node.identifier)
         self.move_node(nid2, node.identifier)
         return node
         
     
-    def __shallow_divide(self, nid1, nid2):
-        raise NotImplementedError
+    def __shallow_unmerge(self, nid1, nid2):
+        """
+        Undoes what __shallow_merge does
+        """
+        killed = self.parent(nid1)
+        self.move_node(nid1, self.root)
+        self.move_node(nid2, self.root)
+        self.remove_node(killed.identifier)
 
     
     def choose_pair(self, tree_0, p):
@@ -215,9 +221,10 @@ class InterpretableTree(tl.Tree):
                         n1 = v1.identifier
                         n2 = v2.identifier
 
-                    auxtree.__shallow_divide(v1.identifier, v2.identifier)
+                    auxtree.__shallow_unmerge(v1.identifier, v2.identifier)
                     it += 1
             z += 1
+        print("       >> generated couples: ", it-1)
         # merges the chosen nodes and returns the tree (deep copied at the beginning)
         auxtree.__parentify(n1, n2, pid)
         return auxtree

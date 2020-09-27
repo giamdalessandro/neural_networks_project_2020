@@ -15,6 +15,7 @@ MODELS  = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'models'
 MASKED1 = os.path.join(MODELS, "masked1_no_dropout_binary_50_epochs_24_9_2020_14_7.h5")
 TEST = False
 
+
 def compute_g(model, inputs):
     '''
         Computes g = dy/dx, where x is the output of the top conv layer after the mask operation,
@@ -73,8 +74,9 @@ def initialize_leaves(trained_model, tree, pos_image_folder=POSITIVE_IMAGE_SET):
             tree.create_node(tag=img[:-4], identifier=img[:-4], parent='root', g=g, alpha=tf.ones(shape=512), b=b, x=x)
             
             i += 1
-            print(">> created", i, "nodes")
-            if i==1000:
+            if i%(STOP/10) == 0:
+                print(">> created", i, "nodes")
+            if i==STOP:
                 break
             
             # TEST IF g and b ARE ACCURATE ENOUGH - IS WORKING! #
@@ -88,8 +90,7 @@ def initialize_leaves(trained_model, tree, pos_image_folder=POSITIVE_IMAGE_SET):
     print("[TIME] -- initialize leaves took ", dt.now()-start)
     return y_dict
 
-
-
+'''
 def choose_pair(curr_tree, tree_0, p):
     """
     Chooses the pair that creates a new tree P s.t. maximizes E(P,Q)-E(Q,Q) with Q being the tree at step 0
@@ -116,7 +117,7 @@ def choose_pair(curr_tree, tree_0, p):
                 it += 1
         z += 1
     return new_tree
-
+'''
 
 def grow(tree_0):
     """
@@ -125,15 +126,16 @@ def grow(tree_0):
     start = dt.now()
     curr_tree = tree_0
     e_0 = e_func(tree_0, tree_0)
-    print("E_0 = ", e_0)
     e = log(10)
     p = 0                                               # index of the tree (P_i in the paper)
     while e-e_0 > 0:
-        curr_tree = choose_pair(curr_tree, tree_0, p)
+        curr_tree = curr_tree.choose_pair(tree_0, p)    # posso eliminare tree_0 hardcodandolo in e_func ?
         #curr_tree.show()
         e = e_func(curr_tree, tree_0)
-        print("       >> delta E = ", e-e_0)
         p += 1
+        print("       >> generated tree:    ", p)
+        #print("       >> delta E = ", e-e_0)
+
     print("[TIME] -- growing took           ", dt.now()-start)
     return curr_tree
 
@@ -143,15 +145,17 @@ def grow(tree_0):
 
 #with tf.device("/CPU:0"):
 m_trained = tf.keras.models.load_model(MASKED1, custom_objects={"MaskLayer":MaskLayer()})
-# print(m_trained.summary())
-
+STOP = 1000
 
 tree = InterpretableTree()
 y_dict = initialize_leaves(m_trained, tree)   # initializes a leaf forall image in the positive set with the right parameters
 tree.vectorify(y_dict)            # updates value (must be called after initialize_leaves())
+if STOP < 20:
+    tree.show()
 new_tree = grow(tree)
 new_tree.info()
-
+if STOP < 20:
+    new_tree.show()
 
 '''
 TODO
