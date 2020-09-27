@@ -265,8 +265,9 @@ class InterpretableTree(tl.Tree):
     def __parse_json_tree(self, tree, current, parent=None):
         """
         Parse a tree from a JSON object returned by from_json()
-            - json_tree: JSON object representing the tree
-            - tree     : tree instance to witch the parsed json_tree will be saved 
+            - tree      : tree instance to witch the parsed json_tree will be saved 
+            - current   : node to parse, initially the JSON tree returned by from_json() 
+            - parent    : parent node of current, initially None
         """
         par_tag = list(parent.keys())[0] if parent is not None else parent
         curr_tag = current if isinstance(current,str) else list(current.keys())[0]
@@ -291,6 +292,7 @@ class InterpretableTree(tl.Tree):
     def from_json(self, save_path):
         """
         Loads a tree from a JSON file
+            - save_path : path to the JSON tree file to load
         """
         with open(save_path, "r") as f:
             dict_tree = json.load(f)
