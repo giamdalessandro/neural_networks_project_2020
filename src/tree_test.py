@@ -153,13 +153,15 @@ tree.merge_nodes('2010_005725', '2010_005651', 'merge2')
 tree.show()
 for i in tree.all_nodes():
     i.print_info()
+'''
 
-
-
+'''
 TODO
     - scrivere "find_gab"
     - scrivere "e_func"
     - aggiungere logaritmi
     - calcolare matrice A
+    - leggere albero da file
+    - scrivere una print info dell'albero con numero nodi, profondità, ecc
 '''
 
