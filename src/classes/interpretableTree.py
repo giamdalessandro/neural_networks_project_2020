@@ -85,6 +85,17 @@ class InterpretableTree(tl.Tree):
         self.s = s
         super(InterpretableTree, self).__init__(tree=tree, deep=deep,node_class=InterpretableNode, identifier=identifier)
 
+    
+    def info(self):
+        size = self.size()
+        leaves = len(self.leaves())
+        print("[TREE] --  nodes:         ", size)
+        print("       --  generic nodes: ", size - leaves - 1)
+        print("       --  leaves:        ", leaves)
+        print("       --  s:             ", self.s)
+        print("       --  gamma:         ", self.gamma)
+        
+
 
     # OVERRIDE #
     def create_node(self, tag=None, identifier=None, parent=None, g=np.zeros(shape=(NUM_FILTERS)),
