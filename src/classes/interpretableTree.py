@@ -90,11 +90,13 @@ class InterpretableTree(tl.Tree):
         """
         size = self.size()
         leaves = len(self.leaves())
+        print("-------------------------------------------------")
         print("[TREE] -- nodes:...........", size)
         print("       -- generic nodes:...", size - leaves - 1)
         print("       -- leaves:..........", leaves)
-        print("       -- s:...............", self.s.shape)
         print("       -- gamma:...........", self.gamma.numpy())
+        print("       -- s (shape):.......", self.s.shape)
+        print("-------------------------------------------------")
         
 
     # OVERRIDE #
