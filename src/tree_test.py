@@ -11,14 +11,14 @@ from utils.dataset_utils import load_test_image
 MODELS  = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'models'))
 MASKED1 = os.path.join(MODELS, "masked1_no_dropout_binary_50_epochs_24_9_2020_14_7.h5")
 
-
+'''
 def compute_g(model, inputs):
-    '''
+    \'''
         Computes g = dy/dx, where x is the output of the top conv layer after the mask operation,
         and y is the output of the prediction before the softmax.
             - model: the pretrained modell on witch g will be computed;
             - imputs: x, the output of the top conv layer after the mask operation.
-    '''
+    \'''
     fc_1 = model.get_layer("fc1")
     fc_2 = model.get_layer("fc2")
     fc_3 = model.get_layer("fc3")
@@ -141,8 +141,9 @@ for i in tree.all_nodes():
 new_tree = grow(tree)
 new_tree.info()
 saved = new_tree.save2json(save_name="test_tree")
-
-loaded = InterpretableTree.from_json(saved)
+'''
+with tf.device("/CPU:0"):
+    loaded = InterpretableTree.from_json("./forest/test_tree.json")
 '''
 tree.show()
 tree.merge_nodes('2010_005968', '2010_005993', 'merge1')

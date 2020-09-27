@@ -200,22 +200,30 @@ class InterpretableTree(tl.Tree):
 
 
     @classmethod
-    def __parse_json_tree(tree, dict_tree, current, parent=None):
+    def __parse_json_tree(self, tree, current, parent=None):
         """
             Parse a tree from a JSON object returned by from_json()
                 - json_tree: JSON object representing the tree
                 - tree     : tree instance to witch the parsed json_tree will be saved 
         """
-        if current["children"] is None:
-            tree.create_node(tag=current, identifier=current, parent=parent.keys()[0])
+        par_tag = list(parent.keys())[0] if parent is not None else parent
+        curr_tag = current if isinstance(current,str) else list(current.keys())[0]
+        print("<On node ->", curr_tag)
+
+        if isinstance(current,str):
+            print(" | -- on leaf ", curr_tag)
+            tree.create_node(tag=curr_tag, identifier=curr_tag, parent=par_tag)
             return 
 
         else:
-            for child in current["children"]:
-                tree.create_node(tag=kid, indentifier=child, parent=current.keys()[0])
-                parse_json_tree(tree, child, current=child, parent=current)
+            tree.create_node(tag=curr_tag, identifier=curr_tag, parent=par_tag)
+            for child in current[curr_tag]["children"]:
+                print("-- on child ", child)
 
+                self.__parse_json_tree(tree, current=child, parent=current)
+                
         return
+
 
     @classmethod
     def from_json(self, save_path):
@@ -227,7 +235,7 @@ class InterpretableTree(tl.Tree):
             #print(dict_tree)
 
         res_tree = InterpretableTree()
-        self.__parse_json_tree(res_tree, dict_tree, current=dict_tree)
+        self.__parse_json_tree(res_tree, dict_tree, parent=None)
 
         res_tree.show()
         return res_tree
