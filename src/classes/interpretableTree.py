@@ -6,7 +6,7 @@ import tensorflow as tf
 from math import sqrt
 from datetime import datetime as dt
 
-POSITIVE_IMAGE_SET = "./dataset/train_val/bird"
+POSITIVE_IMAGE_SET = "./dataset/train_val/"
 NUM_FILTERS = 512
 LAMBDA_0 = 0.000001
 DTYPE = tf.int32

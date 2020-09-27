@@ -13,7 +13,7 @@ from utils.dataset_utils import load_test_image
 
 MODELS  = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'models'))
 MASKED1 = os.path.join(MODELS, "masked1_no_dropout_binary_50_epochs_24_9_2020_14_7.h5")
-
+TEST = True
 
 def compute_g(model, inputs):
     '''
@@ -47,8 +47,15 @@ def initialize_leaves(trained_model, tree, pos_image_folder=POSITIVE_IMAGE_SET):
 
     y_dict = {}
     s_list = []
-    pos_image_folder = os.path.join(pos_image_folder, 'test')   # we test only on a subset of images (10 images)
-    
+    if TEST:
+        pos_image_folder = os.path.join(pos_image_folder, 'test')   # we test only on a subset of images (10 images)
+    else:
+        pos_image_folder = os.path.join(pos_image_folder, 'bird')   # 12k imgs
+
+    # find . -type f -print0 | xargs -0 mv -t .
+    # command to copy all filesf from subdirectories of the current directory in the current directory
+
+    i = 0
     for img in os.listdir(pos_image_folder):
         if img.endswith('.jpg'):
             test_image  = load_test_image(folder=pos_image_folder, fileid=img)
@@ -64,7 +71,10 @@ def initialize_leaves(trained_model, tree, pos_image_folder=POSITIVE_IMAGE_SET):
             s = tf.math.reduce_mean(x, axis=[0,1])
             s_list.append(s)
             tree.create_node(tag=img[:-4], identifier=img[:-4], parent='root', g=g, alpha=tf.ones(shape=512), b=b, x=x)
-
+            
+            i += 1
+            print(">> created", i, "nodes")
+            
             # TEST IF g and b ARE ACCURATE ENOUGH - IS WORKING! #
             # print("\nORIGINAL y -- CALULATED y")
             # print(fc3_output, " = ", tf.add(tf.reduce_sum(tf.math.multiply(g, x), axis=None), b).numpy())
@@ -146,10 +156,9 @@ new_tree.info()
 
 '''
 TODO
-    - scrivere "find_gab"
-    - scrivere "e_func"
-    - aggiungere logaritmi
-    - calcolare matrice A
-    - leggere albero da file
+    - scrivere "find_gab"       - ro
+    - scrivere "e_func"         - balthier
+    - calcolare matrice A       - ???
+    - leggere albero da file    - spacefrogg
 '''
 
