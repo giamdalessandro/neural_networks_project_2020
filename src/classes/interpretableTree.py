@@ -140,7 +140,7 @@ class InterpretableTree(tl.Tree):
         """
         return InterpretableTree(tree=self if with_tree else None, deep=deep, identifier=identifier, gamma=self.gamma, s=self.s)
 
-    
+
     def find_gab(self, n1, n2):
         """
         Finds g, alpha and b optimal for the new node
@@ -269,6 +269,47 @@ class InterpretableTree(tl.Tree):
         print("[TIME] -- vectorify took         ", dt.now()-start)
 
 
+    #####################################################################################
+
+    # OVERRIDE #
+    def to_dict(self, nid=None, key=None, sort=True, reverse=False, with_data=False):
+        """
+        Transform the whole tree into a dict, saving also node parameters.
+        """
+        nid = self.root if (nid is None) else nid
+        ntag = self[nid].tag
+        tree_dict = {ntag: {"children": []}}
+        data = {
+            "alpha" : str(self[nid].alpha.numpy()),
+            "g"     : str(self[nid].g.numpy()),
+            "b"     : str(self[nid].b.numpy()) if not isinstance(self[nid].b,int) else self[nid].b,
+            "l"     : self[nid].l
+        }
+        if with_data:
+            tree_dict[ntag]["data"] = data
+
+        if self[nid].expanded:
+            queue = [self[i] for i in self[nid].successors(self._identifier)]
+            key = (lambda x: x) if (key is None) else key
+            if sort:
+                queue.sort(key=key, reverse=reverse)
+
+            for elem in queue:
+                tree_dict[ntag]["children"].append(
+                    self.to_dict(elem.identifier, with_data=with_data, sort=sort, reverse=reverse))
+            if len(tree_dict[ntag]["children"]) == 0:
+                tree_dict = self[nid].tag if not with_data else \
+                    {ntag: {"data": data}}
+            return tree_dict
+
+
+    # OVERRIDE #
+    def to_json(self, sort=True, reverse=False):
+        """
+        To format the tree in JSON format.
+        """
+        return json.dumps(self.to_dict(with_data=True, sort=sort, reverse=reverse))
+
 
     def save2json(self, save_name, save_folder="./forest"):
         """
@@ -288,10 +329,19 @@ class InterpretableTree(tl.Tree):
 
 
     @classmethod
+    def str_to_tensor(self, str_val):
+        """
+        Converts string np.array to tf.Tensor
+        """
+        np_val = np.array(str_val.strip('[]\n').split(), dtype="float32")
+        return tf.convert_to_tensor(np_val)
+
+
+    @classmethod
     def __parse_json_tree(self, tree, current, parent=None):
         """
         Parse a tree from a JSON object returned by from_json()
-            - tree      : tree instance to witch the parsed json_tree will be saved 
+            - tree      : tree instance where the parsed json_tree will be saved 
             - current   : node to parse, initially the JSON tree returned by from_json() 
             - parent    : parent node of current, initially None
         """
@@ -299,16 +349,19 @@ class InterpretableTree(tl.Tree):
         curr_tag = current if isinstance(current,str) else list(current.keys())[0]
         # print("<On node ->", curr_tag)
 
-        if isinstance(current,str):
+        data = current[curr_tag]["data"]
+        tree.create_node(tag=curr_tag, identifier=curr_tag, parent=par_tag, 
+                        alpha=self.str_to_tensor(data["alpha"]),
+                        g=self.str_to_tensor(data["g"]), 
+                        b=data["b"] if isinstance(data["b"],int) else self.str_to_tensor(data["b"]), 
+                        l=data["l"])
+        if "children" not in current[curr_tag].keys(): #isinstance(current,str):
             # print(" | -- on leaf ", curr_tag)
-            tree.create_node(tag=curr_tag, identifier=curr_tag, parent=par_tag)
             return 
 
         else:
-            tree.create_node(tag=curr_tag, identifier=curr_tag, parent=par_tag)
             for child in current[curr_tag]["children"]:
                 # print("-- on child ", child)
-
                 self.__parse_json_tree(tree, current=child, parent=current)
                 
         return
