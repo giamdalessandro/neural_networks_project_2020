@@ -399,7 +399,7 @@ class InterpretableTree(tl.Tree):
             if img.endswith('.jpg'):
                 test_image = load_test_image(folder=POS_IMAGE_SET_TEST, fileid=img)
                 xj = self.flat_model.predict(test_image)
-                xj = xi = tf.divide(self.__vectorify_on_depth(xj), self.s)
+                xj = tf.divide(self.__vectorify_on_depth(xj), self.s)
                 gj = self.compute_g(xj)
                 gj = tf.multiply(tf.math.scalar_mul(1/L, self.s), self.__vectorify_on_depth(gj))
 
