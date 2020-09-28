@@ -13,6 +13,11 @@ g_sum = tf.math.add(g1, g2)
 
 print(op.linprog(-g_sum, bounds=(-1,1)))
 '''
+
+from pulp import *
+import tensorflow as tf
+import numpy
+
 class MultiDimensionalLpVariable:
     def __init__(self, name, dimensions, low_bound, up_bound, cat):
         self.name = name
@@ -45,20 +50,18 @@ class MultiDimensionalLpVariable:
         self.values = f(self.variables)
 
 
-from pulp import *
-import tensorflow as tf
 
-g1 = [1,2,3,4]
-g2 = [1,2,3,4]
+g1 = [0.21, 0.17, -0.7, -0.2]
+g2 = [-0.21, 0.17, -0.7, -0.2]
 
-g_sum = tf.math.add(g1, g2)
+
 
 
 prob = LpProblem("test09", LpMaximize)
-g = pulp.LpVariable.dicts("g", RANGE,  cat="Real")
-for i in g.viewkeys():
-     g[i].lowBound = -1
-     g[i].upBound = 1
+
+g_sum = tf.math.add(g1, g2)
+g = MultiDimensionalLpVariable("g", 4, -1, 1, "Real")
+
 
 prob += g_sum*g, "obj"
 prob += g*g == 1, "c1"
