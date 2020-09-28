@@ -13,13 +13,14 @@ from tensorflow.keras.applications.vgg16 import preprocess_input
 from tensorflow.keras.preprocessing.image import ImageDataGenerator, load_img, img_to_array
 
 
-NEG_IMAGE_SET_TEST = "./dataset/train_val/test/bird/"
-POS_IMAGE_SET_TEST = "./dataset/train_val/test/not_bird/"
-NUM_FILTERS = 512
-LAMBDA_0 = 0.000001
-DTYPE = tf.int32
 L = 14*14
 STOP = 10
+DTYPE = tf.int32
+NUM_FILTERS = 512
+LAMBDA_0 = 0.000001
+NEG_IMAGE_SET_TEST = "./dataset/train_val/test/bird/"
+POS_IMAGE_SET_TEST = "./dataset/train_val/test/not_bird/"
+
 
 
 ######### OPERATIONS ###########

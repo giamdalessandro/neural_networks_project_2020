@@ -120,10 +120,11 @@ class InterpretableTree(tl.Tree):
         self.move_node(nid2, self.root)
         self.remove_node(killed.identifier)
 
-    def __compute_probability(self, xi):
+    def __compute_probability(self, nodei):  #xi):
         """
         Computes P(xi)
         """
+        '''
         p1 = 0
         p2 = 0
         xi = tf.divide(vectorify_on_depth(xi), self.s)
@@ -157,6 +158,28 @@ class InterpretableTree(tl.Tree):
                 node = self.choose_best_node(gj)
                 p2 += exp(self.gamma * node.compute_h(xj))
         return p1/p2
+        '''
+        p1 = 0
+        p2 = 0
+        xi = nodei.x
+        for img in os.listdir(POS_IMAGE_SET_TEST):  # no sbagliato
+            
+            # ciclo sui figli della root
+            # se figlio v non foglia, prendi sue foglie e usa il suo h_v con x_i delle foglie di v  
+
+
+            if img.endswith('.jpg'):
+                nodej = self.get_node(img)
+                xj = nodej.x
+                best_node = self.choose_best_node(gj)
+                if uguale(xi, xj):
+                    p1 = exp(self.gamma * best_node.compute_h(xi))
+                    p2 += p1
+                else:
+                    p2 += exp(self.gamma * best_node.compute_h(xj))
+
+        # RABARBARO -   DOBBIAMO ITERARE ANCHE SULLE NEGATIVE?
+        return p1/p2
 
     def __compute_eta(self):
         """
@@ -164,6 +187,7 @@ class InterpretableTree(tl.Tree):
         NOTE: this is a constant parameter to be calculated on tree0 and then copied on the new trees
         """
         return self.compute_product_probability()**(-1)
+
 
     # METHODS #
     def find_gab(self, n1, n2):     # FAKE FAKE FAKE FAKE FAKE FAKE FAKE FAKE FAKE #
@@ -310,6 +334,7 @@ class InterpretableTree(tl.Tree):
         """
         Returns the product of all P_t(xi) divided by e^|Vt|
         """
+        '''
         val = 0
         for img in os.listdir(POS_IMAGE_SET_TEST):
             if img.endswith('.jpg'):
@@ -318,7 +343,15 @@ class InterpretableTree(tl.Tree):
                 pro = self.__compute_probability(xi)
                 val = val * pro
         return val / exp(len(self.children(self.root)))
-    
+        '''
+        val = 0
+        for img in os.listdir(POS_IMAGE_SET_TEST):
+            if img.endswith('.jpg'):
+                node = self.get_node(img)
+                pro = self.__compute_probability(node)
+                val = val * pro
+        return val / exp(len(self.children(self.root)))
+
 
     def compute_delta(self):
         """
