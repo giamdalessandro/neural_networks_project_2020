@@ -243,14 +243,25 @@ class InterpretableTree(tl.Tree):
         self.gamma = cardinality/gamma              # gamma viene usata solo per calcolare E
         print("[TIME] -- vectorify took         ", dt.now()-start)
 
-        
+
+    def e_func(p, q):
+        return log(rd.randint(1, 5))
+
+    ###########################################################################################
+
+    # OVERRIDE #
+    def to_json(self, with_data=False, sort=True, reverse=False):
+        """To format the tree in JSON format."""
+        return json.dumps(self.to_dict(with_data=with_data, sort=sort, reverse=reverse))
+
+
     def save2json(self, save_name, save_folder="./forest"):
         """
         Saves a tree to a JSON file
             - save_name  : save file name (w/o '.json')
             - save_folder: folder where to save JSON trees
         """
-        json_tree = json.loads(self.to_json())
+        json_tree = json.loads(self.to_json(with_data=True))
 
         file_path = os.path.join(save_folder, save_name + ".json")
         with open(file_path, "w") as f:
@@ -265,7 +276,7 @@ class InterpretableTree(tl.Tree):
     def __parse_json_tree(self, tree, current, parent=None):
         """
         Parse a tree from a JSON object returned by from_json()
-            - tree      : tree instance to witch the parsed json_tree will be saved 
+            - tree      : tree instance where the parsed json_tree will be saved 
             - current   : node to parse, initially the JSON tree returned by from_json() 
             - parent    : parent node of current, initially None
         """
@@ -273,7 +284,7 @@ class InterpretableTree(tl.Tree):
         curr_tag = current if isinstance(current,str) else list(current.keys())[0]
         # print("<On node ->", curr_tag)
 
-        if isinstance(current,str):
+        if "children" not in current.keys(): #isinstance(current,str):
             # print(" | -- on leaf ", curr_tag)
             tree.create_node(tag=curr_tag, identifier=curr_tag, parent=par_tag)
             return 
@@ -303,6 +314,3 @@ class InterpretableTree(tl.Tree):
 
         res_tree.show()
         return res_tree
-
-def e_func(p, q):
-    return log(rd.randint(1, 5))
