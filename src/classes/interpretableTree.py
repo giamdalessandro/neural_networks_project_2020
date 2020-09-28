@@ -5,10 +5,14 @@ import random as rd
 import treelib as tl
 import tensorflow as tf
 
-from math import sqrt, log
+from math import sqrt, log, exp
 from datetime import datetime as dt
+from tensorflow.keras.applications.vgg16 import preprocess_input
+from tensorflow.keras.preprocessing.image import ImageDataGenerator, load_img, img_to_array
 
-POSITIVE_IMAGE_SET = "./dataset/train_val/"
+
+NEG_IMAGE_SET_TEST = "./dataset/train_val/test/bird/"
+POS_IMAGE_SET_TEST = "./dataset/train_val/test/not_bird/"
 NUM_FILTERS = 512
 LAMBDA_0 = 0.000001
 DTYPE = tf.int32
@@ -40,7 +44,10 @@ class InterpretableNode(tl.Node):
         
         self.alpha = alpha if tf.is_tensor(alpha) else tf.convert_to_tensor(alpha)
         self.g = g if tf.is_tensor(g) else tf.convert_to_tensor(g)  
-        self.w = None
+        if g.shape == [512,]:
+            self.w = tf.math.multiply(alpha, g)
+        else:
+            self.w = None
         self.beta = 1
         self.b = b
         self.l = l          # initial lambda
@@ -50,7 +57,7 @@ class InterpretableNode(tl.Node):
         """
         Compute the node's hypotesis on x
         """
-        return tf.matmul(tf.transpose(self.w), x) + self.b
+        return tf.matmul(tf.transpose(self.w), tf.reshape(x, shape=(512,1)) + self.b)
 
     def print_info(self):
         if self.is_root():
@@ -80,10 +87,22 @@ class InterpretableTree(tl.Tree):
         - gamma = (E[y_i])^-1, parameter computed on the set of all positive images 
     """
 
-    def __init__(self, tree=None, deep=False, node_class=InterpretableNode, identifier=None, gamma=1, s=None):
-        self.gamma = gamma
+    def __init__(self,
+                 eta=0,
+                 s=None,
+                 gamma=1,
+                 tree=None,
+                 deep=False,
+                 fc3_model=None,
+                 flat_model=None,
+                 identifier=None, 
+                 node_class=InterpretableNode):
         self.s = s
-        super(InterpretableTree, self).__init__(tree=tree, deep=deep,node_class=InterpretableNode, identifier=identifier)
+        self.eta = eta
+        self.gamma = gamma
+        self.flat_model = flat_model
+        self.fc3_model = fc3_model
+        super(InterpretableTree, self).__init__(tree=tree, deep=deep, node_class=InterpretableNode, identifier=identifier)
 
     
     def info(self):
@@ -179,8 +198,14 @@ class InterpretableTree(tl.Tree):
         pid = None
 
         # copy current tree (just one time)
-        auxtree = InterpretableTree(self.subtree(self.root), deep=True, gamma=self.gamma, s=self.s)
-        
+        auxtree = InterpretableTree(s=self.s,
+                                    deep=True,
+                                    eta=self.eta,
+                                    gamma=self.gamma,
+                                    fc3_model=self.fc3_model,
+                                    flat_model=self.flat_model,
+                                    tree=self.subtree(self.root))
+
         # set of all second layer's node
         second_layer = self.children(self.root)
         
@@ -222,7 +247,7 @@ class InterpretableTree(tl.Tree):
     def vectorify(self, y_dict):
         """
         Forall leaf in self, vectorifies x and g (using the prev computed s) and updates w = g°x
-        It also normalizes g and b and computes gamma
+        It also normalizes g and b and computes gamma and eta
         """
         start = dt.now()
         gamma = 0
@@ -240,6 +265,7 @@ class InterpretableTree(tl.Tree):
         
         cardinality = len(self.leaves())
         self.gamma = cardinality/gamma              # gamma viene usata solo per calcolare E
+        self.__compute_eta()                        # computes eta which is constant for all trees
         print("[TIME] -- vectorify took         ", dt.now()-start)
 
 
@@ -319,7 +345,109 @@ class InterpretableTree(tl.Tree):
                 best = v
         return best
 
+    
+    def compute_g(self, inputs):
+        '''
+        Computes g = dy/dx, where x is the output of the top conv layer after the mask operation,
+        and y is the output of the prediction before the softmax.
+            - model:  the pretrained modell on witch g will be computed;
+            - imputs: x, the output of the top conv layer after the mask operation.
+        '''
+        fc_1 = self.fc3_model.get_layer("fc1")
+        fc_2 = self.fc3_model.get_layer("fc2")
+        fc_3 = self.fc3_model.get_layer("fc3")
 
+        with tf.GradientTape(watch_accessed_variables=False) as tape:
+            tape.watch(fc_1.variables)
+
+            y = fc_3(fc_2(fc_1(inputs)))
+            gradient = tape.gradient(y, fc_1.variables)
+
+        return tf.reshape(tf.reduce_sum(gradient[0], axis=1), shape=(7, 7, 512))
+
+        
+
+    def compute_product_probability(self):
+        """
+        Returns the product of all P_t(xi) divided by e^|Vt|
+        """
+        val = 0
+        for img in os.listdir(POS_IMAGE_SET_TEST):
+            if img.endswith('.jpg'):
+                test_image = load_test_image(folder=POS_IMAGE_SET_TEST, fileid=img)
+                xi  = self.flat_model.predict(test_image)
+                pro = self.__compute_probability(xi)
+                val = val * pro
+        return val / exp(len(self.children(self.root)))
+    
+
+    def __uguale(self, x1, x2):
+        if tf.reduce_sum(tf.subtract(x1,x2)) == 0:
+            return True
+        else:
+            return False
+
+
+    def __compute_probability(self, xi):
+        """
+        Computes P(xi)
+        """
+        p1 = 0
+        p2 = 0
+        xi =  tf.divide(self.__vectorify_on_depth(xi), self.s)
+        for img in os.listdir(POS_IMAGE_SET_TEST):
+            if img.endswith('.jpg'):
+                test_image = load_test_image(folder=POS_IMAGE_SET_TEST, fileid=img)
+                xj = self.flat_model.predict(test_image)
+                xj = xi = tf.divide(self.__vectorify_on_depth(xj), self.s)
+                gj = self.compute_g(xj)
+                gj = tf.multiply(tf.math.scalar_mul(1/L, self.s), self.__vectorify_on_depth(gj))
+
+                ### NOTE: FORSE DOBBIAMO NORMALIZZARE g ???? ###
+
+                node = self.choose_best_node(gj)
+                if self.__uguale(xi,xj):
+                    p1 = exp(self.gamma * node.compute_h(xi))
+                    p2 += p1
+                else:
+                    p2 += exp(self.gamma * node.compute_h(xj))
+
+        for img in os.listdir(NEG_IMAGE_SET_TEST):
+            if img.endswith('.jpg'):
+                test_image = load_test_image(folder=NEG_IMAGE_SET_TEST, fileid=img)
+                xj = self.flat_model.predict(test_image)
+                gj = self.compute_g(xj)
+                gj = tf.multiply(tf.math.scalar_mul(1/L, self.s), self.__vectorify_on_depth(gj))
+                node = self.choose_best_node(gj)
+                p2 += exp(self.gamma * node.compute_h(xj))
+        return p1/p2
+
+
+    def __compute_eta(self):
+        """
+        Computes eta for the current tree
+        NOTE: this is a constant parameter to be calculated on tree0 and then copied on the new trees
+        """
+        return self.compute_product_probability()**(-1)
+
+
+    def compute_delta(self):
+        """
+        Computes the delta between E_t and E_0 (stored in eta)
+        """
+        return log(self.compute_product_probability() * self.eta)
 
 def e_func(p, q):
     return log(rd.randint(1, 5))
+
+
+def load_test_image(folder, fileid):
+    """
+    loads and preprocesses default img specified in 'visualize.py' in variable 'path'
+    """
+    path = os.path.join(folder, fileid)
+    img = load_img(path, target_size=(224, 224))      # test image
+    img = img_to_array(img)
+    img = np.expand_dims(img, axis=0)
+    img = preprocess_input(img)
+    return img
