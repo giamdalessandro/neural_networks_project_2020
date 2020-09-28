@@ -163,7 +163,7 @@ class InterpretableTree(tl.Tree):
         p2 = 0
         xi = nodei.x
         for img in os.listdir(POS_IMAGE_SET_TEST):  # no sbagliato
-            
+            # RABARBARO
             # ciclo sui figli della root
             # se figlio v non foglia, prendi sue foglie e usa il suo h_v con x_i delle foglie di v  
 
