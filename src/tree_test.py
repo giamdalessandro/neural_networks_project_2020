@@ -139,6 +139,5 @@ TODO
     - scrivere "find_gab"       - ro
     - scrivere "e_func"         - balthier
     - calcolare matrice A       - ???
-    X leggere albero da file    - spacefrogg
 '''
 

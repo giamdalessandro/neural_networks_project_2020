@@ -210,7 +210,6 @@ class InterpretableTree(tl.Tree):
         return auxtree
 
 
-
     def __vectorify_on_depth(self, x):
         """
         xx = tf.ones(shape=(2,2,5))
@@ -243,7 +242,8 @@ class InterpretableTree(tl.Tree):
         self.gamma = cardinality/gamma              # gamma viene usata solo per calcolare E
         print("[TIME] -- vectorify took         ", dt.now()-start)
 
-        
+
+
     def save2json(self, save_name, save_folder="./forest"):
         """
         Saves a tree to a JSON file
@@ -303,6 +303,23 @@ class InterpretableTree(tl.Tree):
 
         res_tree.show()
         return res_tree
+
+
+    def choose_best_node(self, g):
+        """
+        Chooses the best node that fits with g in the second tree layer
+        The best node is chosen following the formula v = argmax(cos(g, w_v))
+            - g --> vector of given image
+        """
+        best = None
+        aux  = -5
+        for v in self.children(self.root):
+            cos_similarity = tf.compat.v1.losses.cosine_distance(g, v.w, axis=0)
+            if cos_similarity >= aux:
+                best = v
+        return best
+
+
 
 def e_func(p, q):
     return log(rd.randint(1, 5))
