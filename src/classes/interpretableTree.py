@@ -249,7 +249,7 @@ class InterpretableTree(tl.Tree):
     # OVERRIDE #
     def to_dict(self, nid=None, key=None, sort=True, reverse=False, with_data=False):
         """
-        Transform the whole tree into a dict.
+        Transform the whole tree into a dict, saving also node parameters.
         """
         nid = self.root if (nid is None) else nid
         ntag = self[nid].tag
@@ -305,6 +305,9 @@ class InterpretableTree(tl.Tree):
 
     @classmethod
     def str_to_tensor(self, str_val):
+        """
+        Converts string np.array to tf.Tensor
+        """
         np_val = np.array(str_val.strip('[]\n').split(), dtype="float32")
         return tf.convert_to_tensor(np_val)
 
