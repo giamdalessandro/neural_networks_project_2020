@@ -1,4 +1,26 @@
-from classes.tree_utils import *
+# from classes.tree_utils import *
+import os
+import json
+import fnmatch
+import numpy as np
+import random as rd
+import treelib as tl
+import tensorflow as tf
+
+from math import sqrt, log, exp
+from datetime import datetime as dt
+from tensorflow.keras.models import Model
+from tensorflow.keras.applications.vgg16 import preprocess_input
+from tensorflow.keras.preprocessing.image import ImageDataGenerator, load_img, img_to_array
+
+
+L = 14*14
+STOP = 10
+DTYPE = tf.int32
+NEG_IMAGE_SET_TEST = "./dataset/train_val/test/bird/"
+POS_IMAGE_SET_TEST = "./dataset/train_val/test/not_bird/"
+NUM_FILTERS = 512
+LAMBDA_0 = 0.000001
 
 '''
 class InterpretableNodeRoot(tl.Node):

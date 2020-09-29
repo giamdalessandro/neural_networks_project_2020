@@ -1,5 +1,7 @@
-import classes.tree_utils
-from classes.interpretableTree import *
+from classes.tree_utils import *
+from classes.interpretableNode import InterpretableNode
+from classes.interpretableTree import InterpretableTree
+
 from classes.maskLayer import MaskLayer
 
 MODELS  = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'models'))
@@ -13,20 +15,16 @@ m_trained = tf.keras.models.load_model(MASKED1, custom_objects={"MaskLayer":Mask
 NEG_IMAGE_SET_TEST = "./dataset/train_val/test/bird/"
 POS_IMAGE_SET_TEST = "./dataset/train_val/test/not_bird/"
 
-tree = InterpretableTree()
-y_dict = initialize_leaves(m_trained, tree, POS_IMAGE_SET_TEST)   
-tree.vectorify(y_dict)            # updates value (must be called after initialize_leaves())
-
-if STOP < 20:
-    tree.show()
+tree = sow(m_trained, POS_IMAGE_SET_TEST)
+tree.show()
 
 #new_tree = grow(tree)
 #new_tree.info()
 #if STOP < 20:
 #    new_tree.show()
 
-saved = tree.save2json(save_name="test_tree")
-loaded = from_json(InterpretableTree(), "./forest/test_tree.json")
+# saved = tree.save2json(save_name="test_tree")
+# loaded = from_json(InterpretableTree(), "./forest/test_tree.json")
 
 
 '''

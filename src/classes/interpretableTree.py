@@ -1,6 +1,33 @@
-import classes.tree_utils #import *
+'''
+from classes.tree_utils import *
 from classes.interpretableNode import *
+from datetime import datetime as dt
+'''
+import os
+import json
+import fnmatch
+import numpy as np
+import random as rd
+import treelib as tl
+import tensorflow as tf
 
+from classes.interpretableNode import InterpretableNode
+from classes.tree_utils import load_test_image, compute_g, vectorify_on_depth
+
+from math import sqrt, log, exp
+from datetime import datetime as dt
+from tensorflow.keras.models import Model
+from tensorflow.keras.applications.vgg16 import preprocess_input
+from tensorflow.keras.preprocessing.image import ImageDataGenerator, load_img, img_to_array
+
+
+L = 14*14
+STOP = 10
+DTYPE = tf.int32
+NEG_IMAGE_SET_TEST = "./dataset/train_val/test/bird/"
+POS_IMAGE_SET_TEST = "./dataset/train_val/test/not_bird/"
+NUM_FILTERS = 512
+LAMBDA_0 = 0.000001
 
 class InterpretableTree(tl.Tree):
     """
@@ -341,7 +368,7 @@ class InterpretableTree(tl.Tree):
 
                 y_dict.update({img[:-4]: fc3_output})
 
-                g = self.compute_g(flat_output)
+                g = compute_g(trained_model, flat_output)
                 x = tf.reshape(flat_output, shape=(7, 7, 512))
                 # inner product between g and x
                 b = tf.subtract(fc3_output, tf.reduce_sum(
@@ -352,8 +379,7 @@ class InterpretableTree(tl.Tree):
                 self.create_node(tag=img[:-4], identifier=img[:-4],
                                 parent='root', g=g, alpha=tf.ones(shape=512), b=b, x=x)
                 i += 1
-                print(">> created", i, "nodes") if i % 10 == 0 else \
-
+                print(">> created", i, "nodes")
                 # TEST IF g and b ARE ACCURATE ENOUGH - IS WORKING! #
                 # print("\nORIGINAL y -- CALULATED y")
                 # print(fc3_output, " = ", tf.add(tf.reduce_sum(tf.math.multiply(g, x), axis=None), b).numpy())
@@ -361,7 +387,7 @@ class InterpretableTree(tl.Tree):
         # sum on s to obtain s(1,1,512) / # images in the positive set
         self.s = tf.reduce_sum(s_list, axis=0)/len(fnmatch.filter(os.listdir(pos_image_folder), '*.jpg'))
         
-        print("[TIME] -- init leaves took        ", dt.now()-start)
+        print("[TIME] ----- init leaves took        ", dt.now()-start)
         return y_dict
 
     def vectorify(self, y_dict):
@@ -379,37 +405,21 @@ class InterpretableTree(tl.Tree):
             # computation of x and g
             node.g = tf.multiply(tf.math.scalar_mul(1/L, self.s), vectorify_on_depth(node.g))
             node.x = tf.divide(vectorify_on_depth(node.x), self.s)
+            node.x = tf.reshape(node.x, shape=(512, 1))     # reshape in order to use mat_mul in vectorify
             # normalization of g and b
             norm_g = tf.norm(node.g, ord=2)
             node.b = tf.divide(node.b, norm_g)
             node.g = tf.divide(node.g, norm_g)
             # computation of w
+            if node.g.shape != [512, 1]:
+                node.g = tf.reshape(node.g, shape=(512, 1))
             node.w = node.g
             # computation of gamma using normalized y_i
             gamma += y_dict[node.tag]/norm_g
 
         cardinality = len(self.leaves())
         self.gamma = cardinality/gamma              # gamma viene usata solo per calcolare E
-        print("[TIME] -- vectorifing leaves took ", dt.now()-start)
-
-    def compute_g(self, inputs):
-        '''
-        Computes g = dy/dx, where x is the output of the top conv layer after the mask operation,
-        and y is the output of the prediction before the softmax.
-            - model:  the pretrained modell on witch g will be computed;
-            - imputs: x, the output of the top conv layer after the mask operation.
-        '''
-        fc_1 = self.fc3_model.get_layer("fc1")
-        fc_2 = self.fc3_model.get_layer("fc2")
-        fc_3 = self.fc3_model.get_layer("fc3")
-
-        with tf.GradientTape(watch_accessed_variables=False) as tape:
-            tape.watch(fc_1.variables)
-
-            y = fc_3(fc_2(fc_1(inputs)))
-            gradient = tape.gradient(y, fc_1.variables)
-
-        return tf.reshape(tf.reduce_sum(gradient[0], axis=1), shape=(7, 7, 512))
+        print("[TIME] ----- vectorifing leaves took ", dt.now()-start)
 
     def compute_theta0(self):
         theta = 0
@@ -418,12 +428,12 @@ class InterpretableTree(tl.Tree):
             node.exph_val = node.exph(self.gamma)
             theta += node.exph_val
         self.theta = theta
-        print("[TIME] -- computing theta took    ", dt.now()-start)
+        print("[TIME] ----- computing theta took    ", dt.now()-start)
 
     def compute_E0(self):
         E = 0
         start = dt.now()
         for node in self.leaves():
             E += log(node.exph_val) 
-        self.E = E - len(self.leaves())*self-theta
-        print("[TIME] -- computing theta took    ", dt.now()-start)
+        self.E = E - len(self.leaves())*self.theta
+        print("[TIME] ----- computing theta took    ", dt.now()-start)

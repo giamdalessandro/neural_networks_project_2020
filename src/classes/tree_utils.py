@@ -6,6 +6,9 @@ import random as rd
 import treelib as tl
 import tensorflow as tf
 
+#from classes.interpretableNode import InterpretableNode
+#from classes.interpretableTree import InterpretableTree
+
 from math import sqrt, log, exp
 from datetime import datetime as dt
 from tensorflow.keras.models import Model
@@ -16,11 +19,8 @@ from tensorflow.keras.preprocessing.image import ImageDataGenerator, load_img, i
 L = 14*14
 STOP = 10
 DTYPE = tf.int32
-NUM_FILTERS = 512
-LAMBDA_0 = 0.000001
 NEG_IMAGE_SET_TEST = "./dataset/train_val/test/bird/"
 POS_IMAGE_SET_TEST = "./dataset/train_val/test/not_bird/"
-
 
 
 ######### OPERATIONS ###########
@@ -54,19 +54,49 @@ def load_test_image(folder, fileid):
     return img
 
 
+def compute_g(fc3_model, inputs):
+    '''
+    Computes g = dy/dx, where x is the output of the top conv layer after the mask operation,
+    and y is the output of the prediction before the softmax.
+        - model:  the pretrained modell on witch g will be computed;
+        - imputs: x, the output of the top conv layer after the mask operation.
+    '''
+    fc_1 = fc3_model.get_layer("fc1")
+    fc_2 = fc3_model.get_layer("fc2")
+    fc_3 = fc3_model.get_layer("fc3")
+
+    with tf.GradientTape(watch_accessed_variables=False) as tape:
+        tape.watch(fc_1.variables)
+
+        y = fc_3(fc_2(fc_1(inputs)))
+        gradient = tape.gradient(y, fc_1.variables)
+
+    return tf.reshape(tf.reduce_sum(gradient[0], axis=1), shape=(7, 7, 512))
+
+
+
 def sow(trained_model, pos_image_folder):
     """
     Sow the tree taking care of all its needs
     """
+    from classes.interpretableTree import InterpretableTree
+
+    start = dt.now()
+    print("[TIME] -- sowing started ")
     tree = InterpretableTree()
     y_dict = tree.init_leaves(trained_model, pos_image_folder)
     tree.vectorify(y_dict)
+    tree.compute_theta0()
+    tree.compute_E0()
+    print("[TIME] -- sowing took  ", dt.now()-start)
+    return tree
 
 
 def grow(tree_0):
     """
     Grows the tree merging nodes until the condition is met
     """
+    print("[TIME] -- growing started ")
     start = dt.now()
     curr_tree = tree_0
     e = 1
@@ -79,7 +109,7 @@ def grow(tree_0):
         print("       >> generated tree:    ", p)
         #print("       >> delta E = ", e-e_0)
 
-    print("[TIME] -- growing took           ", dt.now()-start)
+    print("[TIME] -- growing took ", dt.now()-start)
     return curr_tree
 
 
