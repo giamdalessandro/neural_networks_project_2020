@@ -83,7 +83,7 @@ def objective(x):
     g_sum = tf.math.add(g1, g2)
     #for i in range(4):
         #obj += -g_sum[i]*x[i]
-    return -g_sum[0]*x[0] - g_sum[1]*x[1]
+    return -g_sum[0]*x[0] - g_sum[1]*x[1] -g_sum[2]*x[2] - g_sum[3]*x[3]
 
 def constraint1(x):
     sum_eq = 1.0
