@@ -117,8 +117,8 @@ def grow(tree):
                                      deep=True,
                                      eta=self.eta,
                                      gamma=self.gamma,
-                                     fc3_model=self.fc3_model,
-                                     flat_model=self.flat_model,
+                                     fc3_model=self.fc3_model,        # RABARBARO #  
+                                     flat_model=self.flat_model,      # ¿u sure bro? not everyone needs salvation
                                      tree=self.subtree(self.root))
         second_layer = tree.children(tree.root)
 

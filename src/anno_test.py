@@ -1,4 +1,4 @@
-import xml.etree.ElementTree as ET
+import xml.etree.ElementTree as ET   # phone home.
 
 def read_content(xml_file: str):
 
