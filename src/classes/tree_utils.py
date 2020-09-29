@@ -34,13 +34,11 @@ def vectorify_on_depth(x):
     """
     return tf.reduce_sum(x, axis=[0, 1])
 
-
 def uguale(x1, x2):
     if tf.reduce_sum(tf.subtract(x1, x2)) == 0:
         return True
     else:
         return False
-
 
 def load_test_image(folder, fileid):
     """
@@ -52,7 +50,6 @@ def load_test_image(folder, fileid):
     img = np.expand_dims(img, axis=0)
     img = preprocess_input(img)
     return img
-
 
 def compute_g(fc3_model, inputs):
     '''
@@ -73,8 +70,6 @@ def compute_g(fc3_model, inputs):
 
     return tf.reshape(tf.reduce_sum(gradient[0], axis=1), shape=(7, 7, 512))
 
-
-
 def sow(trained_model, pos_image_folder):
     """
     Sow the tree taking care of all its needs
@@ -92,26 +87,58 @@ def sow(trained_model, pos_image_folder):
     return tree
 
 
-def grow(tree_0):
+def grow(tree):
     """
     Grows the tree merging nodes until the condition is met
+        print("[TIME] -- growing started ")
+        start = dt.now()
+        curr_tree = tree
+        e = 1
+        # index of the tree (P_i in the paper)
+        p = 0
+        while e > 0:
+            curr_tree = curr_tree.choose_pair(tree_0, p)
+            e = curr_tree.compute_delta()
+            p += 1
+            print("       >> generated tree:    ", p)
+            #print("       >> delta E = ", e-e_0)
+
+        print("[TIME] -- growing took ", dt.now()-start)
+        return curr_tree
     """
-    print("[TIME] -- growing started ")
-    start = dt.now()
-    curr_tree = tree_0
-    e = 1
-    # index of the tree (P_i in the paper)
-    p = 0
-    while e > 0:
-        curr_tree = curr_tree.choose_pair(tree_0, p)
-        e = curr_tree.compute_delta()
-        p += 1
-        print("       >> generated tree:    ", p)
-        #print("       >> delta E = ", e-e_0)
+    delta = tree.E
+    while delta > 0:
+        z   = 1
+        it  = 1
+        max = 0
 
-    print("[TIME] -- growing took ", dt.now()-start)
-    return curr_tree
+        new_node = None
+        new_tree = InterpretableTree(s=self.s,
+                                     deep=True,
+                                     eta=self.eta,
+                                     gamma=self.gamma,
+                                     fc3_model=self.fc3_model,
+                                     flat_model=self.flat_model,
+                                     tree=self.subtree(self.root))
+        second_layer = tree.children(tree.root)
 
+        for v1 in second_layer:
+            if z < len(second_layer):
+                for v2 in second_layer[z:]:
+                    
+                    node = new_tree.try_pair(v1, v2, tag=it)
+                    E = new_tree.compute_E(v1, v2)
+                    if E > max:
+                        max = E
+                        new_node = node
+                    it += 1
+                    new_tree.ctrlz(v1, v2)
+            z += 1
+        
+        new_tree.merge_pair(new_node)
+        # new_tree.show()
+
+    return new_tree
 
 
 ######### SAVE & LOAD ###########

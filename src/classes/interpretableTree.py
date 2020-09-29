@@ -45,7 +45,7 @@ class InterpretableTree(tl.Tree):
                  identifier=None, 
                  node_class=InterpretableNode):
         self.s = s
-        self.e = e
+        self.E = E
         self.theta = theta
         self.gamma = gamma
         super(InterpretableTree, self).__init__(tree=tree, deep=deep, node_class=InterpretableNode, identifier=identifier)
@@ -421,6 +421,7 @@ class InterpretableTree(tl.Tree):
         self.gamma = cardinality/gamma              # gamma viene usata solo per calcolare E
         print("[TIME] ----- vectorifing leaves took ", dt.now()-start)
 
+
     def compute_theta0(self):
         theta = 0
         start = dt.now()
@@ -430,6 +431,7 @@ class InterpretableTree(tl.Tree):
         self.theta = theta
         print("[TIME] ----- computing theta took    ", dt.now()-start)
 
+
     def compute_E0(self):
         E = 0
         start = dt.now()
@@ -437,3 +439,14 @@ class InterpretableTree(tl.Tree):
             E += log(node.exph_val) 
         self.E = E - len(self.leaves())*self.theta
         print("[TIME] ----- computing theta took    ", dt.now()-start)
+
+
+    def try_pair(self, v1, v2, tag):
+        raise NotImplementedError
+
+    
+    def ctrlz(self, v1, v2):
+        raise NotImplementedError
+
+    def merge_pair(self):
+        raise NotImplementedError
