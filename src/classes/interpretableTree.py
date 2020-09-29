@@ -1,8 +1,3 @@
-'''
-from classes.tree_utils import *
-from classes.interpretableNode import *
-from datetime import datetime as dt
-'''
 import os
 import json
 import fnmatch
@@ -28,6 +23,7 @@ NEG_IMAGE_SET_TEST = "./dataset/train_val/test/bird/"
 POS_IMAGE_SET_TEST = "./dataset/train_val/test/not_bird/"
 NUM_FILTERS = 512
 LAMBDA_0 = 0.000001
+
 
 class InterpretableTree(tl.Tree):
     """
@@ -114,218 +110,205 @@ class InterpretableTree(tl.Tree):
         print("       -- s (shape):.......", self.s.shape)
         print("-------------------------------------------------")
         
-
-    # PRIVATE #
-    def __parentify(self, nid1, nid2, pid):
-        """
-        Gives hope to two orphan children
-        """
-        self.add_node(pid, parent=self.root)
-        self.move_node(nid1, pid.identifier)
-        self.move_node(nid2, pid.identifier)
-    
-    def __shallow_merge(self, nid1, nid2, tag=None):
-        """
-        Merges nodes nid1 and nid2 to create a parent n, to whom nid1 and nid2 become children
-        """
-        g,a,b = self.find_gab(nid1, nid2)
-        l = LAMBDA_0 * sqrt(len(self.leaves(nid1)) + len(self.leaves(nid2)))
-        tag = nid1 + nid2 if tag is None else tag
-        node = self.create_node(tag=tag, parent='root', alpha=a, g=g, b=b, l=l, x=None, identifier=tag)
-        self.move_node(nid1, node.identifier)
-        self.move_node(nid2, node.identifier)
-        return node
+    ''' OLD STUFF - TO BE REMOVED ...
+        # PRIVATE #
+        def __parentify(self, nid1, nid2, pid):
+            """
+            Gives hope to two orphan children
+            """
+            self.add_node(pid, parent=self.root)
+            self.move_node(nid1, pid.identifier)
+            self.move_node(nid2, pid.identifier)
         
-    def __shallow_unmerge(self, nid1, nid2):
-        """
-        Undoes what __shallow_merge does
-        """
-        killed = self.parent(nid1)
-        self.move_node(nid1, self.root)
-        self.move_node(nid2, self.root)
-        self.remove_node(killed.identifier)
+        def __shallow_merge(self, nid1, nid2, tag=None):
+            """
+            Merges nodes nid1 and nid2 to create a parent n, to whom nid1 and nid2 become children
+            """
+            g,a,b = self.find_gab(nid1, nid2)
+            l = LAMBDA_0 * sqrt(len(self.leaves(nid1)) + len(self.leaves(nid2)))
+            tag = nid1 + nid2 if tag is None else tag
+            node = self.create_node(tag=tag, parent='root', alpha=a, g=g, b=b, l=l, x=None, identifier=tag)
+            self.move_node(nid1, node.identifier)
+            self.move_node(nid2, node.identifier)
+            return node
+            
+        def __shallow_unmerge(self, nid1, nid2):
+            """
+            Undoes what __shallow_merge does
+            """
+            killed = self.parent(nid1)
+            self.move_node(nid1, self.root)
+            self.move_node(nid2, self.root)
+            self.remove_node(killed.identifier)
 
-    def __compute_probability(self, nodei):  #xi):
-        """
-        Computes P(xi)
-        """
-        '''
-        p1 = 0
-        p2 = 0
-        xi = tf.divide(vectorify_on_depth(xi), self.s)
-        for img in os.listdir(POS_IMAGE_SET_TEST):
-            if img.endswith('.jpg'):
-                test_image = load_test_image(
-                    folder=POS_IMAGE_SET_TEST, fileid=img)
-                xj = self.flat_model.predict(test_image)
-                xj = tf.divide(vectorify_on_depth(xj), self.s)
-                gj = self.compute_g(xj)
-                gj = tf.multiply(tf.math.scalar_mul(
-                    1/L, self.s), vectorify_on_depth(gj))
+        def __compute_probability(self, nodei):  #xi):
+            """
+            Computes P(xi)
+            """
+            '''
+            p1 = 0
+            p2 = 0
+            xi = tf.divide(vectorify_on_depth(xi), self.s)
+            for img in os.listdir(POS_IMAGE_SET_TEST):
+                if img.endswith('.jpg'):
+                    test_image = load_test_image(
+                        folder=POS_IMAGE_SET_TEST, fileid=img)
+                    xj = self.flat_model.predict(test_image)
+                    xj = tf.divide(vectorify_on_depth(xj), self.s)
+                    gj = self.compute_g(xj)
+                    gj = tf.multiply(tf.math.scalar_mul(
+                        1/L, self.s), vectorify_on_depth(gj))
 
-                ### NOTE: FORSE DOBBIAMO NORMALIZZARE g ???? ###
+                    ### NOTE: FORSE DOBBIAMO NORMALIZZARE g ???? ###
 
-                node = self.choose_best_node(gj)
-                if uguale(xi, xj):
-                    p1 = exp(self.gamma * node.compute_h(xi))
-                    p2 += p1
-                else:
+                    node = self.choose_best_node(gj)
+                    if uguale(xi, xj):
+                        p1 = exp(self.gamma * node.compute_h(xi))
+                        p2 += p1
+                    else:
+                        p2 += exp(self.gamma * node.compute_h(xj))
+
+            for img in os.listdir(NEG_IMAGE_SET_TEST):
+                if img.endswith('.jpg'):
+                    test_image = load_test_image(
+                        folder=NEG_IMAGE_SET_TEST, fileid=img)
+                    xj = self.flat_model.predict(test_image)
+                    gj = self.compute_g(xj)
+                    gj = tf.multiply(tf.math.scalar_mul(
+                        1/L, self.s), vectorify_on_depth(gj))
+                    node = self.choose_best_node(gj)
                     p2 += exp(self.gamma * node.compute_h(xj))
-
-        for img in os.listdir(NEG_IMAGE_SET_TEST):
-            if img.endswith('.jpg'):
-                test_image = load_test_image(
-                    folder=NEG_IMAGE_SET_TEST, fileid=img)
-                xj = self.flat_model.predict(test_image)
-                gj = self.compute_g(xj)
-                gj = tf.multiply(tf.math.scalar_mul(
-                    1/L, self.s), vectorify_on_depth(gj))
-                node = self.choose_best_node(gj)
-                p2 += exp(self.gamma * node.compute_h(xj))
-        return p1/p2
-        '''
-        p1 = 0
-        p2 = 0
-        xi = nodei.x
-        for img in os.listdir(POS_IMAGE_SET_TEST):  # no sbagliato
-            # RABARBARO
-            # ciclo sui figli della root
-            # se figlio v non foglia, prendi sue foglie e usa il suo h_v con x_i delle foglie di v  
+            return p1/p2
+            '''
+            p1 = 0
+            p2 = 0
+            xi = nodei.x
+            for img in os.listdir(POS_IMAGE_SET_TEST):  # no sbagliato
+                # RABARBARO
+                # ciclo sui figli della root
+                # se figlio v non foglia, prendi sue foglie e usa il suo h_v con x_i delle foglie di v  
 
 
-            if img.endswith('.jpg'):
-                nodej = self.get_node(img)
-                xj = nodej.x
-                best_node = self.choose_best_node(gj)
-                if uguale(xi, xj):
-                    p1 = exp(self.gamma * best_node.compute_h(xi))
-                    p2 += p1
-                else:
-                    p2 += exp(self.gamma * best_node.compute_h(xj))
+                if img.endswith('.jpg'):
+                    nodej = self.get_node(img)
+                    xj = nodej.x
+                    best_node = self.choose_best_node(gj)
+                    if uguale(xi, xj):
+                        p1 = exp(self.gamma * best_node.compute_h(xi))
+                        p2 += p1
+                    else:
+                        p2 += exp(self.gamma * best_node.compute_h(xj))
 
-        # RABARBARO -   DOBBIAMO ITERARE ANCHE SULLE NEGATIVE?
-        return p1/p2
+            # RABARBARO -   DOBBIAMO ITERARE ANCHE SULLE NEGATIVE?
+            return p1/p2
 
-    def __compute_eta(self):
-        """
-        Computes eta for the current tree
-        NOTE: this is a constant parameter to be calculated on tree0 and then copied on the new trees
-        """
-        return self.compute_product_probability()**(-1)
-
-
-    # METHODS #
-    def find_gab(self, n1, n2):     # FAKE FAKE FAKE FAKE FAKE FAKE FAKE FAKE FAKE #
-        """
-        Finds g, alpha and b optimal for the new node
-        """
-        g = tf.random.uniform(shape=[NUM_FILTERS],
-                              minval=1, maxval=5, dtype=DTYPE)
-        alpha = tf.random.uniform(
-            shape=[NUM_FILTERS], minval=1, maxval=5, dtype=DTYPE)
-        b = 0
-        return g, alpha, b
+        def __compute_eta(self):
+            """
+            Computes eta for the current tree
+            NOTE: this is a constant parameter to be calculated on tree0 and then copied on the new trees
+            """
+            return self.compute_product_probability()**(-1)
 
 
-    def choose_pair(self, tree_0, p):
-        """
-        Copies one time the tree and then executes all merging operation on this new tree
-        After a merge operation, it calculates delta E and then reverts back the tree to its previous form
-        Note: need to return the max value of E and the two nodes which merged can generate the tree on which we can compute E
-        """
-        curr_max = 0                    # current max
-
-        # value to be used later when returning final tree
-        n1  = None
-        n2  = None
-        pid = None
-
-        # copy current tree (just one time)
-        auxtree = InterpretableTree(s=self.s,
-                                    deep=True,
-                                    eta=self.eta,
-                                    gamma=self.gamma,
-                                    fc3_model=self.fc3_model,
-                                    flat_model=self.flat_model,
-                                    tree=self.subtree(self.root))
-
-        # set of all second layer's node
-        second_layer = self.children(self.root)
+        # METHODS #
         
-        z = 1
-        it = 1
-        for v1 in second_layer:
-            if z < len(second_layer):
-                for v2 in second_layer[z:]:
+        def choose_pair(self, tree_0, p):
+            """
+            Copies one time the tree and then executes all merging operation on this new tree
+            After a merge operation, it calculates delta E and then reverts back the tree to its previous form
+            Note: need to return the max value of E and the two nodes which merged can generate the tree on which we can compute E
+            """
+            curr_max = 0                    # current max
 
-                    node = auxtree.__shallow_merge(v1.identifier, v2.identifier, 'p_'+str(p)+'it_'+str(it))
-                    e = auxtree.compute_delta()
+            # value to be used later when returning final tree
+            n1  = None
+            n2  = None
+            pid = None
 
-                    if e >= curr_max:       # save node with children for future merge
-                        curr_max = e
-                        pid = node
-                        n1 = v1.identifier
-                        n2 = v2.identifier
+            # copy current tree (just one time)
+            auxtree = InterpretableTree(s=self.s,
+                                        deep=True,
+                                        eta=self.eta,
+                                        gamma=self.gamma,
+                                        fc3_model=self.fc3_model,
+                                        flat_model=self.flat_model,
+                                        tree=self.subtree(self.root))
 
-                    auxtree.__shallow_unmerge(v1.identifier, v2.identifier)
-                    it += 1
-                    if it%1000 == 0:
-                        print("       >>        >> tested couples:", it)
-            z += 1
-        print("       >> generated couples: ", it-1)
-        # merges the chosen nodes and returns the tree (deep copied at the beginning)
-        auxtree.__parentify(n1, n2, pid)
-        return auxtree
-   
+            # set of all second layer's node
+            second_layer = self.children(self.root)
+            
+            z = 1
+            it = 1
+            for v1 in second_layer:
+                if z < len(second_layer):
+                    for v2 in second_layer[z:]:
 
-    def choose_best_node(self, g):
-        """
-        Chooses the best node that fits with g in the second tree layer
-        The best node is chosen following the formula v = argmax(cos(g, w_v))
-            - g --> vector of given image
-        """
-        best = None
-        aux  = -5
-        for v in self.children(self.root):
-            cos_similarity = tf.compat.v1.losses.cosine_distance(g, v.w, axis=0)
-            if cos_similarity >= aux:
-                best = v
-        return best
+                        node = auxtree.__shallow_merge(v1.identifier, v2.identifier, 'p_'+str(p)+'it_'+str(it))
+                        e = auxtree.compute_delta()
 
-   
+                        if e >= curr_max:       # save node with children for future merge
+                            curr_max = e
+                            pid = node
+                            n1 = v1.identifier
+                            n2 = v2.identifier
 
-    def compute_product_probability(self):
-        """
-        Returns the product of all P_t(xi) divided by e^|Vt|
-        """
-        '''
-        val = 0
-        for img in os.listdir(POS_IMAGE_SET_TEST):
-            if img.endswith('.jpg'):
-                test_image = load_test_image(folder=POS_IMAGE_SET_TEST, fileid=img)
-                xi  = self.flat_model.predict(test_image)
-                pro = self.__compute_probability(xi)
-                val = val * pro
-        return val / exp(len(self.children(self.root)))
-        '''
-        val = 0
-        for img in os.listdir(POS_IMAGE_SET_TEST):
-            if img.endswith('.jpg'):
-                node = self.get_node(img)
-                pro = self.__compute_probability(node)
-                val = val * pro
-        return val / exp(len(self.children(self.root)))
+                        auxtree.__shallow_unmerge(v1.identifier, v2.identifier)
+                        it += 1
+                        if it%1000 == 0:
+                            print("       >>        >> tested couples:", it)
+                z += 1
+            print("       >> generated couples: ", it-1)
+            # merges the chosen nodes and returns the tree (deep copied at the beginning)
+            auxtree.__parentify(n1, n2, pid)
+            return auxtree
+    
+
+        def choose_best_node(self, g):
+            """
+            Chooses the best node that fits with g in the second tree layer
+            The best node is chosen following the formula v = argmax(cos(g, w_v))
+                - g --> vector of given image
+            """
+            best = None
+            aux  = -5
+            for v in self.children(self.root):
+                cos_similarity = tf.compat.v1.losses.cosine_distance(g, v.w, axis=0)
+                if cos_similarity >= aux:
+                    best = v
+            return best
+
+    
+
+        def compute_product_probability(self):
+            """
+            Returns the product of all P_t(xi) divided by e^|Vt|
+            """
+            '''
+            val = 0
+            for img in os.listdir(POS_IMAGE_SET_TEST):
+                if img.endswith('.jpg'):
+                    test_image = load_test_image(folder=POS_IMAGE_SET_TEST, fileid=img)
+                    xi  = self.flat_model.predict(test_image)
+                    pro = self.__compute_probability(xi)
+                    val = val * pro
+            return val / exp(len(self.children(self.root)))
+            '''
+            val = 0
+            for img in os.listdir(POS_IMAGE_SET_TEST):
+                if img.endswith('.jpg'):
+                    node = self.get_node(img)
+                    pro = self.__compute_probability(node)
+                    val = val * pro
+            return val / exp(len(self.children(self.root)))
 
 
-    def compute_delta(self):
-        """
-        Computes the delta between E_t and E_0 (stored in eta)
-        """
-        return log(self.compute_product_probability() * self.eta)
-
-
-
-    #### REWRITE ####
+        def compute_delta(self):
+            """
+            Computes the delta between E_t and E_0 (stored in eta)
+            """
+            return log(self.compute_product_probability() * self.eta)
+    '''
+    #### REWRITING ####
 
     def save2json(self, save_name, save_folder="./forest"):
         """
@@ -421,8 +404,10 @@ class InterpretableTree(tl.Tree):
         self.gamma = cardinality/gamma              # gamma viene usata solo per calcolare E
         print("[TIME] ----- vectorifing leaves took ", dt.now()-start)
 
-
     def compute_theta0(self):
+        """
+        Only to be used the first time
+        """
         theta = 0
         start = dt.now()
         for node in self.leaves():
@@ -431,14 +416,27 @@ class InterpretableTree(tl.Tree):
         self.theta = theta
         print("[TIME] ----- computing theta took    ", dt.now()-start)
 
-
     def compute_E0(self):
+        """
+        Only to be used the first time
+        """
         E = 0
         start = dt.now()
         for node in self.leaves():
             E += log(node.exph_val) 
         self.E = E - len(self.leaves())*self.theta
         print("[TIME] ----- computing theta took    ", dt.now()-start)
+
+    def find_gab(self, n1, n2):     # FAKE FAKE FAKE FAKE FAKE FAKE FAKE FAKE FAKE #
+        """
+        Finds g, alpha and b optimal for the new node
+        """
+        g = tf.random.uniform(shape=[NUM_FILTERS],
+                              minval=1, maxval=5, dtype=DTYPE)
+        alpha = tf.random.uniform(
+            shape=[NUM_FILTERS], minval=1, maxval=5, dtype=DTYPE)
+        b = 0
+        return g, alpha, b
 
 
     def try_pair(self, v1, v2, tag):
