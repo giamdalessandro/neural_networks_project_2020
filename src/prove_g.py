@@ -70,32 +70,28 @@ print(g)
 import tensorflow as tf
 import numpy as np
 from scipy.optimize import minimize
-from scipy.optimize import Bounds
-
-
+#from scipy.optimize import Bounds
 
 g1 = [0.21, 0.17, -0.7, -0.2]
 g2 = [-0.21, 0.17, -0.7, -0.2]
 
-
-
 def objective(x):
-    g_sum = tf.math.add(g1, g2)
+    g_sum = np.add(g1, g2)
     #for i in range(4):
         #obj += -g_sum[i]*x[i]
-    return -g_sum[0]*x[0] - g_sum[1]*x[1] -g_sum[2]*x[2] - g_sum[3]*x[3]
+    return sum(-g_sum[0:]*x[0:])
 
 def constraint1(x):
     sum_eq = 1.0
     for i in range(4):
-        sum_eq = sum_eq - x[i]**2
+        sum_eq = sum_eq - x[i]**2.0
     return sum_eq
 
 n = 4
 x0 = np.zeros(n)
 
 b = (-1.0,1.0)
-bnds = ([b, b, b, b])
+bnds = [b, b, b, b]
 #bounds = Bounds(-1, 1)
 con1 = {'type': 'eq', 'fun': constraint1}
 cons = ([con1])
