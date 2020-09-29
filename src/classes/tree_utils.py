@@ -54,62 +54,13 @@ def load_test_image(folder, fileid):
     return img
 
 
-def initialize_leaves(trained_model, tree, pos_image_folder):
+def sow(trained_model, pos_image_folder):
     """
-    Initializes a root's child for every image in the positive image folder and returns the list of all predictions done
+    Sow the tree taking care of all its needs
     """
-    start = dt.now()
-    root = tree.create_node(tag="root", identifier='root')
-
-    flat_model = Model(inputs=trained_model.input,
-                       outputs=trained_model.get_layer("flatten").output)
-    fc3_model = Model(inputs=trained_model.input,
-                      outputs=trained_model.get_layer("fc3").output)
-    tree.fc3_model = fc3_model
-    tree.flat_model = flat_model
-
-    y_dict = {}
-    s_list = []
-    # find . -type f -print0 | xargs -0 mv -t .
-    # command to copy all filesf from subdirectories of the current directory in the current directory
-
-    i = 0
-    for img in os.listdir(pos_image_folder):
-        if img.endswith('.jpg'):
-            test_image = load_test_image(folder=pos_image_folder, fileid=img)
-            flat_output = flat_model.predict(test_image)
-            # we take only the positive prediction score
-            fc3_output = fc3_model.predict(test_image)[0][0]
-
-            y_dict.update({img[:-4]: fc3_output})
-
-            g = tree.compute_g(flat_output)
-            x = tf.reshape(flat_output, shape=(7, 7, 512))
-            b = tf.subtract(fc3_output, tf.reduce_sum(tf.math.multiply(
-                g, x), axis=None))   # inner product between g, x
-
-            s = tf.math.reduce_mean(x, axis=[0, 1])
-            s_list.append(s)
-            tree.create_node(tag=img[:-4], identifier=img[:-4],
-                             parent='root', g=g, alpha=tf.ones(shape=512), b=b, x=x)
-
-            i += 1
-            if i % 10 == 0:
-                print(">> created", i, "nodes")
-            if i == STOP:
-                break
-
-            # TEST IF g and b ARE ACCURATE ENOUGH - IS WORKING! #
-            # print("\nORIGINAL y -- CALULATED y")
-            # print(fc3_output, " = ", tf.add(tf.reduce_sum(tf.math.multiply(g, x), axis=None), b).numpy())
-
-    # number of images in the positive set
-    cardinality = len(fnmatch.filter(os.listdir(pos_image_folder), '*.jpg'))
-    # sum on s to obtain s(1,1,512)
-    tree.s = tf.reduce_sum(s_list, axis=0)/cardinality
-
-    print("[TIME] -- initialize leaves took ", dt.now()-start)
-    return y_dict
+    tree = InterpretableTree()
+    y_dict = tree.init_leaves(trained_model, pos_image_folder)
+    tree.vectorify(y_dict)
 
 
 def grow(tree_0):

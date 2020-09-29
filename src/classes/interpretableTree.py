@@ -9,20 +9,18 @@ class InterpretableTree(tl.Tree):
     """
 
     def __init__(self,
-                 eta=0,
+                 e=0,
                  s=None,
-                 gamma=1,
+                 theta=0,
+                 gamma=0,
                  tree=None,
                  deep=False,
-                 fc3_model=None,
-                 flat_model=None,
                  identifier=None, 
                  node_class=InterpretableNode):
         self.s = s
-        self.eta = eta
+        self.e = e
+        self.theta = theta
         self.gamma = gamma
-        self.flat_model = flat_model
-        self.fc3_model = fc3_model
         super(InterpretableTree, self).__init__(tree=tree, deep=deep, node_class=InterpretableNode, identifier=identifier)
 
     # OVERLOAD #
@@ -251,49 +249,7 @@ class InterpretableTree(tl.Tree):
         # merges the chosen nodes and returns the tree (deep copied at the beginning)
         auxtree.__parentify(n1, n2, pid)
         return auxtree
-
-
-    def vectorify(self, y_dict):
-        """
-        Forall leaf in self, vectorifies x and g (using the prev computed s) and updates w = g°x
-        It also normalizes g and b and computes gamma and eta
-        """
-        start = dt.now()
-        gamma = 0
-        for node in self.leaves():
-            node.g = tf.multiply(tf.math.scalar_mul(1/L, self.s), vectorify_on_depth(node.g))  # ???
-            node.x = tf.divide(vectorify_on_depth(node.x), self.s)
-            # normalization of g and b
-            norm_g = tf.norm(node.g, ord=2)
-            node.b = tf.divide(node.b, norm_g)
-            node.g = tf.divide(node.g, norm_g)
-            # computation of w
-            node.w = tf.math.multiply(node.alpha, node.g)
-            # computation of gamma using normalized y_i
-            gamma += y_dict[node.tag]/norm_g
-        
-        cardinality = len(self.leaves())
-        self.gamma = cardinality/gamma              # gamma viene usata solo per calcolare E
-        self.__compute_eta()                        # computes eta which is constant for all trees
-        print("[TIME] -- vectorify took         ", dt.now()-start)
-
-
-    def save2json(self, save_name, save_folder="./forest"):
-        """
-        Saves a tree to a JSON file
-            - save_name  : save file name (w/o '.json')
-            - save_folder: folder where to save JSON trees
-        """
-        json_tree = json.loads(self.to_json(with_data=True))
-
-        file_path = os.path.join(save_folder, save_name + ".json")
-        with open(file_path, "w") as f:
-            json.dump(json_tree, f, indent=2)
-            f.close()
-
-        print("Tree saved in ", file_path)
-        return file_path            
-    
+   
 
     def choose_best_node(self, g):
         """
@@ -309,25 +265,6 @@ class InterpretableTree(tl.Tree):
                 best = v
         return best
 
-    
-    def compute_g(self, inputs):
-        '''
-        Computes g = dy/dx, where x is the output of the top conv layer after the mask operation,
-        and y is the output of the prediction before the softmax.
-            - model:  the pretrained modell on witch g will be computed;
-            - imputs: x, the output of the top conv layer after the mask operation.
-        '''
-        fc_1 = self.fc3_model.get_layer("fc1")
-        fc_2 = self.fc3_model.get_layer("fc2")
-        fc_3 = self.fc3_model.get_layer("fc3")
-
-        with tf.GradientTape(watch_accessed_variables=False) as tape:
-            tape.watch(fc_1.variables)
-
-            y = fc_3(fc_2(fc_1(inputs)))
-            gradient = tape.gradient(y, fc_1.variables)
-
-        return tf.reshape(tf.reduce_sum(gradient[0], axis=1), shape=(7, 7, 512))
    
 
     def compute_product_probability(self):
@@ -358,3 +295,135 @@ class InterpretableTree(tl.Tree):
         Computes the delta between E_t and E_0 (stored in eta)
         """
         return log(self.compute_product_probability() * self.eta)
+
+
+
+    #### REWRITE ####
+
+    def save2json(self, save_name, save_folder="./forest"):
+        """
+        Saves a tree to a JSON file
+            - save_name  : save file name (w/o '.json')
+            - save_folder: folder where to save JSON trees
+        """
+        json_tree = json.loads(self.to_json(with_data=True))
+
+        file_path = os.path.join(save_folder, save_name + ".json")
+        with open(file_path, "w") as f:
+            json.dump(json_tree, f, indent=2)
+            f.close()
+
+        print("Tree saved in ", file_path)
+        return file_path
+
+    def init_leaves(self, trained_model, pos_image_folder):
+        """
+        Initializes a root's child for every image in the positive image folder and returns the list of all predictions done
+            >> find . -type f -print0 | xargs -0 mv -t .
+            # command to copy all filesf from subdirectories of the current directory in the current directory
+        """
+        i = 0
+        y_dict = {}
+        s_list = []
+        start = dt.now()
+
+        root = self.create_node(tag="root", identifier='root')
+
+        flat_model = Model(inputs=trained_model.input, outputs=trained_model.get_layer("flatten").output)
+        fc3_model = Model(inputs=trained_model.input, outputs=trained_model.get_layer("fc3").output)
+
+        for img in os.listdir(pos_image_folder):
+            if img.endswith('.jpg'):
+                test_image = load_test_image(folder=pos_image_folder, fileid=img)
+                flat_output = flat_model.predict(test_image)
+                # we take only the positive prediction score
+                fc3_output = fc3_model.predict(test_image)[0][0]
+
+                y_dict.update({img[:-4]: fc3_output})
+
+                g = self.compute_g(flat_output)
+                x = tf.reshape(flat_output, shape=(7, 7, 512))
+                # inner product between g and x
+                b = tf.subtract(fc3_output, tf.reduce_sum(
+                    tf.math.multiply(g, x), axis=None))
+
+                s = tf.math.reduce_mean(x, axis=[0, 1])
+                s_list.append(s)
+                self.create_node(tag=img[:-4], identifier=img[:-4],
+                                parent='root', g=g, alpha=tf.ones(shape=512), b=b, x=x)
+                i += 1
+                print(">> created", i, "nodes") if i % 10 == 0 else \
+
+                # TEST IF g and b ARE ACCURATE ENOUGH - IS WORKING! #
+                # print("\nORIGINAL y -- CALULATED y")
+                # print(fc3_output, " = ", tf.add(tf.reduce_sum(tf.math.multiply(g, x), axis=None), b).numpy())
+
+        # sum on s to obtain s(1,1,512) / # images in the positive set
+        self.s = tf.reduce_sum(s_list, axis=0)/len(fnmatch.filter(os.listdir(pos_image_folder), '*.jpg'))
+        
+        print("[TIME] -- init leaves took        ", dt.now()-start)
+        return y_dict
+
+    def vectorify(self, y_dict):
+        """
+        Forall leaf in self:
+            - vectorifies x and g (using the prev computed s)
+            - normalizes g and b 
+            - updates w = g°alpha = g
+            - computes gamma
+        """
+        gamma = 0
+        start = dt.now()
+
+        for node in self.leaves():
+            # computation of x and g
+            node.g = tf.multiply(tf.math.scalar_mul(1/L, self.s), vectorify_on_depth(node.g))
+            node.x = tf.divide(vectorify_on_depth(node.x), self.s)
+            # normalization of g and b
+            norm_g = tf.norm(node.g, ord=2)
+            node.b = tf.divide(node.b, norm_g)
+            node.g = tf.divide(node.g, norm_g)
+            # computation of w
+            node.w = node.g
+            # computation of gamma using normalized y_i
+            gamma += y_dict[node.tag]/norm_g
+
+        cardinality = len(self.leaves())
+        self.gamma = cardinality/gamma              # gamma viene usata solo per calcolare E
+        print("[TIME] -- vectorifing leaves took ", dt.now()-start)
+
+    def compute_g(self, inputs):
+        '''
+        Computes g = dy/dx, where x is the output of the top conv layer after the mask operation,
+        and y is the output of the prediction before the softmax.
+            - model:  the pretrained modell on witch g will be computed;
+            - imputs: x, the output of the top conv layer after the mask operation.
+        '''
+        fc_1 = self.fc3_model.get_layer("fc1")
+        fc_2 = self.fc3_model.get_layer("fc2")
+        fc_3 = self.fc3_model.get_layer("fc3")
+
+        with tf.GradientTape(watch_accessed_variables=False) as tape:
+            tape.watch(fc_1.variables)
+
+            y = fc_3(fc_2(fc_1(inputs)))
+            gradient = tape.gradient(y, fc_1.variables)
+
+        return tf.reshape(tf.reduce_sum(gradient[0], axis=1), shape=(7, 7, 512))
+
+    def compute_theta0(self):
+        theta = 0
+        start = dt.now()
+        for node in self.leaves():
+            node.exph_val = node.exph(self.gamma)
+            theta += node.exph_val
+        self.theta = theta
+        print("[TIME] -- computing theta took    ", dt.now()-start)
+
+    def compute_E0(self):
+        E = 0
+        start = dt.now()
+        for node in self.leaves():
+            E += log(node.exph_val) 
+        self.E = E - len(self.leaves())*self-theta
+        print("[TIME] -- computing theta took    ", dt.now()-start)
