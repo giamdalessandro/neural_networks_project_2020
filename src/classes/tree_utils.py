@@ -185,10 +185,14 @@ def __parse_json_tree(tree, current, parent=None):
     data = current[curr_tag]["data"]
     tree.create_node(tag=curr_tag, identifier=curr_tag, parent=par_tag, 
                     alpha=str_to_tensor(data["alpha"]),
-                    g=str_to_tensor(data["g"]), 
-                    b=data["b"] if isinstance(data["b"],int) else str_to_tensor(data["b"]), 
-                    l=data["l"])
-    if "children" not in current[curr_tag].keys(): #isinstance(current,str):
+                    b=data["b"] if isinstance(data["b"],int) else str_to_tensor(data["b"]),
+                    g=str_to_tensor(data["g"]),  
+                    w=str_to_tensor(data["w"]),
+                    x=str_to_tensor(data["x"]),
+                    l=data["l"],
+                    exph_val=data["exph"])
+
+    if "children" not in current[curr_tag].keys():
         # print(" | -- on leaf ", curr_tag)
         return 
 
@@ -209,6 +213,10 @@ def from_json(res_tree, save_path):
         dict_tree = json.load(f)
         #print(dict_tree)
 
+    res_tree.E = dict_tree["tree_data"]["E"]
+    res_tree.s = dict_tree["tree_data"]["s"]
+    res_tree.theta = dict_tree["tree_data"]["theta"]
+    res_tree.gamma = dict_tree["tree_data"]["gamma"]
     __parse_json_tree(res_tree, dict_tree, parent=None)
 
     res_tree.show()
