@@ -72,8 +72,6 @@ import numpy as np
 from scipy.optimize import minimize
 
 def g_comput(g1, g2): 
-#g1 = [0.21, 0.17, -0.7, -0.2]
-#g2 = [-0.21, 0.17, -0.7, -0.2]
 
     def objective(x):
         g_sum = np.add(g1, g2)
@@ -96,3 +94,7 @@ def g_comput(g1, g2):
     x = solution.x
 
     print(x)
+
+g1 = [0.21, 0.17, -0.7, -0.2]
+g2 = [-0.21, 0.17, -0.7, -0.2]
+g_comput(g1, g2)

@@ -457,8 +457,7 @@ class InterpretableTree(tl.Tree):
         self.move_node(nid1.identifier, node.identifier)
         self.move_node(nid2.identifier, node.identifier)
         return node
-
-    
+  
     def ctrlz(self, nid1, nid2):
         """
         Undoes what try_pair() does

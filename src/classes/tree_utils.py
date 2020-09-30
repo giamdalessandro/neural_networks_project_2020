@@ -132,7 +132,7 @@ def grow(tree):
                     # print(tag)
                     node = new_tree.try_pair(v1, v2, tag=tag)
                     E, theta = new_tree.compute_E(v1, v2, node)
-                    if abs(E-prev_E) > abs(chosen_E-prev_E):
+                    if E-prev_E > chosen_E-prev_E:
                         chosen_E = E
                         # print(E)
                         chosen_theta = theta
@@ -143,20 +143,19 @@ def grow(tree):
                     tested += 1
             z += 1
         print("       >> tested couples :", tested)
-        if  new_node is None:           # or len(second_layer) == 1 or (chosen_E - prev_E) <= 0:
-            print("New node is None.")
-            break
+
+
         if len(second_layer) == 1:
             print("len(second_layer) == 1")
             break
-        print("       >> delta :", chosen_E - prev_E)
-        if -(chosen_E - prev_E) <= 0:
+        print("       >> best delta     :", chosen_E - prev_E)
+        if (chosen_E - prev_E) <= 0 or new_node is None:
             break
-
-        new_tree.parentify(pid=new_node, nid1=nid1, nid2=nid2, E=chosen_E, theta=chosen_theta)
-        #print("       >> delta :", chosen_E - prev_E)
-        new_tree.show()
+        
         t += 1
+        new_tree.parentify(pid=new_node, nid1=nid1, nid2=nid2, E=chosen_E, theta=chosen_theta)
+        new_tree.show()
+        
     print("[TIME] -- growing took ", dt.now()-start)
     return new_tree
 
