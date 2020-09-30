@@ -7,7 +7,7 @@ import treelib as tl
 import tensorflow as tf
 
 from classes.interpretableNode import InterpretableNode
-from classes.tree_utils import load_test_image, compute_g, vectorify_on_depth
+from classes.tree_utils import load_test_image, compute_g, optimize_g, vectorify_on_depth
 
 from math import sqrt, log, exp
 from datetime import datetime as dt
@@ -192,6 +192,7 @@ class InterpretableTree(tl.Tree):
             - computes gamma
         """
         gamma = 0
+        x_dict = {}
         start = dt.now()
 
         for node in self.leaves():
@@ -199,6 +200,7 @@ class InterpretableTree(tl.Tree):
             node.g = tf.multiply(tf.math.scalar_mul(1/L, self.s), vectorify_on_depth(node.g))
             node.x = tf.divide(vectorify_on_depth(node.x), self.s)
             node.x = tf.reshape(node.x, shape=(512, 1))     # reshape in order to use mat_mul in vectorify
+            x_dict.update({node.tag: node.x})
             # normalization of g and b
             norm_g = tf.norm(node.g, ord=2)
             node.b = tf.divide(node.b, norm_g)
@@ -213,6 +215,7 @@ class InterpretableTree(tl.Tree):
         cardinality = len(self.leaves())
         self.gamma = cardinality/gamma              # gamma viene usata solo per calcolare E
         print("[TIME] ----- vectorifing leaves took ", dt.now()-start)
+        return x_dict
 
     def init_E(self):
         """
@@ -246,8 +249,9 @@ class InterpretableTree(tl.Tree):
         """
         Finds g, alpha and b optimal for the new node
         """
-        g = tf.random.uniform(shape=[NUM_FILTERS,1], minval=1, maxval=2, dtype=DTYPE)
-        alpha = tf.random.uniform(shape=[NUM_FILTERS,1], minval=0, maxval=1, dtype=DTYPE)
+        #g = tf.random.uniform(shape=[NUM_FILTERS,1], minval=1, maxval=2, dtype=DTYPE)
+        g = optimize_g(n1.g, n2.g)
+        alpha = tf.ones(shape=[NUM_FILTERS,1], dtype=DTYPE)
         b = 0
         # aggiornare w
         # aggiornare lambda

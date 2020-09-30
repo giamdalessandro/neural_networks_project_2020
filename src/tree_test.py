@@ -19,11 +19,11 @@ m_trained = tf.keras.models.load_model(MASKED1, custom_objects={"MaskLayer":Mask
 NEG_IMAGE_SET_TEST = "./dataset/train_val/test/bird/"
 POS_IMAGE_SET_TEST = "./dataset/train_val/test/not_bird/"
 
-tree = sow(m_trained, POS_IMAGE_SET_TEST)
+tree, y_dict, x_dict = sow(m_trained, POS_IMAGE_SET_TEST)
 tree.info()
 tree.show()
 
-new_tree = grow(tree)
+new_tree = grow(tree, y_dict, x_dict)
 new_tree.info()
 #new_tree.show()
 

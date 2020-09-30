@@ -10,6 +10,7 @@ import tensorflow as tf
 #from classes.interpretableTree import InterpretableTree
 
 from math import sqrt, log, exp
+from scipy.optimize import minimize
 from datetime import datetime as dt
 from tensorflow.keras.models import Model
 from tensorflow.keras.applications.vgg16 import preprocess_input
@@ -25,6 +26,29 @@ POS_IMAGE_SET_TEST = "./dataset/train_val/test/not_bird/"
 
 ######### OPERATIONS ###########
 
+def optimize_g(g1, g2):
+    from classes.interpretableNode import NUM_FILTERS
+    g1 = g1.numpy()
+    g2 = g2.numpy()
+    b = (-1.0, 1.0)     # range nel quale può variare ogni elemento di g
+
+    def objective(x):
+        g_sum = np.add(g1, g2)
+        return sum(-g_sum[0:]*x[0:])
+
+    def constraint1(x):
+        sum_eq = 1.0
+        for i in range(NUM_FILTERS):
+            sum_eq = sum_eq - x[i]**2.0
+        return sum_eq
+
+    x0 = np.zeros(NUM_FILTERS)
+
+    bnds = np.full(shape=(NUM_FILTERS, 2), fill_value=b, dtype=float)
+    cons = ([{'type': 'eq', 'fun': constraint1}])
+    solution = minimize(objective, x0, bounds=bnds, constraints=cons)
+    return tf.convert_to_tensor(solution.x)
+
 
 def vectorify_on_depth(x):
     """
@@ -34,11 +58,6 @@ def vectorify_on_depth(x):
     """
     return tf.reduce_sum(x, axis=[0, 1])
 
-def uguale(x1, x2):
-    if tf.reduce_sum(tf.subtract(x1, x2)) == 0:
-        return True
-    else:
-        return False
 
 def load_test_image(folder, fileid):
     """
@@ -80,30 +99,13 @@ def sow(trained_model, pos_image_folder):
     print("[TIME] -- sowing started ")
     tree = InterpretableTree()
     y_dict = tree.init_leaves(trained_model, pos_image_folder)
-    tree.vectorify(y_dict)
+    x_dict = tree.vectorify(y_dict)
     tree.init_E()
     print("[TIME] -- sowing took  ", dt.now()-start)
-    return tree
+    return tree, y_dict, x_dict
 
-def grow(tree):
-    """
-    Grows the tree merging nodes until the condition is met
-        print("[TIME] -- growing started ")
-        start = dt.now()
-        curr_tree = tree
-        e = 1
-        # index of the tree (P_i in the paper)
-        p = 0
-        while e > 0:
-            curr_tree = curr_tree.choose_pair(tree_0, p)
-            e = curr_tree.compute_delta()
-            p += 1
-            print("       >> generated tree:    ", p)
-            #print("       >> delta E = ", e-e_0)
 
-        print("[TIME] -- growing took ", dt.now()-start)
-        return curr_tree
-    """
+def grow(tree, y_dict, x_dict):
     from classes.interpretableTree import InterpretableTree
     start = dt.now()
     print("[TIME] -- growing started  ")
@@ -113,9 +115,9 @@ def grow(tree):
                                  gamma=tree.gamma,
                                  tree=tree.subtree(tree.root))
     t = 0             # different t indicates different trees in time
+    prev_E = 0
     while True:
         z   = 1
-        prev_E = 0
         chosen_E = 0
         chosen_theta = 0
 
