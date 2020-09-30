@@ -89,13 +89,13 @@ class InterpretableTree(tl.Tree):
 
     # OVERRIDE #
     def create_node(self, tag=None, identifier=None, parent=None, g=np.zeros(shape=(NUM_FILTERS)),
-                    alpha=np.ones(shape=(NUM_FILTERS)), b=0, l=LAMBDA_0, x=0):
+                    alpha=np.ones(shape=(NUM_FILTERS)), b=0, l=LAMBDA_0, x=0, w=None):
         """
         Create a child node for given @parent node. If ``identifier`` is absent,
         a UUID will be generated automatically.
         """
         node = self.node_class(tag=tag, identifier=identifier,
-                               data=None, g=g, alpha=alpha, b=b, l=l, x=x)
+                               data=None, g=g, alpha=alpha, b=b, l=l, x=x, w=w)
         self.add_node(node, parent)
         return node
 
@@ -245,17 +245,18 @@ class InterpretableTree(tl.Tree):
         return E, theta
         
 
-    def find_gab(self, n1, n2):     # FAKE FAKE FAKE FAKE FAKE FAKE FAKE FAKE FAKE #
+    def update_node_values(self, n1, n2):     # SEMI FAKE #
         """
         Finds g, alpha and b optimal for the new node
+        Computes also w and l
         """
-        #g = tf.random.uniform(shape=[NUM_FILTERS,1], minval=1, maxval=2, dtype=DTYPE)
+        b = 0
         g = optimize_g(n1.g, n2.g)
         alpha = tf.ones(shape=[NUM_FILTERS,1], dtype=DTYPE)
-        b = 0
-        # aggiornare w
-        # aggiornare lambda
-        return g, alpha, b
+        w = tf.math.multiply(alpha, g)
+        l = LAMBDA_0 * sqrt(len(self.leaves(n1.identifier)) +
+                            len(self.leaves(n2.identifier)))
+        return g, alpha, b, w, l
 
 
     def try_pair(self, nid1, nid2, tag):
@@ -263,10 +264,10 @@ class InterpretableTree(tl.Tree):
         Merges nodes nid1 and nid2 to create a parent n, to whom nid1 and nid2 become children
         The new node will have exp(h) = exp(h_nid1) + exp(h_nid2)
         """
-        g,a,b = self.find_gab(nid1, nid2)
+        g, alpha, b, w, l = self.update_node_values(nid1, nid2)
+        
         tag = nid1.identifier + nid2.identifier if tag is None else tag
-        l = LAMBDA_0 * sqrt(len(self.leaves(nid1.identifier)) + len(self.leaves(nid2.identifier))) 
-        node = self.create_node(tag=tag, parent='root', alpha=a, g=g, b=b, l=l, x=None, identifier=tag)
+        node = self.create_node(tag=tag, parent='root', alpha=alpha, g=g, b=b, l=l, x=None, w=w, identifier=tag)
         
         node.exph_val = node.exph(self.gamma, nid1.x) + node.exph(self.gamma, nid2.x) 
 

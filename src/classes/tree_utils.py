@@ -6,9 +6,6 @@ import random as rd
 import treelib as tl
 import tensorflow as tf
 
-#from classes.interpretableNode import InterpretableNode
-#from classes.interpretableTree import InterpretableTree
-
 from math import sqrt, log, exp
 from scipy.optimize import minimize
 from datetime import datetime as dt
@@ -19,7 +16,7 @@ from tensorflow.keras.preprocessing.image import ImageDataGenerator, load_img, i
 
 L = 14*14
 STOP = 10
-DTYPE = tf.int32
+DTYPE = tf.float32
 NEG_IMAGE_SET_TEST = "./dataset/train_val/test/bird/"
 POS_IMAGE_SET_TEST = "./dataset/train_val/test/not_bird/"
 
@@ -28,8 +25,9 @@ POS_IMAGE_SET_TEST = "./dataset/train_val/test/not_bird/"
 
 def optimize_g(g1, g2):
     from classes.interpretableNode import NUM_FILTERS
-    g1 = g1.numpy()
-    g2 = g2.numpy()
+    g1 = tf.reshape(g1, shape=[512]).numpy()
+    g2 = tf.reshape(g2, shape=[512]).numpy()
+
     b = (-1.0, 1.0)     # range nel quale può variare ogni elemento di g
 
     def objective(x):
@@ -47,7 +45,7 @@ def optimize_g(g1, g2):
     bnds = np.full(shape=(NUM_FILTERS, 2), fill_value=b, dtype=float)
     cons = ([{'type': 'eq', 'fun': constraint1}])
     solution = minimize(objective, x0, bounds=bnds, constraints=cons)
-    return tf.convert_to_tensor(solution.x)
+    return tf.reshape(tf.convert_to_tensor(solution.x, dtype=DTYPE), shape=[512,1])
 
 
 def vectorify_on_depth(x):
@@ -144,7 +142,7 @@ def grow(tree, y_dict, x_dict):
                     new_tree.ctrlz(v1, v2)
                     tested += 1
             z += 1
-        print("       >> tested couples :", tested)
+            print("       >> tested couples :", tested)
 
 
         if len(second_layer) == 1:

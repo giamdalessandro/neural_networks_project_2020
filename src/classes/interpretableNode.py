@@ -38,6 +38,7 @@ class InterpretableNode(tl.Node):
     def __init__(self,
                  x=0,
                  b=0,
+                 w=None,
                  tag=None,
                  data=None,
                  l=LAMBDA_0,
@@ -59,7 +60,7 @@ class InterpretableNode(tl.Node):
         self.g = g if tf.is_tensor(g) else tf.convert_to_tensor(g)
         self.alpha = alpha if tf.is_tensor(alpha) else tf.convert_to_tensor(alpha)
         
-        self.w = tf.math.multiply(alpha, g) if g.shape == [512, 1] else None
+        self.w = w
         self.exph_val = exph_val
 
     def h(self, xx=None):
@@ -67,7 +68,18 @@ class InterpretableNode(tl.Node):
         Compute the node's hypotesis on x 
         """
         x = self.x if xx is None else xx
-        return tf.matmul(self.w, x + self.b, transpose_a=True)
+
+        w = self.w if self.w.shape == [512, 1] else tf.reshape(self.w, shape=[512, 1])
+        x = tf.reshape(x, shape=[512, 1]) if (x.shape != [512, 1] and x is not None) else x
+
+        if self.w is None:
+            print("[ERR] >> w is None ------------------------------------------------")
+        if x is None:
+            print("[ERR] >> x is None ------------------------------------------------")
+        if self.b is None:
+            print("[ERR] >> b is None ------------------------------------------------")
+        
+        return tf.matmul(self.w, x, transpose_a=True) + self.b
 
     def exph(self, gamma, x=None):
         """
