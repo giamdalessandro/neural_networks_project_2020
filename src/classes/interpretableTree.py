@@ -434,8 +434,8 @@ class InterpretableTree(tl.Tree):
         """
         Finds g, alpha and b optimal for the new node
         """
-        g = tf.random.uniform(shape=[NUM_FILTERS,1], minval=1, maxval=5, dtype=DTYPE)
-        alpha = tf.random.uniform(shape=[NUM_FILTERS,1], minval=1, maxval=5, dtype=DTYPE)
+        g = tf.random.uniform(shape=[NUM_FILTERS,1], minval=1, maxval=2, dtype=DTYPE)
+        alpha = tf.random.uniform(shape=[NUM_FILTERS,1], minval=0, maxval=1, dtype=DTYPE)
         b = 0
         # aggiornare w
         # aggiornare lambda

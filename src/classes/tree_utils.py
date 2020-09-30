@@ -112,9 +112,9 @@ def grow(tree):
                                  theta=tree.theta,
                                  gamma=tree.gamma,
                                  tree=tree.subtree(tree.root))
+    t = 0             # different t indicates different trees in time
     while True:
         z   = 1
-        it  = 1
         prev_E = 0
         chosen_E = 0
         chosen_theta = 0
@@ -128,16 +128,17 @@ def grow(tree):
         for v1 in second_layer:
             if z < len(second_layer):
                 for v2 in second_layer[z:]:
-                    
-                    node = new_tree.try_pair(v1, v2, tag=it)
+                    tag = str(t)+"_"+str(tested)
+                    # print(tag)
+                    node = new_tree.try_pair(v1, v2, tag=tag)
                     E, theta = new_tree.compute_E(v1, v2, node)
                     if abs(E-prev_E) > abs(chosen_E-prev_E):
                         chosen_E = E
+                        # print(E)
                         chosen_theta = theta
                         new_node = node
                         nid1 = v1
                         nid2 = v2
-                    it += 1
                     new_tree.ctrlz(v1, v2)
                     tested += 1
             z += 1
@@ -149,12 +150,13 @@ def grow(tree):
             print("len(second_layer) == 1")
             break
         print("       >> delta :", chosen_E - prev_E)
-        if (chosen_E - prev_E) <= 0:
+        if -(chosen_E - prev_E) <= 0:
             break
 
         new_tree.parentify(pid=new_node, nid1=nid1, nid2=nid2, E=chosen_E, theta=chosen_theta)
         #print("       >> delta :", chosen_E - prev_E)
         new_tree.show()
+        t += 1
     print("[TIME] -- growing took ", dt.now()-start)
     return new_tree
 
