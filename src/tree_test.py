@@ -16,12 +16,12 @@ NEG_IMAGE_SET_TEST = "./dataset/train_val/test/bird/"
 POS_IMAGE_SET_TEST = "./dataset/train_val/test/not_bird/"
 
 tree = sow(m_trained, POS_IMAGE_SET_TEST)
+tree.info()
 tree.show()
 
-#new_tree = grow(tree)
-#new_tree.info()
-#if STOP < 20:
-#    new_tree.show()
+new_tree = grow(tree)
+new_tree.info()
+#new_tree.show()
 
 # saved = tree.save2json(save_name="test_tree")
 # loaded = from_json(InterpretableTree(), "./forest/test_tree.json")

@@ -104,38 +104,58 @@ def grow(tree):
         print("[TIME] -- growing took ", dt.now()-start)
         return curr_tree
     """
-    delta = tree.E
-    while delta > 0:
+    from classes.interpretableTree import InterpretableTree
+    start = dt.now()
+    print("[TIME] -- growing started  ")
+    new_tree = InterpretableTree(s=tree.s,
+                                 deep=True,
+                                 theta=tree.theta,
+                                 gamma=tree.gamma,
+                                 tree=tree.subtree(tree.root))
+    while True:
         z   = 1
         it  = 1
-        max = 0
+        prev_E = 0
+        chosen_E = 0
+        chosen_theta = 0
 
+        nid1 = None
+        nid2 = None
         new_node = None
-        new_tree = InterpretableTree(s=self.s,
-                                     deep=True,
-                                     eta=self.eta,
-                                     gamma=self.gamma,
-                                     fc3_model=self.fc3_model,        # RABARBARO #  
-                                     flat_model=self.flat_model,      # ¿u sure bro? not everyone needs salvation
-                                     tree=self.subtree(self.root))
         second_layer = tree.children(tree.root)
 
+        tested = 0
         for v1 in second_layer:
             if z < len(second_layer):
                 for v2 in second_layer[z:]:
                     
                     node = new_tree.try_pair(v1, v2, tag=it)
-                    E = new_tree.compute_E(v1, v2)
-                    if E > max:
-                        max = E
+                    E, theta = new_tree.compute_E(v1, v2, node)
+                    if abs(E-prev_E) > abs(chosen_E-prev_E):
+                        chosen_E = E
+                        chosen_theta = theta
                         new_node = node
+                        nid1 = v1
+                        nid2 = v2
                     it += 1
                     new_tree.ctrlz(v1, v2)
+                    tested += 1
             z += 1
-        
-        new_tree.merge_pair(new_node)
-        # new_tree.show()
+        print("       >> tested couples :", tested)
+        if  new_node is None:           # or len(second_layer) == 1 or (chosen_E - prev_E) <= 0:
+            print("New node is None.")
+            break
+        if len(second_layer) == 1:
+            print("len(second_layer) == 1")
+            break
+        print("       >> delta :", chosen_E - prev_E)
+        if (chosen_E - prev_E) <= 0:
+            break
 
+        new_tree.parentify(pid=new_node, nid1=nid1, nid2=nid2, E=chosen_E, theta=chosen_theta)
+        #print("       >> delta :", chosen_E - prev_E)
+        new_tree.show()
+    print("[TIME] -- growing took ", dt.now()-start)
     return new_tree
 
 

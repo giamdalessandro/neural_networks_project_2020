@@ -18,7 +18,7 @@ from tensorflow.keras.preprocessing.image import ImageDataGenerator, load_img, i
 
 L = 14*14
 STOP = 10
-DTYPE = tf.int32
+DTYPE = tf.float32
 NEG_IMAGE_SET_TEST = "./dataset/train_val/test/bird/"
 POS_IMAGE_SET_TEST = "./dataset/train_val/test/not_bird/"
 NUM_FILTERS = 512
@@ -414,38 +414,67 @@ class InterpretableTree(tl.Tree):
             E += log(node.exph_val)
             theta += node.exph_val
         self.theta = theta
-        self.E = E - len(self.leaves())*self.theta
+        self.E = E - len(self.leaves())*log(self.theta)
         print("[TIME] ----- computing E took        ", dt.now()-start)
 
-
-    def compute_E(self):
+    def compute_E(self, nid1, nid2, pid):
         """
         """
         E = 0
-        start = dt.now()
-        for node in self.leaves():
-            E += log(node.exph_val) 
-        self.E = E - len(self.leaves())*self.theta
-        print("[TIME] ----- computing E took        ", dt.now()-start)
+        theta = self.theta - nid1.exph_val - nid2.exph_val + pid.exph_val
+        
+        second_layer = self.children(self.root)
+        for node in second_layer:
+            E += log(node.exph_val)
+        E = E - log(theta)*len(second_layer)
+        return E, theta
+        
 
     def find_gab(self, n1, n2):     # FAKE FAKE FAKE FAKE FAKE FAKE FAKE FAKE FAKE #
         """
         Finds g, alpha and b optimal for the new node
         """
-        g = tf.random.uniform(shape=[NUM_FILTERS],
-                              minval=1, maxval=5, dtype=DTYPE)
-        alpha = tf.random.uniform(
-            shape=[NUM_FILTERS], minval=1, maxval=5, dtype=DTYPE)
+        g = tf.random.uniform(shape=[NUM_FILTERS,1], minval=1, maxval=5, dtype=DTYPE)
+        alpha = tf.random.uniform(shape=[NUM_FILTERS,1], minval=1, maxval=5, dtype=DTYPE)
         b = 0
+        # aggiornare w
+        # aggiornare lambda
         return g, alpha, b
 
 
-    def try_pair(self, v1, v2, tag):
-        raise NotImplementedError
+    def try_pair(self, nid1, nid2, tag):
+        """
+        Merges nodes nid1 and nid2 to create a parent n, to whom nid1 and nid2 become children
+        The new node will have exp(h) = exp(h_nid1) + exp(h_nid2)
+        """
+        g,a,b = self.find_gab(nid1, nid2)
+        tag = nid1.identifier + nid2.identifier if tag is None else tag
+        l = LAMBDA_0 * sqrt(len(self.leaves(nid1.identifier)) + len(self.leaves(nid2.identifier))) 
+        node = self.create_node(tag=tag, parent='root', alpha=a, g=g, b=b, l=l, x=None, identifier=tag)
+        
+        node.exph_val = node.exph(self.gamma, nid1.x) + node.exph(self.gamma, nid2.x) 
+
+        self.move_node(nid1.identifier, node.identifier)
+        self.move_node(nid2.identifier, node.identifier)
+        return node
 
     
-    def ctrlz(self, v1, v2):
-        raise NotImplementedError
+    def ctrlz(self, nid1, nid2):
+        """
+        Undoes what try_pair() does
+        """
+        killed = self.parent(nid1.identifier)
+        self.move_node(nid1.identifier, self.root)
+        self.move_node(nid2.identifier, self.root)
+        self.remove_node(killed.identifier)
 
-    def merge_pair(self):
-        raise NotImplementedError
+    def parentify(self, pid, nid1, nid2, E, theta):
+        """
+        Gives hope to two orphan children
+        """
+        self.E = E
+        self.theta = theta
+        self.add_node(pid, parent=self.root)
+        self.move_node(nid1.identifier, pid.identifier)
+        self.move_node(nid2.identifier, pid.identifier)
+        
