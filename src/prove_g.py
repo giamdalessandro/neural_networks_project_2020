@@ -83,11 +83,11 @@ def g_comput(g1, g2):
             sum_eq = sum_eq - x[i]**2.0
         return sum_eq
 
-    n = g1.len()
+    n = len(g1)
     x0 = np.zeros(n)
 
     b = (-1.0,1.0)
-    bnds = np.full(n, b)
+    bnds = np.full(shape=(n,2), fill_value=b, dtype=float)
     con1 = {'type': 'eq', 'fun': constraint1}
     cons = ([con1])
     solution = minimize(objective, x0, bounds=bnds,constraints=cons)
@@ -97,4 +97,6 @@ def g_comput(g1, g2):
 
 g1 = [0.21, 0.17, -0.7, -0.2]
 g2 = [-0.21, 0.17, -0.7, -0.2]
+a = np.zeros((1, 1), dtype=(float, 3))
+print(a)
 g_comput(g1, g2)
