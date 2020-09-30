@@ -22,19 +22,6 @@ POS_IMAGE_SET_TEST = "./dataset/train_val/test/not_bird/"
 NUM_FILTERS = 512
 LAMBDA_0 = 0.000001
 
-'''
-class InterpretableNodeRoot(tl.Node):
-    def __init__(self, s=0, tag=None, gamma=0, identifier=None):
-        self.s = s
-        self.gamma = gamma
-        super().__init__(tag=tag, identifier=identifier)        
-    
-    def print_info(self):
-        print("[ROOT] -- root")
-        print("       -- s:     ", self.s.shape)
-        print("       -- gamma: ", self.gamma)
-        print("------------------------------")
-'''
 
 class InterpretableNode(tl.Node):
     """
@@ -78,7 +65,6 @@ class InterpretableNode(tl.Node):
         """
         Compute the node's hypotesis on x 
         """
-        # return tf.matmul(tf.transpose(self.w), tf.reshape(x, shape=(512, 1)) + self.b)
         return tf.matmul(tf.transpose(self.w), self.x + self.b)
 
     def exph(self, gamma):

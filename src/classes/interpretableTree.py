@@ -262,7 +262,6 @@ class InterpretableTree(tl.Tree):
             auxtree.__parentify(n1, n2, pid)
             return auxtree
     
-
         def choose_best_node(self, g):
             """
             Chooses the best node that fits with g in the second tree layer
@@ -276,8 +275,6 @@ class InterpretableTree(tl.Tree):
                 if cos_similarity >= aux:
                     best = v
             return best
-
-    
 
         def compute_product_probability(self):
             """
@@ -301,13 +298,14 @@ class InterpretableTree(tl.Tree):
                     val = val * pro
             return val / exp(len(self.children(self.root)))
 
-
         def compute_delta(self):
             """
             Computes the delta between E_t and E_0 (stored in eta)
             """
             return log(self.compute_product_probability() * self.eta)
     '''
+
+
     #### REWRITING ####
 
     def save2json(self, save_name, save_folder="./forest"):
@@ -404,28 +402,31 @@ class InterpretableTree(tl.Tree):
         self.gamma = cardinality/gamma              # gamma viene usata solo per calcolare E
         print("[TIME] ----- vectorifing leaves took ", dt.now()-start)
 
-    def compute_theta0(self):
+    def init_E(self):
         """
         Only to be used the first time
         """
+        E = 0
         theta = 0
         start = dt.now()
         for node in self.leaves():
             node.exph_val = node.exph(self.gamma)
+            E += log(node.exph_val)
             theta += node.exph_val
         self.theta = theta
-        print("[TIME] ----- computing theta took    ", dt.now()-start)
+        self.E = E - len(self.leaves())*self.theta
+        print("[TIME] ----- computing E took        ", dt.now()-start)
 
-    def compute_E0(self):
+
+    def compute_E(self):
         """
-        Only to be used the first time
         """
         E = 0
         start = dt.now()
         for node in self.leaves():
             E += log(node.exph_val) 
         self.E = E - len(self.leaves())*self.theta
-        print("[TIME] ----- computing theta took    ", dt.now()-start)
+        print("[TIME] ----- computing E took        ", dt.now()-start)
 
     def find_gab(self, n1, n2):     # FAKE FAKE FAKE FAKE FAKE FAKE FAKE FAKE FAKE #
         """

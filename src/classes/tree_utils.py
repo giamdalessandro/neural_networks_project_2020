@@ -81,11 +81,9 @@ def sow(trained_model, pos_image_folder):
     tree = InterpretableTree()
     y_dict = tree.init_leaves(trained_model, pos_image_folder)
     tree.vectorify(y_dict)
-    tree.compute_theta0()
-    tree.compute_E0()
+    tree.init_E()
     print("[TIME] -- sowing took  ", dt.now()-start)
     return tree
-
 
 def grow(tree):
     """
