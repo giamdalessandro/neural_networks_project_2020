@@ -32,7 +32,7 @@ class InterpretableTree(tl.Tree):
     """
 
     def __init__(self,
-                 e=0,
+                 E=0,
                  s=None,
                  theta=0,
                  gamma=0,
@@ -145,7 +145,7 @@ class InterpretableTree(tl.Tree):
             """
             Computes P(xi)
             """
-            '''
+            \'''
             p1 = 0
             p2 = 0
             xi = tf.divide(vectorify_on_depth(xi), self.s)
@@ -179,7 +179,7 @@ class InterpretableTree(tl.Tree):
                     node = self.choose_best_node(gj)
                     p2 += exp(self.gamma * node.compute_h(xj))
             return p1/p2
-            '''
+            \'''
             p1 = 0
             p2 = 0
             xi = nodei.x
@@ -283,7 +283,7 @@ class InterpretableTree(tl.Tree):
             """
             Returns the product of all P_t(xi) divided by e^|Vt|
             """
-            '''
+            \'''
             val = 0
             for img in os.listdir(POS_IMAGE_SET_TEST):
                 if img.endswith('.jpg'):
@@ -292,7 +292,7 @@ class InterpretableTree(tl.Tree):
                     pro = self.__compute_probability(xi)
                     val = val * pro
             return val / exp(len(self.children(self.root)))
-            '''
+            \'''
             val = 0
             for img in os.listdir(POS_IMAGE_SET_TEST):
                 if img.endswith('.jpg'):
