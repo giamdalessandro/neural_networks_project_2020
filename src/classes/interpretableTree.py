@@ -317,7 +317,14 @@ class InterpretableTree(tl.Tree):
             - save_name  : save file name (w/o '.json')
             - save_folder: folder where to save JSON trees
         """
+        tree_data = {
+            "E"     : self.E,
+            "s"     : self.s,
+            "theta" : self.theta,
+            "gamma" : self.gamma
+        }
         json_tree = json.loads(self.to_json(with_data=True))
+        json_tree.update({"tree_data" : tree_data})
 
         file_path = os.path.join(save_folder, save_name + ".json")
         with open(file_path, "w") as f:

@@ -213,6 +213,10 @@ def from_json(res_tree, save_path):
         dict_tree = json.load(f)
         #print(dict_tree)
 
+    res_tree.E = dict_tree["tree_data"]["E"]
+    res_tree.s = dict_tree["tree_data"]["s"]
+    res_tree.theta = dict_tree["tree_data"]["theta"]
+    res_tree.gamma = dict_tree["tree_data"]["gamma"]
     __parse_json_tree(res_tree, dict_tree, parent=None)
 
     res_tree.show()
