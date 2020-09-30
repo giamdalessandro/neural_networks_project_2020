@@ -16,12 +16,12 @@ tf.config.experimental.set_memory_growth(gpus[0], True)
 #with tf.device("/CPU:0"):
 m_trained = tf.keras.models.load_model(MASKED1, custom_objects={"MaskLayer":MaskLayer()})
 
-NEG_IMAGE_SET_TEST = "./dataset/train_val/test/bird/"
-POS_IMAGE_SET_TEST = "./dataset/train_val/test/not_bird/"
+POS_IMAGE_SET_TEST = "./dataset/train_val/bird/"
+start = dt.now()
 
 tree, y_dict, x_dict = sow(m_trained, POS_IMAGE_SET_TEST)
 tree.info()
-tree.show()
+#tree.show()
 
 new_tree = grow(tree, y_dict, x_dict)
 new_tree.info()
@@ -30,6 +30,7 @@ new_tree.info()
 # saved = tree.save2json(save_name="test_tree")
 # loaded = from_json(InterpretableTree(), "./forest/test_tree.json")
 
+print("[TIME] -- test on ", STOP, " images took ", dt.now()-start)
 
 '''
 TODO

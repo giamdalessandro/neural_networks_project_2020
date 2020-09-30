@@ -7,22 +7,13 @@ import treelib as tl
 import tensorflow as tf
 
 from classes.interpretableNode import InterpretableNode
-from classes.tree_utils import load_test_image, compute_g, optimize_g, vectorify_on_depth
+from classes.tree_utils import  load_test_image, compute_g, optimize_g, vectorify_on_depth, STOP, L, DTYPE, LAMBDA_0, NUM_FILTERS
 
 from math import sqrt, log, exp
 from datetime import datetime as dt
 from tensorflow.keras.models import Model
 from tensorflow.keras.applications.vgg16 import preprocess_input
 from tensorflow.keras.preprocessing.image import ImageDataGenerator, load_img, img_to_array
-
-
-L = 14*14
-STOP = 10
-DTYPE = tf.float32
-NEG_IMAGE_SET_TEST = "./dataset/train_val/test/bird/"
-POS_IMAGE_SET_TEST = "./dataset/train_val/test/not_bird/"
-NUM_FILTERS = 512
-LAMBDA_0 = 0.000001
 
 
 class InterpretableTree(tl.Tree):
@@ -173,6 +164,8 @@ class InterpretableTree(tl.Tree):
                                 parent='root', g=g, alpha=tf.ones(shape=512), b=b, x=x)
                 i += 1
                 print(">> created", i, "nodes")
+                if i==STOP:
+                    break
                 # TEST IF g and b ARE ACCURATE ENOUGH - IS WORKING! #
                 # print("\nORIGINAL y -- CALULATED y")
                 # print(fc3_output, " = ", tf.add(tf.reduce_sum(tf.math.multiply(g, x), axis=None), b).numpy())

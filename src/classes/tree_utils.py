@@ -15,10 +15,10 @@ from tensorflow.keras.preprocessing.image import ImageDataGenerator, load_img, i
 
 
 L = 14*14
-STOP = 10
+STOP = 100
 DTYPE = tf.float32
-NEG_IMAGE_SET_TEST = "./dataset/train_val/test/bird/"
-POS_IMAGE_SET_TEST = "./dataset/train_val/test/not_bird/"
+LAMBDA_0 = 0.000001
+NUM_FILTERS = 512
 
 
 ######### OPERATIONS ###########
@@ -126,6 +126,7 @@ def grow(tree, y_dict, x_dict):
 
         tested = 0
         for v1 in second_layer:
+            start = dt.now()
             if z < len(second_layer):
                 for v2 in second_layer[z:]:
                     tag = str(t)+"_"+str(tested)
@@ -141,8 +142,10 @@ def grow(tree, y_dict, x_dict):
                         nid2 = v2
                     new_tree.ctrlz(v1, v2)
                     tested += 1
+                    if tested % 10 == 0:
+                        print("       >> tested couples :", tested)
             z += 1
-            print("       >> tested couples :", tested)
+            print("       >> tested couples :", tested, "in ", dt.now()-start)
 
 
         if len(second_layer) == 1:

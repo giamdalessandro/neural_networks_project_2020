@@ -1,4 +1,3 @@
-# from classes.tree_utils import *
 import os
 import json
 import fnmatch
@@ -13,14 +12,7 @@ from tensorflow.keras.models import Model
 from tensorflow.keras.applications.vgg16 import preprocess_input
 from tensorflow.keras.preprocessing.image import ImageDataGenerator, load_img, img_to_array
 
-
-L = 14*14
-STOP = 10
-DTYPE = tf.int32
-NEG_IMAGE_SET_TEST = "./dataset/train_val/test/bird/"
-POS_IMAGE_SET_TEST = "./dataset/train_val/test/not_bird/"
-NUM_FILTERS = 512
-LAMBDA_0 = 0.000001
+from classes.tree_utils import STOP, L, DTYPE, LAMBDA_0, NUM_FILTERS
 
 
 class InterpretableNode(tl.Node):
