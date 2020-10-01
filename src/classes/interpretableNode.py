@@ -34,6 +34,7 @@ class InterpretableNode(tl.Node):
                  tag=None,
                  data=None,
                  l=LAMBDA_0,
+                 h_val=None,
                  parent=None,
                  exph_val=None,
                  identifier=None,
@@ -53,7 +54,9 @@ class InterpretableNode(tl.Node):
         self.alpha = alpha if tf.is_tensor(alpha) else tf.convert_to_tensor(alpha)
         
         self.w = w
+        self.h_val = h_val
         self.exph_val = exph_val
+
 
     def h(self, xx=None):
         """
@@ -75,9 +78,13 @@ class InterpretableNode(tl.Node):
 
     def exph(self, gamma, x=None):
         """
-        Compute the exp of the node's hypotesis on x - e^[gamma * h(x)]
+        Compute the exp of the node's hypotesis on x - e^[gamma * h(x)] = hh(x)
+        Returns:
+            - #0    h(x)
+            - #1    hh(x)
         """
-        return exp(gamma * self.h(xx=x))
+        h = self.h(x)
+        return h, exp(gamma * h)
 
 
     def print_info(self):

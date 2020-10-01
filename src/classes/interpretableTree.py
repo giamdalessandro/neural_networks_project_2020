@@ -7,7 +7,7 @@ import treelib as tl
 import tensorflow as tf
 
 from classes.interpretableNode import InterpretableNode
-from classes.tree_utils import  load_test_image, compute_g, optimize_g, vectorify_on_depth, STOP, L, DTYPE, LAMBDA_0, NUM_FILTERS
+from classes.tree_utils import load_test_image, compute_g, optimize_g, vectorify_on_depth, STOP, L, DTYPE, LAMBDA_0, NUM_FILTERS, FAKE
 
 from math import sqrt, log, exp
 from datetime import datetime as dt
@@ -218,13 +218,15 @@ class InterpretableTree(tl.Tree):
         theta = 0
         start = dt.now()
         for node in self.leaves():
-            node.exph_val = node.exph(self.gamma)
-            E += log(node.exph_val)
+            node.h_val, node.exph_val = node.exph(self.gamma)
+            E += node.h_val
             theta += node.exph_val
+
+        self.E = E              # - len(self.leaves())*log(self.theta)
         self.theta = theta
-        self.E = E - len(self.leaves())*log(self.theta)
         print("[TIME] ----- computing E took        ", dt.now()-start)
 
+    '''
     def compute_E(self, nid1, nid2, pid):
         """
         """
@@ -236,7 +238,20 @@ class InterpretableTree(tl.Tree):
             E += log(node.exph_val)
         E = E - log(theta)*len(second_layer)
         return E, theta
-        
+    '''
+
+    def compute_delta(self, node, v1, v2):
+        """
+        computes delta log E using pre existent values in self
+        NOTE: this computes the delta between E_t+1 and E_t; current self has E_t, theta_t
+        delta and new theta is returned
+        """
+        new_theta = (self.theta + node.exph_val -
+                          v1.exph_val - v2.exph_val)
+
+        a = node.h_val - v1.h_val - v2.h_val
+        b = len(self.leaves()) * log(self.theta / new_theta)
+        return (1 + a + b), new_theta
 
     def update_node_values(self, n1, n2):     # SEMI FAKE #
         """
@@ -244,7 +259,7 @@ class InterpretableTree(tl.Tree):
         Computes also w and l
         """
         b = 0
-        g = optimize_g(n1.g, n2.g)
+        g = optimize_g(n1.g, n2.g, fake=FAKE)
         alpha = tf.ones(shape=[NUM_FILTERS,1], dtype=DTYPE)
         w = tf.math.multiply(alpha, g)
         l = LAMBDA_0 * sqrt(len(self.leaves(n1.identifier)) +
@@ -262,7 +277,11 @@ class InterpretableTree(tl.Tree):
         tag = nid1.identifier + nid2.identifier if tag is None else tag
         node = self.create_node(tag=tag, parent='root', alpha=alpha, g=g, b=b, l=l, x=None, w=w, identifier=tag)
         
-        node.exph_val = node.exph(self.gamma, nid1.x) + node.exph(self.gamma, nid2.x) 
+        # calculates the value of the new node's exph to use it later
+        aux1 = node.exph(self.gamma, nid1.x)
+        aux2 = node.exph(self.gamma, nid2.x)
+        node.h_val    = aux1[0] + aux2[0]
+        node.exph_val = aux1[1] + aux2[1]
 
         self.move_node(nid1.identifier, node.identifier)
         self.move_node(nid2.identifier, node.identifier)
@@ -277,11 +296,10 @@ class InterpretableTree(tl.Tree):
         self.move_node(nid2.identifier, self.root)
         self.remove_node(killed.identifier)
 
-    def parentify(self, pid, nid1, nid2, E, theta):
+    def parentify(self, pid, nid1, nid2, theta):
         """
         Gives hope to two orphan children
         """
-        self.E = E
         self.theta = theta
         self.add_node(pid, parent=self.root)
         self.move_node(nid1.identifier, pid.identifier)
