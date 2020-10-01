@@ -35,14 +35,14 @@ def optimize_g(g1, g2, fake=True):
     b = (-1.0, 1.0)     # range nel quale può variare ogni elemento di g
 
     def objective(x):
-        g_sum = np.add(g1, g2)
-        return sum(-g_sum[0:]*x[0:])        # tf.reduce_sum(tf.math.multiply(-g_sum,x)) maybe optimize
+        g_sum = tf.math.add(g1, g2)
+        return tf.reduce_sum(tf.math.multiply(-1*g_sum,x)).numpy()     # sum(-g_sum[0:]*x[0:])
 
     def constraint1(x):
         sum_eq = 1.0
-        for i in range(NUM_FILTERS):
-            sum_eq = sum_eq - x[i]**2.0     # 
-        return sum_eq
+        #for i in range(NUM_FILTERS):
+        #    sum_eq = sum_eq - x[i]**2.0                                 # maybe more tf here
+        return (sum_eq - tf.reduce_sum(tf.math.multiply(x,x)).numpy())
 
     x0 = np.zeros(NUM_FILTERS)
 
