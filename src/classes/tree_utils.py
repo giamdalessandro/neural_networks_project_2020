@@ -32,12 +32,12 @@ def optimize_g(g1, g2):
 
     def objective(x):
         g_sum = np.add(g1, g2)
-        return sum(-g_sum[0:]*x[0:])
+        return sum(-g_sum[0:]*x[0:])        # tf.reduce_sum(tf.math.multiply(-g_sum,x)) maybe optimize
 
     def constraint1(x):
         sum_eq = 1.0
         for i in range(NUM_FILTERS):
-            sum_eq = sum_eq - x[i]**2.0
+            sum_eq = sum_eq - x[i]**2.0     # 
         return sum_eq
 
     x0 = np.zeros(NUM_FILTERS)
