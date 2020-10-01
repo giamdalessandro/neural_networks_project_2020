@@ -15,7 +15,8 @@ from tensorflow.keras.preprocessing.image import ImageDataGenerator, load_img, i
 
 
 L = 14*14
-STOP = 100
+STOP = 10
+FAKE = False
 DTYPE = tf.float32
 LAMBDA_0 = 0.000001
 NUM_FILTERS = 512
@@ -23,7 +24,10 @@ NUM_FILTERS = 512
 
 ######### OPERATIONS ###########
 
-def optimize_g(g1, g2):
+def optimize_g(g1, g2, fake=True):
+    if fake:
+        return tf.ones(shape=[512,1])
+
     from classes.interpretableNode import NUM_FILTERS
     g1 = tf.reshape(g1, shape=[512]).numpy()
     g2 = tf.reshape(g2, shape=[512]).numpy()
@@ -103,60 +107,63 @@ def sow(trained_model, pos_image_folder):
     return tree, y_dict, x_dict
 
 
-def grow(tree, y_dict, x_dict):
+def grow(old_tree, y_dict, x_dict):
     from classes.interpretableTree import InterpretableTree
     start = dt.now()
     print("[TIME] -- growing started  ")
-    new_tree = InterpretableTree(s=tree.s,
-                                 deep=True,
-                                 theta=tree.theta,
-                                 gamma=tree.gamma,
-                                 tree=tree.subtree(tree.root))
+    
     t = 0             # different t indicates different trees in time
-    prev_E = 0
-    while True:
-        z   = 1
-        chosen_E = 0
-        chosen_theta = 0
 
+    while True:
+        z = 1
         nid1 = None
         nid2 = None
+        max_delta = 0
+        new_theta = 0
         new_node = None
-        second_layer = tree.children(tree.root)
+        new_tree = InterpretableTree(s=old_tree.s,
+                                     deep=True,
+                                     theta=old_tree.theta,
+                                     gamma=old_tree.gamma,
+                                     tree=old_tree.subtree(old_tree.root))
+        second_layer = old_tree.children(old_tree.root)
 
+        num_couples = int(len(second_layer)*(len(second_layer)-1)/2)
         tested = 0
+        
         for v1 in second_layer:
-            start = dt.now()
+            start2 = dt.now()
             if z < len(second_layer):
                 for v2 in second_layer[z:]:
+
                     tag = str(t)+"_"+str(tested)
-                    # print(tag)
                     node = new_tree.try_pair(v1, v2, tag=tag)
-                    E, theta = new_tree.compute_E(v1, v2, node)
-                    if E-prev_E > chosen_E-prev_E:
-                        chosen_E = E
-                        # print(E)
-                        chosen_theta = theta
-                        new_node = node
+                    delta, theta = old_tree.compute_delta(node, v1, v2)
+                    print("delta = ", delta)
+                    if delta > max_delta:  
                         nid1 = v1
                         nid2 = v2
+                        new_node = node
+                        new_theta = theta
+                        max_delta = delta
+                        
                     new_tree.ctrlz(v1, v2)
                     tested += 1
                     if tested % 10 == 0:
-                        print("       >> tested couples :", tested)
+                        print("       >> tested couples :", tested, "on", num_couples)
             z += 1
-            print("       >> tested couples :", tested, "in ", dt.now()-start)
+            print("       >> tested couples :", tested, "on", num_couples, "in ", dt.now()-start2)
 
 
         if len(second_layer) == 1:
             print("len(second_layer) == 1")
             break
-        print("       >> best delta     :", chosen_E - prev_E)
-        if (chosen_E - prev_E) <= 0 or new_node is None:
+        print("       >> best delta     :", max_delta)
+        if max_delta <= 0 or new_node is None:
             break
         
         t += 1
-        new_tree.parentify(pid=new_node, nid1=nid1, nid2=nid2, E=chosen_E, theta=chosen_theta)
+        new_tree.parentify(pid=new_node, nid1=nid1, nid2=nid2, theta=new_theta)
         new_tree.show()
         
     print("[TIME] -- growing took ", dt.now()-start)
