@@ -118,7 +118,7 @@ def grow(old_tree, y_dict, x_dict):
         z = 1
         nid1 = None
         nid2 = None
-        max_delta = 0
+        max_delta = None
         new_theta = 0
         new_node = None
         new_tree = InterpretableTree(s=old_tree.s,
@@ -139,8 +139,11 @@ def grow(old_tree, y_dict, x_dict):
                     tag = str(t)+"_"+str(tested)
                     node = new_tree.try_pair(v1, v2, tag=tag)
                     delta, theta = old_tree.compute_delta(node, v1, v2)
+                    delta = delta.numpy()[0][0]
                     print("delta = ", delta)
-                    if delta > max_delta:  
+                    if max_delta is None:
+                        max_delta = delta
+                    if max_delta is not None and delta > max_delta:  
                         nid1 = v1
                         nid2 = v2
                         new_node = node
