@@ -266,7 +266,6 @@ class InterpretableTree(tl.Tree):
                             len(self.leaves(n2.identifier)))
         return g, alpha, b, w, l
 
-
     def try_pair(self, nid1, nid2, tag):
         """
         Merges nodes nid1 and nid2 to create a parent n, to whom nid1 and nid2 become children

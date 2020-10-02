@@ -128,9 +128,8 @@ def grow(old_tree, y_dict, x_dict):
 
         num_couples = int(len(second_layer)*(len(second_layer)-1)/2)
         tested = 0
-        
+        start2 = dt.now()
         for v1 in second_layer:
-            start2 = dt.now()
             if z < len(second_layer):
                 for v2 in second_layer[z:]:
 
