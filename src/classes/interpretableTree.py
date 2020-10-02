@@ -226,20 +226,6 @@ class InterpretableTree(tl.Tree):
         self.theta = theta
         print("[TIME] ----- computing E took        ", dt.now()-start)
 
-    '''
-    def compute_E(self, nid1, nid2, pid):
-        """
-        """
-        E = 0
-        theta = self.theta - nid1.exph_val - nid2.exph_val + pid.exph_val
-        
-        second_layer = self.children(self.root)
-        for node in second_layer:
-            E += log(node.exph_val)
-        E = E - log(theta)*len(second_layer)
-        return E, theta
-    '''
-
     def compute_delta(self, node, v1, v2):
         """
         computes delta log E using pre existent values in self
@@ -264,15 +250,14 @@ class InterpretableTree(tl.Tree):
                             len(self.leaves(n2.identifier)))
         return g, alpha, b, w, l
 
-    def try_pair(self, nid1, nid2, tag):
+    def try_pair(self, nid1, nid2, new_id, tag):
         """
         Merges nodes nid1 and nid2 to create a parent n, to whom nid1 and nid2 become children
         The new node will have exp(h) = exp(h_nid1) + exp(h_nid2)
         """
         g, alpha, b, w, l = self.update_node_values(nid1, nid2)
         
-        tag = nid1.identifier + nid2.identifier if tag is None else tag
-        node = self.create_node(tag=tag, parent='root', alpha=alpha, g=g, b=b, l=l, x=None, w=w, identifier=tag)
+        node = self.create_node(tag=tag, parent='root', alpha=alpha, g=g, b=b, l=l, x=None, w=w, identifier=new_id)
         
         # calculates the value of the new node's exph to use it later
         node.h_val    = 0
@@ -316,3 +301,19 @@ class InterpretableTree(tl.Tree):
         self.move_node(nid1.identifier, pid.identifier)
         self.move_node(nid2.identifier, pid.identifier)
         
+    '''
+    def unbornify(self, nid1, nid2, nodes_dict):
+        """
+        Kill 'em all
+        Removes unused entry in the nodes_dict
+        """
+        second_layer = self.children(self.root)
+        for v in second_layer:
+            if v.identifier != nid1.identifier and v.identifier != nid2.identifier:
+                id_tocheck = IDentify(nid1.identifier, v.identifier)
+                if id_tocheck in nodes_dict:
+                    nodes_dict.pop(id_tocheck)
+                id_tocheck = IDentify(nid2.identifier, v.identifier)
+                if id_tocheck in nodes_dict:
+                    nodes_dict.pop(id_tocheck)
+    '''

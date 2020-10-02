@@ -90,6 +90,13 @@ def compute_g(fc3_model, inputs):
 
     return tf.reshape(tf.reduce_sum(gradient[0], axis=1), shape=(7, 7, 512))
 
+
+def IDentify(nid1, nid2):
+    """
+    Creates a unique ID such that follows this rule: when merging two nodes, the new node will have the combined ID of the two, with the first being the one with 
+    """
+    return nid1+nid2 if nid1 < nid2 else nid2+nid1
+
 def sow(trained_model, pos_image_folder):
     """
     Sow the tree taking care of all its needs
@@ -112,6 +119,7 @@ def grow(old_tree, y_dict, x_dict):
     print("[TIME] -- growing started  ")
     
     t = 0             # different t indicates different trees in time
+    nodes_dict = {}
 
     while True:
         z = 1
@@ -135,7 +143,14 @@ def grow(old_tree, y_dict, x_dict):
                 for v2 in second_layer[z:]:
 
                     tag = str(t)+"_"+str(tested)
-                    node = new_tree.try_pair(v1, v2, tag=tag)
+                    nid = IDentify(v1.identifier, v2.identifier)
+                    
+                    if nid in nodes_dict:
+                        node = nodes_dict[nid]
+                    else:
+                        node = new_tree.try_pair(v1, v2, new_id=nid, tag=tag)
+                        nodes_dict.update({nid:node})
+
                     delta, theta = old_tree.compute_delta(node, v1, v2)
                     delta = delta.numpy()[0][0]
                     print("delta = ", delta)
