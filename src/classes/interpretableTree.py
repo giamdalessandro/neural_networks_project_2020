@@ -283,14 +283,14 @@ class InterpretableTree(tl.Tree):
         self.move_node(nid2.identifier, node.identifier)
         return node
   
-    def ctrlz(self, nid1, nid2):
+    def ctrlz(self, pid, nid1, nid2):
         """
         Undoes what try_pair() does
         """
-        killed = self.parent(nid1.identifier)
+        #killed = self.parent(nid1.identifier)
         self.move_node(nid1.identifier, self.root)
         self.move_node(nid2.identifier, self.root)
-        self.remove_node(killed.identifier)
+        self.remove_node(pid.identifier)
 
     def parentify(self, pid, nid1, nid2, theta):
         """

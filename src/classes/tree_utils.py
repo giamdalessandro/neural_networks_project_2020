@@ -16,7 +16,7 @@ from tensorflow.keras.preprocessing.image import ImageDataGenerator, load_img, i
 
 
 L = 14*14
-STOP = 20
+STOP = 10
 FAKE = False
 DTYPE = tf.float32
 LAMBDA_0 = 0.000001
@@ -165,7 +165,7 @@ def grow(old_tree, y_dict, x_dict):
                         new_theta = theta
                         max_delta = delta
                         
-                    new_tree.ctrlz(v1, v2)
+                    new_tree.ctrlz(node, v1, v2)
                     tested += 1
                     if tested % 10 == 0:
                         print("       >> tested couples :", tested, "on", num_couples, "in ", dt.now()-start2)
@@ -179,18 +179,32 @@ def grow(old_tree, y_dict, x_dict):
             break
         
         t += 1
+        unbornify(second_layer, nid1.identifier, nid2.identifier, nodes_dict)
         new_tree.parentify(pid=new_node, nid1=nid1, nid2=nid2, theta=new_theta)
         old_tree = new_tree
         new_tree.show()
         
-        txt_log(new_tree, start)
+        #txt_log(new_tree, start)
 
     print("[TIME] -- growing took ", dt.now()-start)
-
-
-
     return new_tree
 
+
+def unbornify(root_children, nid1, nid2, nodes_dict):
+    len1 = len(nodes_dict)
+    print("       >> len(nodes_dict):", len1)
+    '''
+    for v in root_children:
+        if (nid1 != v.identifier) and (nid2 != v.identifier):
+            id_tocheck = IDentify(v.identifier, nid1)
+            if id_tocheck in nodes_dict:
+                nodes_dict.pop(id_tocheck)
+            id_tocheck = IDentify(v.identifier, nid2)
+            if id_tocheck in nodes_dict:
+                nodes_dict.pop(id_tocheck)
+    print("       >> unbornify removed", len1-len(nodes_dict), "entries")
+    '''
+            
 
 ######### SAVE & LOAD ###########
 
