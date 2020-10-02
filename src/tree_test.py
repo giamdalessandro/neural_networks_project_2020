@@ -31,7 +31,7 @@ saved = tree.save2json(save_name="test_tree_"+str(STOP)+"_imgs")
 # loaded = from_json(InterpretableTree(), "./forest/test_tree.json")
 
 print("[TIME] -- test on ", STOP, " images took ", dt.now()-start)
-
+print("Evvai.")
 '''
 TODO
     - scrivere "find_gab"       - ro
