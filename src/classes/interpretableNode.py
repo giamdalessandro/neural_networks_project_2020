@@ -78,7 +78,7 @@ class InterpretableNode(tl.Node):
 
     def exph(self, gamma, x=None):
         """
-        Compute the exp of the node's hypotesis on x - e^[gamma * h(x)] = hh(x)
+        Compute the exp of the node's hypotesis on x: e^[gamma * h(x)] = hh(x)
         Returns:
             - #0    h(x)
             - #1    hh(x)
