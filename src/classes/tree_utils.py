@@ -16,7 +16,7 @@ from tensorflow.keras.preprocessing.image import ImageDataGenerator, load_img, i
 
 
 L = 14*14
-STOP = 10
+STOP = 20
 FAKE = False
 DTYPE = tf.float32
 LAMBDA_0 = 0.000001
@@ -206,6 +206,7 @@ def grow(old_tree, y_dict, x_dict):
 
 def unbornify(root_children, nid1, nid2, nodes_dict):
     len1 = len(nodes_dict)
+    start = dt.now()
     print("       >> len(nodes_dict):", len1)
     for v in root_children:
         if (nid1 != v.identifier) and (nid2 != v.identifier):
@@ -215,7 +216,7 @@ def unbornify(root_children, nid1, nid2, nodes_dict):
             id_tocheck = IDentify(v.identifier, nid2)
             if id_tocheck in nodes_dict:
                 nodes_dict.pop(id_tocheck)
-    print("       >> unbornify removed", len1-len(nodes_dict), "entries")
+    print("       >> unbornify removed", len1-len(nodes_dict), "entries in ", dt.now()-start)
             
 
 ######### SAVE & LOAD ###########
