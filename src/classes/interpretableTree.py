@@ -56,10 +56,10 @@ class InterpretableTree(tl.Tree):
             "alpha" : str(self[nid].alpha.numpy()),
             "b"     : str(self[nid].b.numpy()) if not isinstance(self[nid].b, int) else self[nid].b,
             "g"     : str(self[nid].g.numpy()),
-            "w"     : str(self[nid].w.numpy()),
-            "x"     : str(self[nid].x.numpy()),
+            "w"     : str(self[nid].w.numpy()) if self[nid].w is not None else 0.0,
+            "x"     : str(self[nid].x.numpy()) if not isinstance(self[nid].x, int) else self[nid].x,
             "l"     : self[nid].l,
-            "exph"  : self[nid].exph_val 
+            "exph"  : self[nid].exph_val if self[nid].exph_val is not None else 0.0
         }
         if with_data:
             tree_dict[ntag]["data"] = data
@@ -80,13 +80,13 @@ class InterpretableTree(tl.Tree):
 
     # OVERRIDE #
     def create_node(self, tag=None, identifier=None, parent=None, g=np.zeros(shape=(NUM_FILTERS)),
-                    alpha=np.ones(shape=(NUM_FILTERS)), b=0, l=LAMBDA_0, x=0, w=None):
+                    alpha=np.ones(shape=(NUM_FILTERS)), b=0, l=LAMBDA_0, x=0, w=None, exph_val=None):
         """
         Create a child node for given @parent node. If ``identifier`` is absent,
         a UUID will be generated automatically.
         """
         node = self.node_class(tag=tag, identifier=identifier,
-                               data=None, g=g, alpha=alpha, b=b, l=l, x=x, w=w)
+                               data=None, g=g, alpha=alpha, b=b, l=l, x=x, w=w, exph_val=exph_val)
         self.add_node(node, parent)
         return node
 
@@ -111,10 +111,10 @@ class InterpretableTree(tl.Tree):
             - save_folder: folder where to save JSON trees
         """
         tree_data = {
-            "E"     : self.E,
-            "s"     : self.s,
+            "E"     : str(self.E.numpy()),
+            "s"     : str(self.s.numpy()),
             "theta" : self.theta,
-            "gamma" : self.gamma
+            "gamma" : str(self.gamma.numpy)
         }
         json_tree = json.loads(self.to_json(with_data=True))
         json_tree.update({"tree_data" : tree_data})
