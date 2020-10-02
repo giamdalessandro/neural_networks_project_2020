@@ -16,7 +16,7 @@ from tensorflow.keras.preprocessing.image import ImageDataGenerator, load_img, i
 
 
 L = 14*14
-STOP = 20
+STOP = 10
 FAKE = False
 DTYPE = tf.float32
 LAMBDA_0 = 0.000001
@@ -199,7 +199,14 @@ def str_to_tensor(str_val, dtype="float32"):
     """
     Converts string np.array to tf.Tensor
     """
-    np_val = np.array(str_val.strip('[]\n').split(), dtype=dtype)
+    stripped = []
+    list_val = str_val.strip('[]\n').split()
+    for elem in list_val:
+        e = elem.strip("[]").strip("]")
+        if e != "" and e != "]":
+            stripped.append(e)
+
+    np_val = np.array(stripped, dtype=dtype)
     return tf.convert_to_tensor(np_val)
 
 
@@ -219,8 +226,8 @@ def __parse_json_tree(tree, current, parent=None):
                     alpha=str_to_tensor(data["alpha"]),
                     b=data["b"] if isinstance(data["b"],int) else str_to_tensor(data["b"]),
                     g=str_to_tensor(data["g"]),  
-                    w=str_to_tensor(data["w"]),
-                    x=str_to_tensor(data["x"]),
+                    w=data["w"] if isinstance(data["w"],float) else str_to_tensor(data["w"]),
+                    x=data["x"] if isinstance(data["b"],int) else str_to_tensor(data["x"]),
                     l=data["l"],
                     exph_val=data["exph"])
 
@@ -259,7 +266,6 @@ def txt_log(tree, start_time, path="./log.txt"):
     with open(path, "a") as f:
         f.write("####################################################")
         f.write("Time elapsed: {}\n".format(dt.now() - start_time))
-        f.write(tree.show())
         f.write("--------------------------------")
         f.write(tree.info())
     f.close()
