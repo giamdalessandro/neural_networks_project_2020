@@ -95,7 +95,7 @@ def IDentify(nid1, nid2):
     """
     Creates a unique ID such that follows this rule: when merging two nodes, the new node will have the combined ID of the two, with the first being the one with 
     """
-    return nid1+nid2 if nid1 < nid2 else nid2+nid1
+    return nid1+'#_#'+nid2 if nid1 < nid2 else nid2+'#_#'+nid1
 
 def sow(trained_model, pos_image_folder):
     """
@@ -147,6 +147,19 @@ def grow(old_tree, y_dict, x_dict):
                     
                     if nid in nodes_dict:
                         node = nodes_dict[nid]
+                        node = new_tree.create_node(tag=node.tag,
+                                                    identifier=node.identifier, 
+                                                    parent=new_tree.root, 
+                                                    g=node.g,
+                                                    alpha=node.alpha, 
+                                                    b=node.b,
+                                                    l=node.l, 
+                                                    x=node.x, 
+                                                    w=node.w,
+                                                    h_val=node.h_val,
+                                                    exph_val=node.exph_val)
+                        new_tree.move_node(v1.identifier, node.identifier)
+                        new_tree.move_node(v2.identifier, node.identifier)
                     else:
                         node = new_tree.try_pair(v1, v2, new_id=nid, tag=tag)
                         nodes_dict.update({nid:node})
