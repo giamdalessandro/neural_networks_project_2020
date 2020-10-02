@@ -35,7 +35,6 @@ print("Evvai.")
 '''
 TODO
     - scrivere "find_gab"       - ro
-    - scrivere "e_func"         - balthier
     - calcolare matrice A       - ???
 '''
 

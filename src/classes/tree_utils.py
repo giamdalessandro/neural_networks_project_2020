@@ -16,8 +16,7 @@ from tensorflow.keras.preprocessing.image import ImageDataGenerator, load_img, i
 
 
 L = 14*14
-STOP = 20
-FAKE = False
+STOP = 10
 DTYPE = tf.float32
 LAMBDA_0 = 0.000001
 NUM_FILTERS = 512
@@ -25,9 +24,12 @@ NUM_FILTERS = 512
 
 ######### OPERATIONS ###########
 
-def optimize_g(g1, g2, fake=True):
-    if fake:
-        return tf.ones(shape=[512,1])
+def optimize_g(g1, g2):
+    """
+    Computes the new g starting from g1 and g2 of nodes v1 and v2
+        - g1:   tensorflow array
+        - g2:   tensorflow array
+    """
 
     from classes.interpretableNode import NUM_FILTERS
     g1 = tf.reshape(g1, shape=[NUM_FILTERS])
@@ -50,7 +52,6 @@ def optimize_g(g1, g2, fake=True):
     solution = minimize(objective, x0, bounds=bnds, constraints=cons)
     return tf.reshape(tf.convert_to_tensor(solution.x, dtype=DTYPE), shape=[512,1])
 
-
 def vectorify_on_depth(x):
     """
     xx = tf.ones(shape=(2,2,5))
@@ -58,7 +59,6 @@ def vectorify_on_depth(x):
     # sum over h and w --> outputs a vector of lenght d=5
     """
     return tf.reduce_sum(x, axis=[0, 1])
-
 
 def load_test_image(folder, fileid):
     """
@@ -90,10 +90,9 @@ def compute_g(fc3_model, inputs):
 
     return tf.reshape(tf.reduce_sum(gradient[0], axis=1), shape=(7, 7, 512))
 
-
 def IDentify(nid1, nid2):
     """
-    Creates a unique ID such that follows this rule: when merging two nodes, the new node will have the combined ID of the two, with the first being the one with 
+    Creates a unique ID such that follows this rule: when merging two nodes, the new node will have the combined ID of the two in lexographical order
     """
     return nid1+'#_#'+nid2 if nid1 < nid2 else nid2+'#_#'+nid1
 
@@ -112,8 +111,10 @@ def sow(trained_model, pos_image_folder):
     print("[TIME] -- sowing took  ", dt.now()-start)
     return tree, y_dict, x_dict
 
-
 def grow(old_tree, y_dict, x_dict):
+    """
+    Grow the tree taking care of all its needs
+    """
     from classes.interpretableTree import InterpretableTree
     start = dt.now()
     print("[TIME] -- growing started  ")
@@ -146,29 +147,14 @@ def grow(old_tree, y_dict, x_dict):
                     nid = IDentify(v1.identifier, v2.identifier)
                     
                     if nid in nodes_dict:
-                        node = nodes_dict[nid]
-                        node = new_tree.create_node(tag=node.tag,
-                                                    identifier=node.identifier, 
-                                                    parent=new_tree.root, 
-                                                    g=node.g,
-                                                    alpha=node.alpha, 
-                                                    b=node.b,
-                                                    l=node.l, 
-                                                    x=node.x, 
-                                                    w=node.w,
-                                                    h_val=node.h_val,
-                                                    exph_val=node.exph_val)
-                        new_tree.move_node(v1.identifier, node.identifier)
-                        new_tree.move_node(v2.identifier, node.identifier)
+                        node = retrieve_node(nid, node, nodes_dict, v1, v2, new_tree)
                     else:
                         node = new_tree.try_pair(v1, v2, new_id=nid, tag=tag)
                         nodes_dict.update({nid:node})
 
                     delta, theta = old_tree.compute_delta(node, v1, v2)
                     delta = delta.numpy()[0][0]
-                    print("delta = ", delta)
-                    #if delta > 0:
-                    #    beep(sound='coin')
+                    
                     if max_delta is None:
                         max_delta = delta
                     if max_delta is not None and delta > max_delta:  
@@ -181,30 +167,53 @@ def grow(old_tree, y_dict, x_dict):
                     new_tree.ctrlz(node, v1, v2)
                     tested += 1
                     if tested % 10 == 0:
-                        print("       >> tested couples :", tested, "on", num_couples, "in ", dt.now()-start2)
+                        print("       >> tested couples :", str(tested)+"/"+str(num_couples), "in ", dt.now()-start2)
             z += 1
 
         if len(second_layer) == 1:
             print("len(second_layer) == 1")
             break
+
         print("       >> best delta     :", max_delta)
         if max_delta <= 0 or new_node is None:
             break
-        
+
         t += 1
         unbornify(second_layer, nid1.identifier, nid2.identifier, nodes_dict)
         new_tree.parentify(pid=new_node, nid1=nid1, nid2=nid2, theta=new_theta)
         old_tree = new_tree
         new_tree.show()
-        
-        #txt_log(new_tree, start)
 
     print("       >> len(nodes_dict):", len(nodes_dict))
     print("[TIME] -- growing took ", dt.now()-start)
     return new_tree
 
+def retrieve_node(nid, node, nodes_dict, v1, v2, new_tree):
+    """
+    Retrieves the node from the dictionary and does some magic to make it work
+    NOTE: this tree lib really sucks sometimes
+    """
+    node = nodes_dict[nid]
+    node = new_tree.create_node(tag=node.tag,
+                                identifier=node.identifier,
+                                parent=new_tree.root,
+                                g=node.g,
+                                alpha=node.alpha,
+                                b=node.b,
+                                l=node.l,
+                                x=node.x,
+                                w=node.w,
+                                h_val=node.h_val,
+                                exph_val=node.exph_val)
+    new_tree.move_node(v1.identifier, node.identifier)
+    new_tree.move_node(v2.identifier, node.identifier)
+    return node
 
 def unbornify(root_children, nid1, nid2, nodes_dict):
+    """
+    Removes entries in the dictionary that will never be used
+    If I merged v1 and v2, all pairs I can compute involving v1 or v2 are now useless and only waste memory
+    """
     len1 = len(nodes_dict)
     start = dt.now()
     print("       >> len(nodes_dict):", len1)

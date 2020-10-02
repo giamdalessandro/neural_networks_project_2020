@@ -7,7 +7,7 @@ import treelib as tl
 import tensorflow as tf
 
 from classes.interpretableNode import InterpretableNode
-from classes.tree_utils import load_test_image, compute_g, optimize_g, vectorify_on_depth, STOP, L, DTYPE, LAMBDA_0, NUM_FILTERS, FAKE
+from classes.tree_utils import load_test_image, compute_g, optimize_g, vectorify_on_depth, STOP, L, DTYPE, LAMBDA_0, NUM_FILTERS
 
 from math import sqrt, log, exp
 from datetime import datetime as dt
@@ -170,7 +170,7 @@ class InterpretableTree(tl.Tree):
                 # print(fc3_output, " = ", tf.add(tf.reduce_sum(tf.math.multiply(g, x), axis=None), b).numpy())
 
         # sum on s to obtain s(1,1,512) / # images in the positive set
-        self.s = tf.reduce_sum(s_list, axis=0)/len(self.all_nodes())    #len(fnmatch.filter(os.listdir(pos_image_folder), '*.jpg'))
+        self.s = tf.reduce_sum(s_list, axis=0)/len(self.all_nodes())
         
         print("[TIME] ----- init leaves took        ", dt.now()-start)
         return y_dict
@@ -242,7 +242,7 @@ class InterpretableTree(tl.Tree):
         Computes also w and l
         """
         b = 0
-        g = optimize_g(n1.g, n2.g, fake=FAKE)
+        g = optimize_g(n1.g, n2.g)
         alpha = tf.ones(shape=[NUM_FILTERS,1], dtype=DTYPE)
         w = tf.math.multiply(alpha, g)
         l = LAMBDA_0 * sqrt(len(self.leaves(n1.identifier)) +
@@ -286,7 +286,6 @@ class InterpretableTree(tl.Tree):
         """
         Undoes what try_pair() does
         """
-        #killed = self.parent(nid1.identifier)
         self.move_node(nid1.identifier, self.root)
         self.move_node(nid2.identifier, self.root)
         if self.contains(pid.identifier):

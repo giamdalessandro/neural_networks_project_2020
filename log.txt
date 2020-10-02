@@ -2,31 +2,6 @@
 [[[20 nodes, no dictionary optimization]]]
 ----------------------------------------------------------------------------------------------------------------------------------
 [TIME] -- sowing started 
-2020-10-02 13:37:35.238986: I tensorflow/stream_executor/platform/default/dso_loader.cc:44] Successfully opened dynamic library libcudnn.so.7
-2020-10-02 13:37:35.721730: I tensorflow/stream_executor/platform/default/dso_loader.cc:44] Successfully opened dynamic library libcublas.so.10
-2020-10-02 13:37:35.849368: W tensorflow/core/common_runtime/bfc_allocator.cc:245] Allocator (GPU_0_bfc) ran out of memory trying to allocate 2.06GiB with freed_by_count=0. The caller indicates that this is not a failure, but may mean that there could be performance gains if more memory were available.
-2020-10-02 13:37:35.941306: W tensorflow/core/common_runtime/bfc_allocator.cc:245] Allocator (GPU_0_bfc) ran out of memory trying to allocate 2.06GiB with freed_by_count=0. The caller indicates that this is not a failure, but may mean that there could be performance gains if more memory were available.
-2020-10-02 13:37:36.011763: W tensorflow/core/common_runtime/bfc_allocator.cc:245] Allocator (GPU_0_bfc) ran out of memory trying to allocate 2.09GiB with freed_by_count=0. The caller indicates that this is not a failure, but may mean that there could be performance gains if more memory were available.
-2020-10-02 13:37:36.079121: W tensorflow/core/common_runtime/bfc_allocator.cc:245] Allocator (GPU_0_bfc) ran out of memory trying to allocate 2.15GiB with freed_by_count=0. The caller indicates that this is not a failure, but may mean that there could be performance gains if more memory were available.
->> created 1 nodes
->> created 2 nodes
->> created 3 nodes
->> created 4 nodes
->> created 5 nodes
->> created 6 nodes
->> created 7 nodes
->> created 8 nodes
->> created 9 nodes
->> created 10 nodes
->> created 11 nodes
->> created 12 nodes
->> created 13 nodes
->> created 14 nodes
->> created 15 nodes
->> created 16 nodes
->> created 17 nodes
->> created 18 nodes
->> created 19 nodes
 >> created 20 nodes
 [TIME] ----- init leaves took         0:00:02.639333
 [TIME] ----- vectorifing leaves took  0:00:00.014015
@@ -39,215 +14,7 @@
        -- gamma:........... 4.9698006e-08
        -- s (shape):....... (512,)
 -------------------------------------------------
-[TIME] -- growing started  
-delta =  -0.096939564
-delta =  0.6129234
-delta =  -0.100428104
-delta =  0.5076761
-delta =  0.3513674
-delta =  2.2400877
-delta =  -0.09842634
-delta =  1.9221194
-delta =  -0.08350575
-delta =  -0.08570731
-       >> tested couples : 10 on 190 in  0:01:09.477888
-delta =  -0.087848306
-delta =  -0.063737035
-delta =  0.22339296
-delta =  -0.077653825
-delta =  -0.09659946
-delta =  -0.10016644
-delta =  -0.027934074
-delta =  -0.08377969
-delta =  -0.0075148344
-delta =  0.6164341
-       >> tested couples : 20 on 190 in  0:02:16.192857
-delta =  -0.12457299
-delta =  0.5083494
-delta =  0.3171965
-delta =  2.2016783
-delta =  -0.12334001
-delta =  1.8839269
-delta =  -0.104418635
-delta =  -0.11213088
-delta =  -0.11405766
-delta =  -0.08312321
-       >> tested couples : 30 on 190 in  0:03:02.598546
-delta =  0.21575165
-delta =  -0.1046437
-delta =  -0.11913335
-delta =  -0.12369931
-delta =  -0.045179963
-delta =  -0.11034417
-delta =  -0.037112474
-delta =  0.6029506
-delta =  1.3699317
-delta =  0.99088
-       >> tested couples : 40 on 190 in  0:03:50.288874
-delta =  2.8526692
-delta =  0.6000593
-delta =  2.536059
-delta =  0.64048815
-delta =  0.6031132
-delta =  0.6021104
-delta =  0.6702192
-delta =  1.0323639
-delta =  0.60761046
-delta =  0.617048
-       >> tested couples : 50 on 190 in  0:04:34.308006
-delta =  0.6071193
-delta =  0.71949434
-delta =  0.6041117
-delta =  0.6610682
-delta =  0.49577403
-delta =  0.31578577
-delta =  2.2016249
-delta =  -0.12772119
-delta =  1.8838047
-delta =  -0.11007786
-       >> tested couples : 60 on 190 in  0:05:24.358822
-delta =  -0.116018414
-delta =  -0.11800289
-delta =  -0.08924508
-delta =  0.20584679
-delta =  -0.10835433
-delta =  -0.124272704
-delta =  -0.12851417
-delta =  -0.05201733
-delta =  -0.11417711
-delta =  -0.03999746
-       >> tested couples : 70 on 190 in  0:06:12.664175
-delta =  0.8895345
-delta =  2.7538
-delta =  0.4933331
-delta =  2.4370599
-delta =  0.53142476
-delta =  0.49727106
-delta =  0.49616742
-delta =  0.56025505
-delta =  0.91548777
-delta =  0.50208855
-       >> tested couples : 80 on 190 in  0:06:57.163536
-delta =  0.5089319
-delta =  0.49958682
-delta =  0.60828066
-delta =  0.49835706
-delta =  0.5570278
-delta =  2.6760705
-delta =  0.31881154
-delta =  2.357809
-delta =  0.3282153
-delta =  0.33368027
-       >> tested couples : 90 on 190 in  0:08:47.447416
-delta =  0.33133858
-delta =  0.34583628
-delta =  0.6167487
-delta =  0.34248453
-delta =  0.31738383
-delta =  0.3151973
-delta =  0.37871325
-delta =  0.33580172
-delta =  0.4162676
-delta =  2.2053633
-       >> tested couples : 100 on 190 in  0:09:37.913087
-delta =  4.255906
-delta =  2.2112596
-delta =  2.2215066
-delta =  2.219022
-delta =  2.2275016
-delta =  2.488213
-delta =  2.2308078
-delta =  2.2018185
-delta =  2.2005055
-delta =  2.2585545
-       >> tested couples : 110 on 190 in  0:10:21.708967
-delta =  2.2237878
-delta =  2.3068686
-delta =  1.8875095
-delta =  -0.10910249
-delta =  -0.11417484
-delta =  -0.11618757
-delta =  -0.088534236
-delta =  0.20472383
-delta =  -0.10641825
-delta =  -0.12304127
-       >> tested couples : 120 on 190 in  0:11:12.677591
-delta =  -0.12713039
-delta =  -0.051696897
-delta =  -0.11231065
-delta =  -0.037678182
-delta =  1.8935854
-delta =  1.9035875
-delta =  1.9010932
-delta =  1.9098876
-delta =  2.171114
-delta =  1.9128623
-       >> tested couples : 130 on 190 in  0:13:21.576546
-delta =  1.8840351
-delta =  1.8827093
-delta =  1.9410236
-delta =  1.9058136
-delta =  1.9888128
-delta =  -0.09842074
-delta =  -0.10028803
-delta =  -0.06694543
-delta =  0.23596692
-delta =  -0.09112668
-       >> tested couples : 140 on 190 in  0:14:51.858087
-delta =  -0.10408175
-delta =  -0.10899174
-delta =  -0.028303623
-delta =  -0.096692085
-delta =  -0.024502993
-delta =  -0.10383475
-delta =  -0.07832265
-delta =  0.21125245
-delta =  -0.093839645
-delta =  -0.111860275
-       >> tested couples : 150 on 190 in  0:15:39.391530
-delta =  -0.11562669
-delta =  -0.042084813
-delta =  -0.09985447
-delta =  -0.024241567
-delta =  -0.08014202
-delta =  0.20982265
-delta =  -0.09595072
-delta =  -0.11379051
-delta =  -0.11759043
-delta =  -0.043861985
-       >> tested couples : 160 on 190 in  0:17:57.822721
-delta =  -0.10192788
-delta =  -0.026421309
-delta =  0.26211786
-delta =  -0.07121599
-delta =  -0.082726955
-delta =  -0.08796251
-delta =  -0.0052928925
-delta =  -0.07662177
-delta =  -0.005424738
-delta =  0.21701264
-       >> tested couples : 170 on 190 in  0:19:05.180067
-delta =  0.21625042
-delta =  0.20861936
-delta =  0.30652976
-delta =  0.21259761
-delta =  0.2764802
-delta =  -0.10436952
-delta =  -0.108033895
-delta =  -0.035207868
-delta =  -0.09191668
-delta =  -0.01595223
-       >> tested couples : 180 on 190 in  0:20:55.510393
-delta =  -0.123389006
-delta =  -0.044804692
-delta =  -0.11005628
-delta =  -0.036871314
-delta =  -0.050497413
-delta =  -0.11383009
-delta =  -0.040008903
-delta =  -0.04045856
-delta =  0.029438138
-delta =  -0.022230744
+[TIME] -- growing started
        >> tested couples : 190 on 190 in  0:22:26.010333
        >> best delta     : 4.255906
 root
@@ -273,194 +40,7 @@ root
 ├── Yellow_Breasted_Chat_0110_21871
 └── Yellow_Warbler_0123_176471
 
-delta =  -0.12539124
-delta =  0.5461693
-delta =  -0.12659359
-delta =  0.4450755
-delta =  0.3399477
-delta =  -0.12346363
-delta =  -0.11441851
-delta =  -0.10851532
-delta =  -0.11090922
-delta =  -0.096945524
-       >> tested couples : 10 on 171 in  0:01:12.486767
-delta =  0.17297363
-delta =  -0.09964448
-delta =  -0.12513006
-delta =  -0.12723243
-delta =  -0.06423688
-delta =  -0.10637003
-delta =  -0.025652707
-delta =  0.44922423
-delta =  0.54106236
-delta =  -0.15802634
-       >> tested couples : 20 on 171 in  0:02:18.453959
-delta =  0.4372728
-delta =  0.29894406
-delta =  -0.15562975
-delta =  -0.14276886
-delta =  -0.14212179
-delta =  -0.14430892
-delta =  -0.12384248
-delta =  0.15726376
-delta =  -0.13379192
-delta =  -0.1550262
-       >> tested couples : 30 on 171 in  0:03:04.847297
-delta =  -0.15808141
-delta =  -0.089092016
-delta =  -0.1401105
-delta =  -0.062288523
-delta =  0.40755844
-delta =  0.5303416
-delta =  1.2529612
-delta =  0.93603086
-delta =  0.5288129
-delta =  0.56213784
-       >> tested couples : 40 on 171 in  0:03:51.008505
-delta =  0.5345576
-delta =  0.53325033
-delta =  0.5890882
-delta =  0.9303012
-delta =  0.54004073
-delta =  0.5415802
-delta =  0.53342223
-delta =  0.63461137
-delta =  0.53581905
-delta =  0.59814143
-       >> tested couples : 50 on 171 in  0:04:34.879448
-delta =  1.0411279
-delta =  0.42741442
-delta =  0.299721
-delta =  -0.15768826
-delta =  -0.14604568
-delta =  -0.14370883
-delta =  -0.14595115
-delta =  -0.12755811
-delta =  0.14994478
-delta =  -0.13521028
-       >> tested couples : 60 on 171 in  0:05:25.994362
-delta =  -0.15780735
-delta =  -0.16055298
-delta =  -0.09349167
-delta =  -0.14164507
-delta =  -0.062919796
-delta =  0.40854955
-delta =  0.83864784
-delta =  0.42631388
-delta =  0.45741892
-delta =  0.43289852
-       >> tested couples : 70 on 171 in  0:06:15.873463
-delta =  0.43149543
-delta =  0.48351502
-delta =  0.8181722
-delta =  0.4386859
-delta =  0.4377606
-delta =  0.43015718
-delta =  0.52785134
-delta =  0.4342432
-delta =  0.4981923
-delta =  0.94413924
-       >> tested couples : 80 on 171 in  0:07:24.095276
-delta =  0.30382663
-delta =  0.3076067
-delta =  0.32083035
-delta =  0.31824684
-delta =  0.3230312
-delta =  0.5774909
-delta =  0.33041716
-delta =  0.29905516
-delta =  0.29827052
-delta =  0.3529482
-       >> tested couples : 90 on 171 in  0:08:53.261170
-delta =  0.32316017
-delta =  0.40789086
-delta =  0.889723
-delta =  -0.14389443
-delta =  -0.14072967
-delta =  -0.14299893
-delta =  -0.12565994
-delta =  0.15009761
-delta =  -0.13214254
-delta =  -0.15541184
-       >> tested couples : 100 on 171 in  0:09:47.812964
-delta =  -0.15801251
-delta =  -0.091968894
-delta =  -0.13864422
-delta =  -0.059488
-delta =  0.41280055
-delta =  -0.13088942
-delta =  -0.1330198
-delta =  -0.11025655
-delta =  0.17469215
-delta =  -0.12274408
-       >> tested couples : 110 on 171 in  0:11:18.084182
-delta =  -0.14251494
-delta =  -0.14589822
-delta =  -0.074842334
-delta =  -0.12893403
-delta =  -0.0521065
-delta =  0.41601694
-delta =  -0.12839997
-delta =  -0.11310232
-delta =  0.15914607
-delta =  -0.11732817
-       >> tested couples : 120 on 171 in  0:12:05.344708
-delta =  -0.1419313
-delta =  -0.14422345
-delta =  -0.0799793
-delta =  -0.12394619
-delta =  -0.04385239
-delta =  0.42996418
-delta =  -0.11518741
-delta =  0.15743041
-delta =  -0.11969268
-delta =  -0.144122
-       >> tested couples : 130 on 171 in  0:14:18.603052
-delta =  -0.14644599
-delta =  -0.082026005
-delta =  -0.12627351
-delta =  -0.0462811
-delta =  0.4273603
-delta =  0.19824243
-delta =  -0.10513604
-delta =  -0.12352967
-delta =  -0.12722337
-delta =  -0.05428219
-       >> tested couples : 140 on 171 in  0:15:27.784648
-delta =  -0.1111722
-delta =  -0.03529191
-delta =  0.4312011
-delta =  0.16582942
-delta =  0.1576724
-delta =  0.15169859
-delta =  0.23914647
-delta =  0.16073751
-delta =  0.22964752
-delta =  0.6840911
-       >> tested couples : 150 on 171 in  0:16:51.515945
-delta =  -0.13359761
-delta =  -0.13579297
-delta =  -0.07223141
-delta =  -0.11518681
-delta =  -0.034757018
-delta =  0.439634
-delta =  -0.15785265
-delta =  -0.08880162
-delta =  -0.13990247
-delta =  -0.062125802
-       >> tested couples : 160 on 171 in  0:18:18.928092
-delta =  0.40766412
-delta =  -0.09293246
-delta =  -0.14220381
-delta =  -0.06381929
-delta =  0.4069959
-delta =  -0.07812095
-delta =  -0.0034799576
-delta =  0.46085238
-delta =  -0.04162669
-delta =  0.4323365
        >> tested couples : 170 on 171 in  0:19:52.857967
-delta =  0.51745915
        >> best delta     : 1.2529612
 root
 ├── 0_100
@@ -486,174 +66,7 @@ root
 ├── Yellow_Breasted_Chat_0110_21871
 └── Yellow_Warbler_0123_176471
 
-delta =  0.2091111
-delta =  0.18084061
-delta =  0.47359294
-delta =  0.17062497
-delta =  0.24926054
-delta =  0.1592269
-delta =  0.15981972
-delta =  0.2939855
-delta =  0.7692957
-delta =  0.15844631
-       >> tested couples : 10 on 153 in  0:01:13.902456
-delta =  0.2103076
-delta =  0.19085932
-delta =  0.36347842
-delta =  0.1588012
-delta =  0.18699908
-delta =  0.57097775
-delta =  0.57097405
-delta =  0.23581254
-delta =  0.51294625
-delta =  0.2243911
-       >> tested couples : 20 on 153 in  0:02:20.372484
-delta =  0.30932045
-delta =  0.21062338
-delta =  0.21152318
-delta =  0.35648346
-delta =  0.8505478
-delta =  0.20896411
-delta =  0.26781166
-delta =  0.24679339
-delta =  0.42934632
-delta =  0.2099725
-       >> tested couples : 30 on 153 in  0:03:07.766815
-delta =  0.23344088
-delta =  0.6092639
-delta =  0.60926193
-delta =  0.48796237
-delta =  0.19477415
-delta =  0.27768517
-delta =  0.18177664
-delta =  0.18258774
-delta =  0.32408857
-delta =  0.8121083
-       >> tested couples : 40 on 153 in  0:03:58.221985
-delta =  0.18039536
-delta =  0.23699784
-delta =  0.21648788
-delta =  0.39584208
-delta =  0.18120658
-delta =  0.20617235
-delta =  0.5846245
-delta =  0.5846191
-delta =  0.47936434
-delta =  0.5493871
-       >> tested couples : 50 on 153 in  0:05:31.452772
-delta =  0.47127163
-delta =  0.47152913
-delta =  0.590739
-delta =  1.0403922
-delta =  0.471667
-delta =  0.5139557
-delta =  0.4966588
-delta =  0.65564454
-delta =  0.47115368
-delta =  0.5058446
-       >> tested couples : 60 on 153 in  0:06:20.905191
-delta =  0.9010098
-delta =  0.9009763
-delta =  0.26585233
-delta =  0.17131186
-delta =  0.17207944
-delta =  0.31184912
-delta =  0.79692197
-delta =  0.17007232
-delta =  0.22556925
-delta =  0.20530272
-       >> tested couples : 70 on 153 in  0:07:14.639595
-delta =  0.38302302
-delta =  0.17077792
-delta =  0.196468
-delta =  0.576232
-delta =  0.5762305
-delta =  0.25125694
-delta =  0.2522502
-delta =  0.40100384
-delta =  0.9015653
-delta =  0.24929476
-       >> tested couples : 80 on 153 in  0:08:44.461114
-delta =  0.31056356
-delta =  0.289001
-delta =  0.47500086
-delta =  0.2505194
-delta =  0.27235103
-delta =  0.6453564
-delta =  0.6453556
-delta =  0.16010642
-delta =  0.29649913
-delta =  0.7757082
-       >> tested couples : 90 on 153 in  0:09:34.258304
-delta =  0.1584531
-delta =  0.21176493
-delta =  0.19199777
-delta =  0.36668324
-delta =  0.15896428
-delta =  0.18615985
-delta =  0.5684301
-delta =  0.5684267
-delta =  0.29757297
-delta =  0.77742076
-       >> tested couples : 100 on 153 in  0:11:03.669610
-delta =  0.1590836
-delta =  0.21266294
-delta =  0.19284213
-delta =  0.367846
-delta =  0.15963817
-delta =  0.1866678
-delta =  0.5686526
-delta =  0.56865036
-delta =  0.9565084
-delta =  0.2942474
-       >> tested couples : 110 on 153 in  0:12:38.767462
-delta =  0.35779142
-delta =  0.335716
-delta =  0.5249028
-delta =  0.29570425
-delta =  0.3159877
-delta =  0.68633795
-delta =  0.6863483
-delta =  0.7713146
-delta =  0.8520403
-delta =  0.8261144
-       >> tested couples : 120 on 153 in  0:14:01.548143
-delta =  1.0398264
-delta =  0.7743449
-delta =  0.7830086
-delta =  1.1333951
-delta =  1.133393
-delta =  0.21010458
-delta =  0.19050574
-delta =  0.3640604
-delta =  0.15801394
-delta =  0.18575358
-       >> tested couples : 130 on 153 in  0:15:49.032994
-delta =  0.56895375
-delta =  0.5689536
-delta =  0.24799252
-delta =  0.43065214
-delta =  0.21112847
-delta =  0.23453224
-delta =  0.61026317
-delta =  0.6102621
-delta =  0.40786648
-delta =  0.19137502
-       >> tested couples : 140 on 153 in  0:17:17.239179
-delta =  0.21576488
-delta =  0.59316844
-delta =  0.59318584
-delta =  0.3657775
-delta =  0.38400114
-delta =  0.750795
-delta =  0.7507944
-delta =  0.18585229
-delta =  0.5683647
-delta =  0.5683649
        >> tested couples : 150 on 153 in  0:18:10.332649
-delta =  0.6036992
-delta =  0.60369825
-delta =  1.0
        >> best delta     : 1.1333951
 root
 ├── 1_36
@@ -680,155 +93,8 @@ root
 ├── Yellow_Breasted_Chat_0110_21871
 └── Yellow_Warbler_0123_176471
 
-delta =  0.38897908
-delta =  0.34598064
-delta =  0.54490215
-delta =  0.3285148
-delta =  0.4450382
-delta =  0.30282593
-delta =  0.30503726
-delta =  0.5046556
-delta =  0.29681754
-delta =  0.39068496
-       >> tested couples : 10 on 136 in  0:01:12.946279
-delta =  0.36179447
-delta =  0.59430003
-delta =  0.30100715
-delta =  0.30080938
-delta =  0.6359087
-delta =  0.63590527
-delta =  0.44807363
-delta =  0.6274853
-delta =  0.42909527
-delta =  0.5535269
-       >> tested couples : 20 on 136 in  0:02:20.189650
-delta =  0.40043473
-delta =  0.40301847
-delta =  0.6162269
-delta =  0.3933289
-delta =  0.4959581
-delta =  0.46509576
-delta =  0.71011543
-delta =  0.39833188
-delta =  0.3922217
-delta =  0.71716833
-       >> tested couples : 30 on 136 in  0:03:07.800947
-delta =  0.71716905
-delta =  0.58861357
-delta =  0.38443124
-delta =  0.50632143
-delta =  0.356735
-delta =  0.35920823
-delta =  0.5680516
-delta =  0.34997833
-delta =  0.44978786
-delta =  0.41956353
-       >> tested couples : 40 on 136 in  0:03:57.951571
-delta =  0.6605494
-delta =  0.35473144
-delta =  0.35050297
-delta =  0.6787213
-delta =  0.6787027
-delta =  0.57317716
-delta =  0.6789321
-delta =  0.55159456
-delta =  0.5533778
-delta =  0.73431945
-       >> tested couples : 50 on 136 in  0:06:10.450830
-delta =  0.5470558
-delta =  0.62897944
-delta =  0.602777
-delta =  0.8182099
-delta =  0.55016226
-delta =  0.5580383
-delta =  0.9069722
-delta =  0.907002
-delta =  0.48682332
-delta =  0.3389566
-       >> tested couples : 60 on 136 in  0:07:06.305156
-delta =  0.3413757
-delta =  0.5480461
-delta =  0.33237612
-delta =  0.43079853
-delta =  0.40088165
-delta =  0.6398289
-delta =  0.33699858
-delta =  0.33368325
-delta =  0.6635328
-delta =  0.6635334
-       >> tested couples : 70 on 136 in  0:08:40.266664
-delta =  0.45712316
-delta =  0.45982432
-delta =  0.6778083
-delta =  0.44963753
-delta =  0.5553136
-delta =  0.5237651
-delta =  0.7731416
-delta =  0.4549135
-delta =  0.44674993
-delta =  0.76817596
-       >> tested couples : 80 on 136 in  0:09:30.178701
-delta =  0.76817155
-delta =  0.31496596
-delta =  0.5173905
-delta =  0.3064096
-delta =  0.40209496
-delta =  0.37280202
-delta =  0.6079073
-delta =  0.31078732
-delta =  0.3093437
-delta =  0.642322
-       >> tested couples : 90 on 136 in  0:10:16.567695
-delta =  0.64232355
-delta =  0.520195
-delta =  0.3086642
-delta =  0.4046781
-delta =  0.3753171
-delta =  0.6108339
-delta =  0.31308973
-delta =  0.31143844
-delta =  0.6440621
-delta =  0.6440622
-       >> tested couples : 100 on 136 in  0:11:51.745976
-delta =  0.50954294
-delta =  0.61808324
-delta =  0.5858886
-delta =  0.83931303
-delta =  0.51510286
-delta =  0.50499976
-delta =  0.8231195
-delta =  0.82310367
-delta =  0.3949852
-delta =  0.36590672
-       >> tested couples : 110 on 136 in  0:13:37.499333
-delta =  0.5995891
-delta =  0.3045714
-delta =  0.30380547
-delta =  0.6379433
-delta =  0.63794345
-delta =  0.4668262
-delta =  0.71198225
-delta =  0.40000486
-delta =  0.39381754
-delta =  0.7186502
-       >> tested couples : 120 on 136 in  0:15:05.520720
-delta =  0.7186551
-delta =  0.67889667
-delta =  0.37073994
-delta =  0.3657837
-delta =  0.6927219
-delta =  0.6927228
-delta =  0.60548306
-delta =  0.59278417
-delta =  0.9064336
-delta =  0.90643525
+
        >> tested couples : 130 on 136 in  0:16:35.378022
-delta =  0.3076676
-delta =  0.6409522
-delta =  0.6409505
-delta =  0.64962983
-delta =  0.6496321
-delta =  1.0
        >> best delta     : 1.0
 root
 ├── 2010_005603
@@ -856,137 +122,7 @@ root
 ├── Yellow_Breasted_Chat_0110_21871
 └── Yellow_Warbler_0123_176471
 
-delta =  0.38897908
-delta =  0.34598064
-delta =  0.54490215
-delta =  0.3285148
-delta =  0.4450382
-delta =  0.30282593
-delta =  0.30503726
-delta =  0.5046556
-delta =  0.29681754
-delta =  0.39068496
-       >> tested couples : 10 on 120 in  0:01:12.626118
-delta =  0.36179447
-delta =  0.59430003
-delta =  0.30100715
-delta =  0.30080938
-delta =  0.63590765
-delta =  0.44807363
-delta =  0.6274853
-delta =  0.42909527
-delta =  0.5535269
-delta =  0.40043473
-       >> tested couples : 20 on 120 in  0:02:18.252540
-delta =  0.40301847
-delta =  0.6162269
-delta =  0.3933289
-delta =  0.4959581
-delta =  0.46509576
-delta =  0.71011543
-delta =  0.39833188
-delta =  0.3922217
-delta =  0.7171551
-delta =  0.58861357
-       >> tested couples : 30 on 120 in  0:03:06.962385
-delta =  0.38443124
-delta =  0.50632143
-delta =  0.356735
-delta =  0.35920823
-delta =  0.5680516
-delta =  0.34997833
-delta =  0.44978786
-delta =  0.41956353
-delta =  0.6605494
-delta =  0.35473144
-       >> tested couples : 40 on 120 in  0:03:58.151589
-delta =  0.35050297
-delta =  0.6787253
-delta =  0.57317716
-delta =  0.6789321
-delta =  0.55159456
-delta =  0.5533778
-delta =  0.73431945
-delta =  0.5470558
-delta =  0.62897944
-delta =  0.602777
-       >> tested couples : 50 on 120 in  0:05:28.918010
-delta =  0.8182099
-delta =  0.55016226
-delta =  0.5580383
-delta =  0.9069995
-delta =  0.48682332
-delta =  0.3389566
-delta =  0.3413757
-delta =  0.5480461
-delta =  0.33237612
-delta =  0.43079853
-       >> tested couples : 60 on 120 in  0:06:25.026162
-delta =  0.40088165
-delta =  0.6398289
-delta =  0.33699858
-delta =  0.33368325
-delta =  0.66353315
-delta =  0.45712316
-delta =  0.45982432
-delta =  0.6778083
-delta =  0.44963753
-delta =  0.5553136
-       >> tested couples : 70 on 120 in  0:07:55.338807
-delta =  0.5237651
-delta =  0.7731416
-delta =  0.4549135
-delta =  0.44674993
-delta =  0.7681513
-delta =  0.31496596
-delta =  0.5173905
-delta =  0.3064096
-delta =  0.40209496
-delta =  0.37280202
-       >> tested couples : 80 on 120 in  0:09:23.240422
-delta =  0.6079073
-delta =  0.31078732
-delta =  0.3093437
-delta =  0.6423232
-delta =  0.520195
-delta =  0.3086642
-delta =  0.4046781
-delta =  0.3753171
-delta =  0.6108339
-delta =  0.31308973
-       >> tested couples : 90 on 120 in  0:10:56.370046
-delta =  0.31143844
-delta =  0.6440461
-delta =  0.50954294
-delta =  0.61808324
-delta =  0.5858886
-delta =  0.83931303
-delta =  0.51510286
-delta =  0.50499976
-delta =  0.8231193
-delta =  0.3949852
-       >> tested couples : 100 on 120 in  0:12:42.356975
-delta =  0.36590672
-delta =  0.5995891
-delta =  0.3045714
-delta =  0.30380547
-delta =  0.6379431
-delta =  0.4668262
-delta =  0.71198225
-delta =  0.40000486
-delta =  0.39381754
-delta =  0.7186557
-       >> tested couples : 110 on 120 in  0:14:11.339455
-delta =  0.67889667
-delta =  0.37073994
-delta =  0.3657837
-delta =  0.6927163
-delta =  0.60548306
-delta =  0.59278417
-delta =  0.906435
-delta =  0.3076676
-delta =  0.6409488
-delta =  0.649631
+
        >> tested couples : 120 on 120 in  0:15:43.240668
        >> best delta     : 0.9069995
 root
@@ -1016,121 +152,8 @@ root
 ├── Yellow_Breasted_Chat_0110_21871
 └── Yellow_Warbler_0123_176471
 
-delta =  0.3945111
-delta =  0.35105777
-delta =  0.33336818
-delta =  0.45106208
-delta =  0.30723846
-delta =  0.30949962
-delta =  0.5111401
-delta =  0.30106878
-delta =  0.39623284
-delta =  0.36705065
-       >> tested couples : 10 on 105 in  0:01:11.972631
-delta =  0.6014087
-delta =  0.30537665
-delta =  0.30430377
-delta =  0.6379006
-delta =  0.4546075
-delta =  0.43539524
-delta =  0.5610502
-delta =  0.40627408
-delta =  0.40890992
-delta =  0.6242323
-       >> tested couples : 20 on 105 in  0:02:18.035258
-delta =  0.39899993
-delta =  0.5029838
-delta =  0.47181654
-delta =  0.71877337
-delta =  0.4041264
-delta =  0.3971026
-delta =  0.72048223
-delta =  0.39026582
-delta =  0.5133624
-delta =  0.36211538
-       >> tested couples : 30 on 105 in  0:03:09.221730
-delta =  0.36464
-delta =  0.57556725
-delta =  0.35519266
-delta =  0.45633793
-delta =  0.42581308
-delta =  0.6687088
-delta =  0.3600676
-delta =  0.3549379
-delta =  0.68161225
-delta =  0.49362683
-       >> tested couples : 40 on 105 in  0:03:59.069478
-delta =  0.34411108
-delta =  0.34658122
-delta =  0.5553212
-delta =  0.33736575
-delta =  0.43711472
-delta =  0.40689933
-delta =  0.6477432
-delta =  0.34210908
-delta =  0.33789885
-delta =  0.66620916
-       >> tested couples : 50 on 105 in  0:05:33.030951
-delta =  0.46345913
-delta =  0.466213
-delta =  0.6863432
-delta =  0.45580256
-delta =  0.5628538
-delta =  0.53099585
-delta =  0.78233933
-delta =  0.4612038
-delta =  0.45211303
-delta =  0.77194786
-       >> tested couples : 60 on 105 in  0:06:21.802980
-delta =  0.31972575
-delta =  0.5241914
-delta =  0.31095648
-delta =  0.4079504
-delta =  0.378363
-delta =  0.6153383
-delta =  0.31545353
-delta =  0.3131268
-delta =  0.64458656
-delta =  0.52704954
-       >> tested couples : 70 on 105 in  0:07:06.886573
-delta =  0.31326115
-delta =  0.41058564
-delta =  0.38092983
-delta =  0.6183195
-delta =  0.31780612
-delta =  0.31527042
-delta =  0.64637583
-delta =  0.51617074
-delta =  0.62610555
-delta =  0.59359694
-       >> tested couples : 80 on 105 in  0:08:41.138709
-delta =  0.84901667
-delta =  0.52185774
-delta =  0.5108144
-delta =  0.82731986
-delta =  0.4006722
-delta =  0.37130082
-delta =  0.6068435
-delta =  0.30907512
-delta =  0.3074305
-delta =  0.64005804
-       >> tested couples : 90 on 105 in  0:10:30.146251
-delta =  0.47356343
-delta =  0.7206576
-delta =  0.40581536
-delta =  0.39871395
-delta =  0.7219819
-delta =  0.6872523
-delta =  0.37625647
-delta =  0.3703941
-delta =  0.6957735
-delta =  0.6128669
+
        >> tested couples : 100 on 105 in  0:12:00.049645
-delta =  0.5992105
-delta =  0.9112184
-delta =  0.31140852
-delta =  0.6431801
-delta =  0.65102965
        >> best delta     : 0.9112184
 root
 ├── 2010_005603
@@ -1160,106 +183,8 @@ root
 ├── Yellow_Breasted_Chat_0110_21871
 └── Yellow_Warbler_0123_176471
 
-delta =  0.5401443
-delta =  0.48467386
-delta =  0.4610747
-delta =  0.60969543
-delta =  0.42330825
-delta =  0.42688668
-delta =  0.6819601
-delta =  0.41288543
-delta =  0.5422821
-delta =  0.50539327
-       >> tested couples : 10 on 91 in  0:01:12.252977
-delta =  0.420313
-delta =  0.39616716
-delta =  0.6901913
-delta =  0.6267302
-delta =  0.60133123
-delta =  0.7593756
-delta =  0.56003
-delta =  0.5640421
-delta =  0.83533025
-delta =  0.54830587
-       >> tested couples : 20 on 91 in  0:02:18.998816
-delta =  0.68812656
-delta =  0.64888835
-delta =  0.5566958
-delta =  0.5255351
-delta =  0.8075565
-delta =  0.5438957
-delta =  0.6989069
-delta =  0.5037408
-delta =  0.5076221
-delta =  0.77369285
-       >> tested couples : 30 on 91 in  0:03:08.631207
-delta =  0.49243212
-delta =  0.6288941
-delta =  0.5904162
-delta =  0.5005233
-delta =  0.47160304
-delta =  0.75749815
-delta =  0.6728859
-delta =  0.4797697
-delta =  0.4835868
-delta =  0.74706936
-       >> tested couples : 40 on 91 in  0:04:00.179645
-delta =  0.46866953
-delta =  0.60348034
-delta =  0.5653703
-delta =  0.47660637
-delta =  0.44877553
-delta =  0.736588
-delta =  0.63034606
-delta =  0.6344981
-delta =  0.9114878
-delta =  0.6181698
-       >> tested couples : 50 on 91 in  0:05:19.158188
-delta =  0.7616255
-delta =  0.7215681
-delta =  0.6268861
-delta =  0.593282
-delta =  0.8711153
-delta =  0.44496346
-delta =  0.7033851
-delta =  0.43057275
-delta =  0.5621302
-delta =  0.52476084
-       >> tested couples : 60 on 91 in  0:06:47.217300
-delta =  0.438218
-delta =  0.41259992
-delta =  0.7041245
-delta =  0.70766234
-delta =  0.4341997
-delta =  0.5661428
-delta =  0.528692
-delta =  0.44189692
-delta =  0.41603243
-delta =  0.70711654
-       >> tested couples : 70 on 91 in  0:08:58.952020
-delta =  0.6907792
-delta =  0.8376546
-delta =  0.7968247
-delta =  0.6998279
-delta =  0.66391706
-delta =  0.93783736
-delta =  0.5503993
-delta =  0.51328754
-delta =  0.42755258
-delta =  0.40273666
-       >> tested couples : 80 on 91 in  0:10:27.770598
-delta =  0.69562966
-delta =  0.65107083
-delta =  0.55880713
-delta =  0.5275575
-delta =  0.8094317
-delta =  0.521479
-delta =  0.49168944
-delta =  0.7760669
-delta =  0.40977025
-delta =  0.7016575
+
        >> tested couples : 90 on 91 in  0:12:24.214180
-delta =  0.68799603
        >> best delta     : 0.93783736
 root
 ├── 2010_005603
@@ -1290,92 +215,10 @@ root
 ├── Yellow_Breasted_Chat_0110_21871
 └── Yellow_Warbler_0123_176471
 
-delta =  0.69106483
-delta =  0.62305605
-delta =  0.5932965
-delta =  0.77419734
-delta =  0.54341054
-delta =  0.54836
-delta =  0.52856183
-delta =  0.6936369
-delta =  0.6487051
-delta =  0.5392355
-       >> tested couples : 10 on 78 in  0:01:33.101382
-delta =  0.49110496
-delta =  0.7441267
-delta =  0.80534387
-delta =  0.77347016
-delta =  0.965456
-delta =  0.71943426
-delta =  0.7248845
-delta =  0.70306134
-delta =  0.88037896
-delta =  0.8326843
-       >> tested couples : 20 on 78 in  0:02:19.274467
-delta =  0.7148602
-delta =  0.65851367
-delta =  0.89751375
-delta =  0.70316815
-delta =  0.89158034
-delta =  0.650478
-delta =  0.65577507
-delta =  0.63459325
-delta =  0.807961
-delta =  0.76116085
-       >> tested couples : 30 on 78 in  0:03:11.216785
-delta =  0.6460397
-delta =  0.592325
-delta =  0.8358582
-delta =  0.85897255
-delta =  0.6202818
-delta =  0.6255039
-delta =  0.6046407
-delta =  0.7760687
-delta =  0.72970223
-delta =  0.6159073
-       >> tested couples : 40 on 78 in  0:04:04.484679
-delta =  0.5634738
-delta =  0.8092314
-delta =  0.8034799
-delta =  0.80909467
-delta =  0.78657556
-delta =  0.96817493
-delta =  0.91951346
-delta =  0.79875946
-delta =  0.7395427
-delta =  0.97365975
-       >> tested couples : 50 on 78 in  0:06:01.259903
-delta =  0.57461286
-delta =  0.5543672
-delta =  0.7219775
-delta =  0.6764796
-delta =  0.56529105
-delta =  0.5154419
-delta =  0.76554966
-delta =  0.559371
-delta =  0.7274294
-delta =  0.6818354
-       >> tested couples : 60 on 78 in  0:07:30.579594
-delta =  0.57035136
-delta =  0.52021384
-delta =  0.76982915
-delta =  0.7055948
-delta =  0.6604018
-delta =  0.55016124
-delta =  0.50124955
-delta =  0.75295144
-delta =  0.83532286
-delta =  0.71741295
+
        >> tested couples : 70 on 78 in  0:08:58.273910
-delta =  0.66096425
-delta =  0.8998002
-delta =  0.67197084
-delta =  0.6172323
-delta =  0.858986
-delta =  0.5114573
-delta =  0.7619836
-delta =  0.7260819
        >> best delta     : 0.97365975
+
 root
 ├── 2010_005603
 ├── 2010_005608
@@ -1406,79 +249,10 @@ root
 ├── Yellow_Breasted_Chat_0110_21871
 └── Yellow_Warbler_0123_176471
 
-delta =  0.8497088
-delta =  0.76842594
-delta =  0.73215127
-delta =  0.6694591
-delta =  0.6758566
-delta =  0.64993775
-delta =  0.852741
-delta =  0.7992921
-delta =  0.6640384
-delta =  0.5906143
-       >> tested couples : 10 on 66 in  0:01:32.488025
-delta =  0.80053836
-delta =  0.993366
-delta =  0.9546163
-delta =  0.8870692
-delta =  0.89404464
-delta =  0.86576843
-delta =  1.082901
-delta =  1.0262134
-delta =  0.881181
-delta =  0.7981683
-       >> tested couples : 20 on 66 in  0:02:19.034445
-delta =  0.9917942
-delta =  0.8706634
-delta =  0.8046913
-delta =  0.8114879
-delta =  0.783962
-delta =  0.99646497
-delta =  0.9408269
-delta =  0.7989607
-delta =  0.7190279
-delta =  0.91792464
-       >> tested couples : 30 on 66 in  0:03:11.543349
-delta =  0.7679057
-delta =  0.7746146
-delta =  0.7474605
-delta =  0.95769215
-delta =  0.9025636
-delta =  0.76224947
-delta =  0.6838175
-delta =  0.88531005
-delta =  0.7107481
-delta =  0.68431544
-       >> tested couples : 40 on 66 in  0:05:09.587595
-delta =  0.89008236
-delta =  0.8359692
-delta =  0.6987034
-delta =  0.6232799
-delta =  0.82981974
-delta =  0.69077384
-delta =  0.8970604
-delta =  0.8428347
-delta =  0.7052237
-delta =  0.6294638
-       >> tested couples : 50 on 66 in  0:06:39.654043
-delta =  0.8354327
-delta =  0.8687682
-delta =  0.81501436
-delta =  0.67885697
-delta =  0.6045252
-delta =  0.812919
-delta =  1.0293369
-delta =  0.88420177
-delta =  0.801072
-delta =  0.9945179
+
        >> tested couples : 60 on 66 in  0:08:06.804831
-delta =  0.8301606
-delta =  0.7490276
-delta =  0.9458569
-delta =  0.618078
-delta =  0.82511103
-delta =  0.76588595
        >> best delta     : 1.082901
+
 root
 ├── 2010_005603
 ├── 2010_005725
@@ -1510,67 +284,10 @@ root
 ├── Yellow_Breasted_Chat_0110_21871
 └── Yellow_Warbler_0123_176471
 
-delta =  1.0900073
-delta =  1.0391579
-delta =  0.9478636
-delta =  0.9574921
-delta =  0.9179207
-delta =  1.1325545
-delta =  0.9396639
-delta =  0.8099321
-delta =  0.92444277
-delta =  0.9244452
-       >> tested couples : 10 on 55 in  0:01:10.533728
-delta =  1.2418535
-delta =  1.1460795
-delta =  1.1562369
-delta =  1.1144962
-delta =  1.3393815
-delta =  1.1374521
-delta =  0.99889255
-delta =  1.0985416
-delta =  1.0985432
-delta =  1.0945323
-       >> tested couples : 20 on 55 in  0:02:00.501334
-delta =  1.1045704
-delta =  1.063335
-delta =  1.2858114
-delta =  1.0860069
-delta =  0.94949925
-delta =  1.0526466
-delta =  1.0526508
-delta =  1.0116758
-delta =  0.9714234
-delta =  1.1891882
-       >> tested couples : 30 on 55 in  0:03:59.137431
-delta =  0.99354744
-delta =  0.8611133
-delta =  0.97107613
-delta =  0.9710765
-delta =  0.98112965
-delta =  1.1994405
-delta =  1.0033293
-delta =  0.8704386
-delta =  0.979632
-delta =  0.97963274
-       >> tested couples : 40 on 55 in  0:05:28.010273
-delta =  1.1572974
-delta =  0.96316886
-delta =  0.8322128
-delta =  0.9446681
-delta =  0.9446671
-delta =  1.180464
-delta =  1.0402601
-delta =  1.1371139
-delta =  1.1371039
-delta =  0.85320365
+
        >> tested couples : 50 on 55 in  0:07:42.350387
-delta =  0.9638305
-delta =  0.96383095
-delta =  0.85319644
-delta =  0.85319585
-delta =  1.0
        >> best delta     : 1.3393815
+
 root
 ├── 2010_005603
 ├── 2010_005968
@@ -1603,56 +320,10 @@ root
 ├── Yellow_Breasted_Chat_0110_21871
 └── Yellow_Warbler_0123_176471
 
-delta =  1.4121511
-delta =  1.2855675
-delta =  1.2991767
-delta =  1.2427943
-delta =  1.2739449
-delta =  1.0750902
-delta =  1.0734549
-delta =  1.0734568
-delta =  1.0734562
-delta =  1.4917974
-       >> tested couples : 10 on 45 in  0:01:09.875559
-delta =  1.50596
-delta =  1.4472921
-delta =  1.4797192
-delta =  1.2715418
-delta =  1.254376
-delta =  1.2543794
-delta =  1.254377
-delta =  1.3771591
-delta =  1.3198535
-delta =  1.3515203
-       >> tested couples : 20 on 45 in  0:03:10.495586
-delta =  1.1489531
-delta =  1.1411194
-delta =  1.1411197
-delta =  1.1411091
-delta =  1.3335652
-delta =  1.3653281
-delta =  1.1621314
-delta =  1.1532463
-delta =  1.1532468
-delta =  1.1532401
-       >> tested couples : 30 on 45 in  0:04:41.498526
-delta =  1.308152
-delta =  1.1076182
-delta =  1.1031833
-delta =  1.1031824
-delta =  1.1031826
-delta =  1.1377236
-delta =  1.1307963
-delta =  1.1307968
-delta =  1.1307967
-delta =  0.9579875
+
        >> tested couples : 40 on 45 in  0:06:11.819961
-delta =  0.957987
-delta =  0.9579877
-delta =  1.0
-delta =  1.0
-delta =  1.0
        >> best delta     : 1.50596
+
 root
 ├── 10_10
 │   ├── 2010_005968
@@ -1686,46 +357,9 @@ root
 ├── Yellow_Breasted_Chat_0110_21871
 └── Yellow_Warbler_0123_176471
 
-delta =  1.6724174
-delta =  1.6146886
-delta =  1.6568027
-delta =  1.3776486
-delta =  1.242427
-delta =  1.2424284
-delta =  1.242428
-delta =  1.2424291
-delta =  1.7192228
-delta =  1.7620397
-       >> tested couples : 10 on 36 in  0:01:06.547489
-delta =  1.4777948
-delta =  1.3341573
-delta =  1.3341576
-delta =  1.3341501
-delta =  1.334155
-delta =  1.7034965
-delta =  1.4220433
-delta =  1.283023
-delta =  1.2830224
-delta =  1.2830224
-       >> tested couples : 20 on 36 in  0:02:36.504519
-delta =  1.2830156
-delta =  1.4627141
-delta =  1.3203095
-delta =  1.3203098
-delta =  1.3203098
-delta =  1.32031
-delta =  1.0765345
-delta =  1.076534
-delta =  1.0765345
-delta =  1.0765303
        >> tested couples : 30 on 36 in  0:03:31.162487
-delta =  1.0
-delta =  1.0
-delta =  1.0
-delta =  1.0
-delta =  1.0
-delta =  1.0
        >> best delta     : 1.7620397
+
 root
 ├── 10_10
 │   ├── 2010_005968
@@ -1760,36 +394,8 @@ root
 ├── Tennessee_Warbler_0034_174854
 └── Yellow_Warbler_0123_176471
 
-delta =  2.0721016
-delta =  1.7483337
-delta =  1.4479064
-delta =  1.447907
-delta =  1.4479069
-delta =  1.4479074
-delta =  1.4479067
-delta =  1.8075233
-delta =  1.5018501
-delta =  1.5018498
-       >> tested couples : 10 on 28 in  0:00:45.617584
-delta =  1.5018499
-delta =  1.5018463
-delta =  1.5018501
-delta =  1.2202904
-delta =  1.2202902
-delta =  1.2202904
-delta =  1.2202882
-delta =  1.2202911
-delta =  1.0
-delta =  1.0
+
        >> tested couples : 20 on 28 in  0:01:40.357571
-delta =  1.0
-delta =  1.0
-delta =  1.0
-delta =  1.0
-delta =  1.0
-delta =  1.0
-delta =  1.0
-delta =  1.0
        >> best delta     : 2.0721016
 [TIME] -- growing took  2:40:30.672992
 -------------------------------------------------
@@ -1801,4 +407,471 @@ delta =  1.0
 -------------------------------------------------
 [TIME] -- test on  20  images took  2:40:33.331791
 ----------------------------------------------------------------------------------------------------------------------------------
-----------------------------------------------------------------------------------------------------------------------------------####################################################Time elapsed: 0:06:01.248471
+[[[20 nodes, dictionary optimization]]]----------------------------------------------------------------------------------------------------------------------------------
+[TIME] -- sowing started 
+>> created 20 nodes
+[TIME] ----- init leaves took         0:00:03.345157
+[TIME] ----- vectorifing leaves took  0:00:00.017919
+[TIME] ----- computing E took         0:00:00.004405
+[TIME] -- sowing took   0:00:03.371819
+-------------------------------------------------
+[TREE] -- nodes:........... 21
+       -- generic nodes:... 0
+       -- leaves:.......... 20
+       -- gamma:........... 4.7331426e-08
+       -- s (shape):....... (512,)
+-------------------------------------------------
+[TIME] -- growing started  
+
+       >> tested couples : 190 on 190 in  0:21:42.620727
+       >> best delta     : 4.2559195
+       >> len(nodes_dict): 190
+       >> unbornify removed 36 entries
+root
+├── 0_100
+│   ├── 2010_005960
+│   └── 2010_005993
+├── 2010_005603
+├── 2010_005608
+├── 2010_005651
+├── 2010_005725
+├── 2010_005837
+├── 2010_005896
+├── 2010_005968
+├── 2010_006084
+├── Red_Headed_Woodpecker_0017_183777
+├── Ring_Billed_Gull_0050_51567
+├── Sage_Thrasher_0019_107436
+├── Seaside_Sparrow_0056_120710
+├── Tennessee_Warbler_0034_174854
+├── Vesper_Sparrow_0033_125568
+├── Western_Meadowlark_0109_77990
+├── White_Pelican_0084_95877
+├── Yellow_Breasted_Chat_0110_21871
+└── Yellow_Warbler_0123_176471
+
+       >> tested couples : 170 on 171 in  0:01:50.200111
+       >> best delta     : 1.2529626
+       >> len(nodes_dict): 172
+       >> unbornify removed 34 entries
+
+root
+├── 0_100
+│   ├── 2010_005960
+│   └── 2010_005993
+├── 0_38
+│   ├── 2010_005651
+│   └── 2010_005837
+├── 2010_005603
+├── 2010_005608
+├── 2010_005725
+├── 2010_005896
+├── 2010_005968
+├── 2010_006084
+├── Red_Headed_Woodpecker_0017_183777
+├── Ring_Billed_Gull_0050_51567
+├── Sage_Thrasher_0019_107436
+├── Seaside_Sparrow_0056_120710
+├── Tennessee_Warbler_0034_174854
+├── Vesper_Sparrow_0033_125568
+├── Western_Meadowlark_0109_77990
+├── White_Pelican_0084_95877
+├── Yellow_Breasted_Chat_0110_21871
+└── Yellow_Warbler_0123_176471
+
+       >> tested couples : 150 on 153 in  0:02:37.984550
+       >> best delta     : 1.1333927
+       >> len(nodes_dict): 155
+       >> unbornify removed 32 entries
+
+root
+├── 0_100
+│   ├── 2010_005960
+│   └── 2010_005993
+├── 2010_005603
+├── 2010_005608
+├── 2010_005725
+├── 2010_005896
+├── 2010_005968
+├── 2010_006084
+├── 2_124
+│   ├── 0_38
+│   │   ├── 2010_005651
+│   │   └── 2010_005837
+│   └── Seaside_Sparrow_0056_120710
+├── Red_Headed_Woodpecker_0017_183777
+├── Ring_Billed_Gull_0050_51567
+├── Sage_Thrasher_0019_107436
+├── Tennessee_Warbler_0034_174854
+├── Vesper_Sparrow_0033_125568
+├── Western_Meadowlark_0109_77990
+├── White_Pelican_0084_95877
+├── Yellow_Breasted_Chat_0110_21871
+└── Yellow_Warbler_0123_176471
+
+
+       >> tested couples : 130 on 136 in  0:01:15.657631
+       >> best delta     : 1.0
+       >> len(nodes_dict): 139
+       >> unbornify removed 30 entries
+root
+├── 2010_005603
+├── 2010_005608
+├── 2010_005725
+├── 2010_005896
+├── 2010_005968
+├── 2010_006084
+├── 3_135
+│   ├── 0_100
+│   │   ├── 2010_005960
+│   │   └── 2010_005993
+│   └── 2_124
+│       ├── 0_38
+│       │   ├── 2010_005651
+│       │   └── 2010_005837
+│       └── Seaside_Sparrow_0056_120710
+├── Red_Headed_Woodpecker_0017_183777
+├── Ring_Billed_Gull_0050_51567
+├── Sage_Thrasher_0019_107436
+├── Tennessee_Warbler_0034_174854
+├── Vesper_Sparrow_0033_125568
+├── Western_Meadowlark_0109_77990
+├── White_Pelican_0084_95877
+├── Yellow_Breasted_Chat_0110_21871
+└── Yellow_Warbler_0123_176471
+
+
+       >> tested couples : 120 on 120 in  0:02:15.432091
+       >> best delta     : 0.90700316
+       >> len(nodes_dict): 124
+       >> unbornify removed 28 entries
+
+root
+├── 2010_005603
+├── 2010_005608
+├── 2010_005725
+├── 2010_005968
+├── 2010_006084
+├── 4_53
+│   ├── 2010_005896
+│   └── 3_135
+│       ├── 0_100
+│       │   ├── 2010_005960
+│       │   └── 2010_005993
+│       └── 2_124
+│           ├── 0_38
+│           │   ├── 2010_005651
+│           │   └── 2010_005837
+│           └── Seaside_Sparrow_0056_120710
+├── Red_Headed_Woodpecker_0017_183777
+├── Ring_Billed_Gull_0050_51567
+├── Sage_Thrasher_0019_107436
+├── Tennessee_Warbler_0034_174854
+├── Vesper_Sparrow_0033_125568
+├── Western_Meadowlark_0109_77990
+├── White_Pelican_0084_95877
+├── Yellow_Breasted_Chat_0110_21871
+└── Yellow_Warbler_0123_176471
+
+       >> best delta     : 0.9112184
+       >> len(nodes_dict): 110
+       >> unbornify removed 26 entries
+
+root
+├── 2010_005603
+├── 2010_005608
+├── 2010_005725
+├── 2010_005968
+├── 2010_006084
+├── 5_101
+│   ├── 4_53
+│   │   ├── 2010_005896
+│   │   └── 3_135
+│   │       ├── 0_100
+│   │       │   ├── 2010_005960
+│   │       │   └── 2010_005993
+│   │       └── 2_124
+│   │           ├── 0_38
+│   │           │   ├── 2010_005651
+│   │           │   └── 2010_005837
+│   │           └── Seaside_Sparrow_0056_120710
+│   └── White_Pelican_0084_95877
+├── Red_Headed_Woodpecker_0017_183777
+├── Ring_Billed_Gull_0050_51567
+├── Sage_Thrasher_0019_107436
+├── Tennessee_Warbler_0034_174854
+├── Vesper_Sparrow_0033_125568
+├── Western_Meadowlark_0109_77990
+├── Yellow_Breasted_Chat_0110_21871
+└── Yellow_Warbler_0123_176471
+
+       >> tested couples : 90 on 91 in  0:00:54.395935
+       >> best delta     : 0.93783426
+       >> len(nodes_dict): 97
+       >> unbornify removed 24 entries
+
+root
+├── 2010_005603
+├── 2010_005608
+├── 2010_005725
+├── 2010_005968
+├── 2010_006084
+├── 6_75
+│   ├── 5_101
+│   │   ├── 4_53
+│   │   │   ├── 2010_005896
+│   │   │   └── 3_135
+│   │   │       ├── 0_100
+│   │   │       │   ├── 2010_005960
+│   │   │       │   └── 2010_005993
+│   │   │       └── 2_124
+│   │   │           ├── 0_38
+│   │   │           │   ├── 2010_005651
+│   │   │           │   └── 2010_005837
+│   │   │           └── Seaside_Sparrow_0056_120710
+│   │   └── White_Pelican_0084_95877
+│   └── Sage_Thrasher_0019_107436
+├── Red_Headed_Woodpecker_0017_183777
+├── Ring_Billed_Gull_0050_51567
+├── Tennessee_Warbler_0034_174854
+├── Vesper_Sparrow_0033_125568
+├── Western_Meadowlark_0109_77990
+├── Yellow_Breasted_Chat_0110_21871
+└── Yellow_Warbler_0123_176471
+
+
+       >> tested couples : 70 on 78 in  0:00:40.143776
+       >> best delta     : 0.9736582
+       >> len(nodes_dict): 85
+       >> unbornify removed 22 entries
+       
+root
+├── 2010_005603
+├── 2010_005608
+├── 2010_005725
+├── 2010_005968
+├── 7_49
+│   ├── 2010_006084
+│   └── 6_75
+│       ├── 5_101
+│       │   ├── 4_53
+│       │   │   ├── 2010_005896
+│       │   │   └── 3_135
+│       │   │       ├── 0_100
+│       │   │       │   ├── 2010_005960
+│       │   │       │   └── 2010_005993
+│       │   │       └── 2_124
+│       │   │           ├── 0_38
+│       │   │           │   ├── 2010_005651
+│       │   │           │   └── 2010_005837
+│       │   │           └── Seaside_Sparrow_0056_120710
+│       │   └── White_Pelican_0084_95877
+│       └── Sage_Thrasher_0019_107436
+├── Red_Headed_Woodpecker_0017_183777
+├── Ring_Billed_Gull_0050_51567
+├── Tennessee_Warbler_0034_174854
+├── Vesper_Sparrow_0033_125568
+├── Western_Meadowlark_0109_77990
+├── Yellow_Breasted_Chat_0110_21871
+└── Yellow_Warbler_0123_176471
+
+
+       >> tested couples : 60 on 66 in  0:00:36.329780
+       >> best delta     : 1.0828986
+       >> len(nodes_dict): 74
+       >> unbornify removed 20 entries
+
+root
+├── 0_32
+│   ├── 2010_005608
+│   └── Vesper_Sparrow_0033_125568
+├── 2010_005603
+├── 2010_005725
+├── 2010_005968
+├── 7_49
+│   ├── 2010_006084
+│   └── 6_75
+│       ├── 5_101
+│       │   ├── 4_53
+│       │   │   ├── 2010_005896
+│       │   │   └── 3_135
+│       │   │       ├── 0_100
+│       │   │       │   ├── 2010_005960
+│       │   │       │   └── 2010_005993
+│       │   │       └── 2_124
+│       │   │           ├── 0_38
+│       │   │           │   ├── 2010_005651
+│       │   │           │   └── 2010_005837
+│       │   │           └── Seaside_Sparrow_0056_120710
+│       │   └── White_Pelican_0084_95877
+│       └── Sage_Thrasher_0019_107436
+├── Red_Headed_Woodpecker_0017_183777
+├── Ring_Billed_Gull_0050_51567
+├── Tennessee_Warbler_0034_174854
+├── Western_Meadowlark_0109_77990
+├── Yellow_Breasted_Chat_0110_21871
+└── Yellow_Warbler_0123_176471
+
+
+       >> tested couples : 50 on 55 in  0:00:34.217235
+       >> best delta     : 1.3393817
+       >> len(nodes_dict): 64
+       >> unbornify removed 18 entries
+
+root
+├── 0_32
+│   ├── 2010_005608
+│   └── Vesper_Sparrow_0033_125568
+├── 0_66
+│   ├── 2010_005725
+│   └── Western_Meadowlark_0109_77990
+├── 2010_005603
+├── 2010_005968
+├── 7_49
+│   ├── 2010_006084
+│   └── 6_75
+│       ├── 5_101
+│       │   ├── 4_53
+│       │   │   ├── 2010_005896
+│       │   │   └── 3_135
+│       │   │       ├── 0_100
+│       │   │       │   ├── 2010_005960
+│       │   │       │   └── 2010_005993
+│       │   │       └── 2_124
+│       │   │           ├── 0_38
+│       │   │           │   ├── 2010_005651
+│       │   │           │   └── 2010_005837
+│       │   │           └── Seaside_Sparrow_0056_120710
+│       │   └── White_Pelican_0084_95877
+│       └── Sage_Thrasher_0019_107436
+├── Red_Headed_Woodpecker_0017_183777
+├── Ring_Billed_Gull_0050_51567
+├── Tennessee_Warbler_0034_174854
+├── Yellow_Breasted_Chat_0110_21871
+└── Yellow_Warbler_0123_176471
+
+       >> tested couples : 40 on 45 in  0:02:34.977143
+       >> best delta     : 1.5059514
+       >> len(nodes_dict): 55
+       >> unbornify removed 16 entries
+
+root
+├── 0_115
+│   ├── 2010_005968
+│   └── Ring_Billed_Gull_0050_51567
+├── 0_32
+│   ├── 2010_005608
+│   └── Vesper_Sparrow_0033_125568
+├── 0_66
+│   ├── 2010_005725
+│   └── Western_Meadowlark_0109_77990
+├── 2010_005603
+├── 7_49
+│   ├── 2010_006084
+│   └── 6_75
+│       ├── 5_101
+│       │   ├── 4_53
+│       │   │   ├── 2010_005896
+│       │   │   └── 3_135
+│       │   │       ├── 0_100
+│       │   │       │   ├── 2010_005960
+│       │   │       │   └── 2010_005993
+│       │   │       └── 2_124
+│       │   │           ├── 0_38
+│       │   │           │   ├── 2010_005651
+│       │   │           │   └── 2010_005837
+│       │   │           └── Seaside_Sparrow_0056_120710
+│       │   └── White_Pelican_0084_95877
+│       └── Sage_Thrasher_0019_107436
+├── Red_Headed_Woodpecker_0017_183777
+├── Tennessee_Warbler_0034_174854
+├── Yellow_Breasted_Chat_0110_21871
+└── Yellow_Warbler_0123_176471
+
+       >> tested couples : 30 on 36 in  0:00:41.457622
+       >> best delta     : 1.7620409
+       >> len(nodes_dict): 47
+       >> unbornify removed 14 entries
+
+root
+├── 0_115
+│   ├── 2010_005968
+│   └── Ring_Billed_Gull_0050_51567
+├── 0_152
+│   ├── Red_Headed_Woodpecker_0017_183777
+│   └── Yellow_Breasted_Chat_0110_21871
+├── 0_32
+│   ├── 2010_005608
+│   └── Vesper_Sparrow_0033_125568
+├── 0_66
+│   ├── 2010_005725
+│   └── Western_Meadowlark_0109_77990
+├── 2010_005603
+├── 7_49
+│   ├── 2010_006084
+│   └── 6_75
+│       ├── 5_101
+│       │   ├── 4_53
+│       │   │   ├── 2010_005896
+│       │   │   └── 3_135
+│       │   │       ├── 0_100
+│       │   │       │   ├── 2010_005960
+│       │   │       │   └── 2010_005993
+│       │   │       └── 2_124
+│       │   │           ├── 0_38
+│       │   │           │   ├── 2010_005651
+│       │   │           │   └── 2010_005837
+│       │   │           └── Seaside_Sparrow_0056_120710
+│       │   └── White_Pelican_0084_95877
+│       └── Sage_Thrasher_0019_107436
+├── Tennessee_Warbler_0034_174854
+└── Yellow_Warbler_0123_176471
+
+       >> tested couples : 20 on 28 in  0:00:57.555512
+       >> best delta     : 2.0720987
+       >> len(nodes_dict): 40
+[TIME] -- growing took  0:40:01.222845
+-------------------------------------------------
+[TREE] -- nodes:........... 33
+       -- generic nodes:... 12
+       -- leaves:.......... 20
+       -- gamma:........... 4.7331426e-08
+       -- s (shape):....... (512,)
+-------------------------------------------------
+root
+├── 0_115
+│   ├── 2010_005968
+│   └── Ring_Billed_Gull_0050_51567
+├── 0_152
+│   ├── Red_Headed_Woodpecker_0017_183777
+│   └── Yellow_Breasted_Chat_0110_21871
+├── 0_32
+│   ├── 2010_005608
+│   └── Vesper_Sparrow_0033_125568
+├── 0_66
+│   ├── 2010_005725
+│   └── Western_Meadowlark_0109_77990
+├── 2010_005603
+├── 7_49
+│   ├── 2010_006084
+│   └── 6_75
+│       ├── 5_101
+│       │   ├── 4_53
+│       │   │   ├── 2010_005896
+│       │   │   └── 3_135
+│       │   │       ├── 0_100
+│       │   │       │   ├── 2010_005960
+│       │   │       │   └── 2010_005993
+│       │   │       └── 2_124
+│       │   │           ├── 0_38
+│       │   │           │   ├── 2010_005651
+│       │   │           │   └── 2010_005837
+│       │   │           └── Seaside_Sparrow_0056_120710
+│       │   └── White_Pelican_0084_95877
+│       └── Sage_Thrasher_0019_107436
+├── Tennessee_Warbler_0034_174854
+└── Yellow_Warbler_0123_176471
+
+Tree saved in  ./forest/test_tree_20_imgs.json
+[TIME] -- test on  20  images took  0:40:04.878951
+Evvai.
