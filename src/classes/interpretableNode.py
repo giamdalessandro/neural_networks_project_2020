@@ -65,7 +65,7 @@ class InterpretableNode(tl.Node):
         x = self.x if xx is None else xx
 
         w = self.w if self.w.shape == [512, 1] else tf.reshape(self.w, shape=[512, 1])
-        x = tf.reshape(x, shape=[512, 1]) if (x.shape != [512, 1] and x is not None) else x
+        x = tf.reshape(x, shape=[512, 1]) if (x is not None and x.shape != [512, 1]) else x
 
         if self.w is None:
             print("[ERR] >> w is None ------------------------------------------------")

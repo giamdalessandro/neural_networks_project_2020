@@ -36,7 +36,7 @@ def optimize_g(g1, g2, fake=True):
 
     def objective(x):
         g_sum = tf.math.add(g1, g2)
-        return tf.reduce_sum(tf.math.multiply(-1*g_sum,x)).numpy()
+        return tf.reduce_sum(tf.math.multiply(-1*g_sum, x)).numpy()
 
     def constraint1(x):
         sum_eq = 1.0
