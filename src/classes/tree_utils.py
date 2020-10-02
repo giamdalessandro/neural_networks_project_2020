@@ -168,7 +168,12 @@ def grow(old_tree, y_dict, x_dict):
         old_tree = new_tree
         new_tree.show()
         
+        txt_log(new_tree, start)
+
     print("[TIME] -- growing took ", dt.now()-start)
+
+
+
     return new_tree
 
 
@@ -233,3 +238,13 @@ def from_json(res_tree, save_path):
 
     res_tree.show()
     return res_tree
+
+
+def txt_log(tree, start_time, path="./log.txt"):
+    with open(path, "a") as f:
+        f.write("####################################################")
+        f.write("Time elapsed: {}\n".format(dt.now() - start_time))
+        f.write(tree.show())
+        f.write("--------------------------------")
+        f.write(tree.info())
+    f.close()
