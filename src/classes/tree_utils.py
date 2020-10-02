@@ -29,19 +29,17 @@ def optimize_g(g1, g2, fake=True):
         return tf.ones(shape=[512,1])
 
     from classes.interpretableNode import NUM_FILTERS
-    g1 = tf.reshape(g1, shape=[512]).numpy()
-    g2 = tf.reshape(g2, shape=[512]).numpy()
+    g1 = tf.reshape(g1, shape=[NUM_FILTERS])
+    g2 = tf.reshape(g2, shape=[NUM_FILTERS])
 
     b = (-1.0, 1.0)     # range nel quale può variare ogni elemento di g
 
     def objective(x):
         g_sum = tf.math.add(g1, g2)
-        return tf.reduce_sum(tf.math.multiply(-1*g_sum,x)).numpy()     # sum(-g_sum[0:]*x[0:])
+        return tf.reduce_sum(tf.math.multiply(-1*g_sum,x)).numpy()
 
     def constraint1(x):
         sum_eq = 1.0
-        #for i in range(NUM_FILTERS):
-        #    sum_eq = sum_eq - x[i]**2.0                                 # maybe more tf here
         return (sum_eq - tf.reduce_sum(tf.math.multiply(x,x)).numpy())
 
     x0 = np.zeros(NUM_FILTERS)
@@ -153,10 +151,8 @@ def grow(old_tree, y_dict, x_dict):
                     new_tree.ctrlz(v1, v2)
                     tested += 1
                     if tested % 10 == 0:
-                        print("       >> tested couples :", tested, "on", num_couples)
+                        print("       >> tested couples :", tested, "on", num_couples, "in ", dt.now()-start2)
             z += 1
-            print("       >> tested couples :", tested, "on", num_couples, "in ", dt.now()-start2)
-
 
         if len(second_layer) == 1:
             print("len(second_layer) == 1")
@@ -167,6 +163,7 @@ def grow(old_tree, y_dict, x_dict):
         
         t += 1
         new_tree.parentify(pid=new_node, nid1=nid1, nid2=nid2, theta=new_theta)
+        old_tree = new_tree
         new_tree.show()
         
     print("[TIME] -- growing took ", dt.now()-start)
