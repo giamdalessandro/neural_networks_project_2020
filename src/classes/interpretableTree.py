@@ -249,7 +249,7 @@ class InterpretableTree(tl.Tree):
         new_theta = (self.theta + node.exph_val - v1.exph_val - v2.exph_val)
         a = node.h_val - v1.h_val - v2.h_val
         b = len(self.leaves()) * log(self.theta / new_theta)
-        return (1 + a + b), new_theta
+        return (1 + self.gamma*a + b), new_theta
 
     def update_node_values(self, n1, n2):     # SEMI FAKE #
         """
