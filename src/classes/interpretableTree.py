@@ -80,13 +80,13 @@ class InterpretableTree(tl.Tree):
 
     # OVERRIDE #
     def create_node(self, tag=None, identifier=None, parent=None, g=np.zeros(shape=(NUM_FILTERS)),
-                    alpha=np.ones(shape=(NUM_FILTERS)), b=0, l=LAMBDA_0, x=0, w=None, exph_val=None):
+                    alpha=np.ones(shape=(NUM_FILTERS)), b=0, l=LAMBDA_0, x=0, w=None, h_val=None, exph_val=None):
         """
         Create a child node for given @parent node. If ``identifier`` is absent,
         a UUID will be generated automatically.
         """
         node = self.node_class(tag=tag, identifier=identifier,
-                               data=None, g=g, alpha=alpha, b=b, l=l, x=x, w=w, exph_val=exph_val)
+                               data=None, g=g, alpha=alpha, b=b, l=l, x=x, w=w, h_val=h_val, exph_val=exph_val)
         self.add_node(node, parent)
         return node
 
@@ -155,8 +155,7 @@ class InterpretableTree(tl.Tree):
                 g = compute_g(trained_model, flat_output)
                 x = tf.reshape(flat_output, shape=(7, 7, 512))
                 # inner product between g and x
-                b = tf.subtract(fc3_output, tf.reduce_sum(
-                    tf.math.multiply(g, x), axis=None))
+                b = tf.subtract(fc3_output, tf.reduce_sum(tf.math.multiply(g, x), axis=None))
 
                 s = tf.math.reduce_mean(x, axis=[0, 1])
                 s_list.append(s)
@@ -171,7 +170,7 @@ class InterpretableTree(tl.Tree):
                 # print(fc3_output, " = ", tf.add(tf.reduce_sum(tf.math.multiply(g, x), axis=None), b).numpy())
 
         # sum on s to obtain s(1,1,512) / # images in the positive set
-        self.s = tf.reduce_sum(s_list, axis=0)/len(fnmatch.filter(os.listdir(pos_image_folder), '*.jpg'))
+        self.s = tf.reduce_sum(s_list, axis=0)/len(self.all_nodes())    #len(fnmatch.filter(os.listdir(pos_image_folder), '*.jpg'))
         
         print("[TIME] ----- init leaves took        ", dt.now()-start)
         return y_dict
@@ -283,14 +282,19 @@ class InterpretableTree(tl.Tree):
         self.move_node(nid2.identifier, node.identifier)
         return node
   
-    def ctrlz(self, nid1, nid2):
+    def ctrlz(self, pid, nid1, nid2):
         """
         Undoes what try_pair() does
         """
-        killed = self.parent(nid1.identifier)
+        #killed = self.parent(nid1.identifier)
         self.move_node(nid1.identifier, self.root)
         self.move_node(nid2.identifier, self.root)
-        self.remove_node(killed.identifier)
+        if self.contains(pid.identifier):
+            self.remove_node(pid.identifier)
+        else:
+            print("[[[ERR]]]: i tried to delete this node: <tag:", pid.tag, ", id:", pid.identifier, "> but it was not in the tree! So strange...")
+            print("let's see the tree")
+            self.show()
 
     def parentify(self, pid, nid1, nid2, theta):
         """
@@ -300,20 +304,4 @@ class InterpretableTree(tl.Tree):
         self.add_node(pid, parent=self.root)
         self.move_node(nid1.identifier, pid.identifier)
         self.move_node(nid2.identifier, pid.identifier)
-        
-    '''
-    def unbornify(self, nid1, nid2, nodes_dict):
-        """
-        Kill 'em all
-        Removes unused entry in the nodes_dict
-        """
-        second_layer = self.children(self.root)
-        for v in second_layer:
-            if v.identifier != nid1.identifier and v.identifier != nid2.identifier:
-                id_tocheck = IDentify(nid1.identifier, v.identifier)
-                if id_tocheck in nodes_dict:
-                    nodes_dict.pop(id_tocheck)
-                id_tocheck = IDentify(nid2.identifier, v.identifier)
-                if id_tocheck in nodes_dict:
-                    nodes_dict.pop(id_tocheck)
-    '''
+

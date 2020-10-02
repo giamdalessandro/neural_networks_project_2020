@@ -12,7 +12,7 @@ from tensorflow.keras.models import Model
 from tensorflow.keras.applications.vgg16 import preprocess_input
 from tensorflow.keras.preprocessing.image import ImageDataGenerator, load_img, img_to_array
 
-from classes.tree_utils import STOP, L, DTYPE, LAMBDA_0, NUM_FILTERS
+from classes.tree_utils import L, DTYPE, LAMBDA_0, NUM_FILTERS
 
 
 class InterpretableNode(tl.Node):

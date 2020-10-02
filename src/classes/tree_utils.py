@@ -95,7 +95,7 @@ def IDentify(nid1, nid2):
     """
     Creates a unique ID such that follows this rule: when merging two nodes, the new node will have the combined ID of the two, with the first being the one with 
     """
-    return nid1+nid2 if nid1 < nid2 else nid2+nid1
+    return nid1+'#_#'+nid2 if nid1 < nid2 else nid2+'#_#'+nid1
 
 def sow(trained_model, pos_image_folder):
     """
@@ -147,6 +147,19 @@ def grow(old_tree, y_dict, x_dict):
                     
                     if nid in nodes_dict:
                         node = nodes_dict[nid]
+                        node = new_tree.create_node(tag=node.tag,
+                                                    identifier=node.identifier, 
+                                                    parent=new_tree.root, 
+                                                    g=node.g,
+                                                    alpha=node.alpha, 
+                                                    b=node.b,
+                                                    l=node.l, 
+                                                    x=node.x, 
+                                                    w=node.w,
+                                                    h_val=node.h_val,
+                                                    exph_val=node.exph_val)
+                        new_tree.move_node(v1.identifier, node.identifier)
+                        new_tree.move_node(v2.identifier, node.identifier)
                     else:
                         node = new_tree.try_pair(v1, v2, new_id=nid, tag=tag)
                         nodes_dict.update({nid:node})
@@ -165,7 +178,7 @@ def grow(old_tree, y_dict, x_dict):
                         new_theta = theta
                         max_delta = delta
                         
-                    new_tree.ctrlz(v1, v2)
+                    new_tree.ctrlz(node, v1, v2)
                     tested += 1
                     if tested % 10 == 0:
                         print("       >> tested couples :", tested, "on", num_couples, "in ", dt.now()-start2)
@@ -179,18 +192,31 @@ def grow(old_tree, y_dict, x_dict):
             break
         
         t += 1
+        unbornify(second_layer, nid1.identifier, nid2.identifier, nodes_dict)
         new_tree.parentify(pid=new_node, nid1=nid1, nid2=nid2, theta=new_theta)
         old_tree = new_tree
         new_tree.show()
         
-        txt_log(new_tree, start)
+        #txt_log(new_tree, start)
 
+    print("       >> len(nodes_dict):", len(nodes_dict))
     print("[TIME] -- growing took ", dt.now()-start)
-
-
-
     return new_tree
 
+
+def unbornify(root_children, nid1, nid2, nodes_dict):
+    len1 = len(nodes_dict)
+    print("       >> len(nodes_dict):", len1)
+    for v in root_children:
+        if (nid1 != v.identifier) and (nid2 != v.identifier):
+            id_tocheck = IDentify(v.identifier, nid1)
+            if id_tocheck in nodes_dict:
+                nodes_dict.pop(id_tocheck)
+            id_tocheck = IDentify(v.identifier, nid2)
+            if id_tocheck in nodes_dict:
+                nodes_dict.pop(id_tocheck)
+    print("       >> unbornify removed", len1-len(nodes_dict), "entries")
+            
 
 ######### SAVE & LOAD ###########
 
@@ -263,9 +289,11 @@ def from_json(res_tree, save_path):
 
 
 def txt_log(tree, start_time, path="./log.txt"):
-    with open(path, "a") as f:
+    '''with open(path, "a") as f:
         f.write("####################################################")
         f.write("Time elapsed: {}\n".format(dt.now() - start_time))
+        #f.write(tree.show())
         f.write("--------------------------------")
-        f.write(tree.info())
-    f.close()
+        #f.write(tree.info())
+    f.close()'''
+    raise NotImplementedError
