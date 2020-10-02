@@ -6,6 +6,7 @@ import random as rd
 import treelib as tl
 import tensorflow as tf
 
+from beepy import beep
 from math import sqrt, log, exp
 from scipy.optimize import minimize
 from datetime import datetime as dt
@@ -138,6 +139,8 @@ def grow(old_tree, y_dict, x_dict):
                     delta, theta = old_tree.compute_delta(node, v1, v2)
                     delta = delta.numpy()[0][0]
                     print("delta = ", delta)
+                    if delta > 0:
+                        beep(sound='coin')
                     if max_delta is None:
                         max_delta = delta
                     if max_delta is not None and delta > max_delta:  
