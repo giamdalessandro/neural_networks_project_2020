@@ -25,9 +25,9 @@ tree.info()
 
 new_tree = grow(tree, y_dict, x_dict)
 new_tree.info()
-#new_tree.show()
+new_tree.show()
 
-# saved = tree.save2json(save_name="test_tree")
+saved = tree.save2json(save_name="test_tree")
 # loaded = from_json(InterpretableTree(), "./forest/test_tree.json")
 
 print("[TIME] -- test on ", STOP, " images took ", dt.now()-start)

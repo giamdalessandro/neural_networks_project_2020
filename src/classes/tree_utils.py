@@ -199,6 +199,7 @@ def grow(old_tree, y_dict, x_dict):
         
         #txt_log(new_tree, start)
 
+    print("       >> len(nodes_dict):", len(nodes_dict))
     print("[TIME] -- growing took ", dt.now()-start)
     return new_tree
 
@@ -206,7 +207,6 @@ def grow(old_tree, y_dict, x_dict):
 def unbornify(root_children, nid1, nid2, nodes_dict):
     len1 = len(nodes_dict)
     print("       >> len(nodes_dict):", len1)
-    '''
     for v in root_children:
         if (nid1 != v.identifier) and (nid2 != v.identifier):
             id_tocheck = IDentify(v.identifier, nid1)
@@ -216,7 +216,6 @@ def unbornify(root_children, nid1, nid2, nodes_dict):
             if id_tocheck in nodes_dict:
                 nodes_dict.pop(id_tocheck)
     print("       >> unbornify removed", len1-len(nodes_dict), "entries")
-    '''
             
 
 ######### SAVE & LOAD ###########
