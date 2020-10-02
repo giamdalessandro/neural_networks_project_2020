@@ -270,10 +270,11 @@ def from_json(res_tree, save_path):
 
 
 def txt_log(tree, start_time, path="./log.txt"):
-    with open(path, "a") as f:
+    '''with open(path, "a") as f:
         f.write("####################################################")
         f.write("Time elapsed: {}\n".format(dt.now() - start_time))
-        f.write(tree.show())
+        #f.write(tree.show())
         f.write("--------------------------------")
-        f.write(tree.info())
-    f.close()
+        #f.write(tree.info())
+    f.close()'''
+    raise NotImplementedError
