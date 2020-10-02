@@ -246,9 +246,7 @@ class InterpretableTree(tl.Tree):
         NOTE: this computes the delta between E_t+1 and E_t; current self has E_t, theta_t
         delta and new theta is returned
         """
-        new_theta = (self.theta + node.exph_val -
-                          v1.exph_val - v2.exph_val)
-
+        new_theta = (self.theta + node.exph_val - v1.exph_val - v2.exph_val)
         a = node.h_val - v1.h_val - v2.h_val
         b = len(self.leaves()) * log(self.theta / new_theta)
         return (1 + a + b), new_theta
@@ -277,10 +275,24 @@ class InterpretableTree(tl.Tree):
         node = self.create_node(tag=tag, parent='root', alpha=alpha, g=g, b=b, l=l, x=None, w=w, identifier=tag)
         
         # calculates the value of the new node's exph to use it later
-        aux1 = node.exph(self.gamma, nid1.x)
-        aux2 = node.exph(self.gamma, nid2.x)
-        node.h_val    = aux1[0] + aux2[0]
-        node.exph_val = aux1[1] + aux2[1]
+        node.h_val    = 0
+        node.exph_val = 0
+
+        if nid1.is_leaf():
+            aux = node.exph(self.gamma, nid1.x)
+            node.h_val += aux[0]
+            node.exph_val += aux[1]
+        else:
+            node.h_val += nid1.h_val
+            node.exph_val += nid1.exph_val
+
+        if nid2.is_leaf():
+            aux = node.exph(self.gamma, nid2.x)
+            node.h_val += aux[0]
+            node.exph_val += aux[1]
+        else:
+            node.h_val += nid2.h_val
+            node.exph_val += nid2.exph_val
 
         self.move_node(nid1.identifier, node.identifier)
         self.move_node(nid2.identifier, node.identifier)
