@@ -34,7 +34,6 @@ print("[TIME] -- test on ", STOP, " images took ", dt.now()-start)
 
 '''
 TODO
-    - scrivere "find_gab"       - ro
     - calcolare matrice A       - ???
 '''
 
