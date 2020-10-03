@@ -25,10 +25,7 @@ NUM_FILTERS = 512
 
 ######### OPERATIONS ###########
 
-def optimize_g(g1, g2, fake=True):
-    if fake:
-        return tf.ones(shape=[512,1])
-
+def optimize_g(g1, g2):
     from classes.interpretableNode import NUM_FILTERS
     g1 = tf.reshape(g1, shape=[NUM_FILTERS])
     g2 = tf.reshape(g2, shape=[NUM_FILTERS])
@@ -49,6 +46,24 @@ def optimize_g(g1, g2, fake=True):
     cons = ([{'type': 'eq', 'fun': constraint1}])
     solution = minimize(objective, x0, bounds=bnds, constraints=cons)
     return tf.reshape(tf.convert_to_tensor(solution.x, dtype=DTYPE), shape=[512,1])
+
+
+def optimize_alpha(Xs, Ys, l=LAMBDA_0):
+    '''
+    Execute the LASSO problem to find the best value for alpha
+        - Xs = list of g°x
+        - Ys = list of y AFTER the softmax
+    '''
+    from sklearn.linear_model import Lasso
+
+    lasso = Lasso(l)
+    lasso.fit(Xs, Ys)
+    coeff_used = np.sum(lasso.coef_ != 0)
+    alpha = np.zeros(shape=[512])
+    for þ in lasso.sparse_coef_.nonzero()[1]:
+        alpha[þ] = 1
+
+    return tf.reshape(tf.convert_to_tensor(alpha, dtype=DTYPE), shape=[512,1])
 
 
 def vectorify_on_depth(x):
@@ -166,9 +181,7 @@ def grow(old_tree, y_dict, x_dict):
 
                     delta, theta = old_tree.compute_delta(node, v1, v2)
                     delta = delta.numpy()[0][0]
-                    print("delta = ", delta)
-                    #if delta > 0:
-                    #    beep(sound='coin')
+
                     if max_delta is None:
                         max_delta = delta
                     if max_delta is not None and delta > max_delta:  
@@ -180,7 +193,7 @@ def grow(old_tree, y_dict, x_dict):
                         
                     new_tree.ctrlz(node, v1, v2)
                     tested += 1
-                    if tested % 10 == 0:
+                    if tested % (STOP % 10) == 0:
                         print("       >> tested couples :", tested, "on", num_couples, "in ", dt.now()-start2)
             z += 1
 
@@ -292,24 +305,3 @@ def txt_log(tree, start_time, path="./log.txt"):
     raise NotImplementedError
 
 
-def alpha_b(Xs, Ys, l=LAMBDA_0):
-    '''
-    Xs = #insieme di x
-    y = #y
-    '''
-    from sklearn.linear_model import Lasso, LogisticRegression
-    from sklearn.feature_selection import SelectFromModel
-    '''
-    sel_ = SelectFromModel(LogisticRegression(C=1, penalty='l1'), threshold= l)
-    sel_.fit(Xs, np.ravel(Y,order='C'))
-    sel_.get_support()
-    
-    removed_feats = X.columns[(sel_.estimator_.coef_ == 0).ravel().tolist()]
-    return removed_feats
-    '''
-    lasso = Lasso(l)
-    lasso.fit(Xs, Ys)
-    coeff_used = np.sum(lasso.coef_ != 0)
-    print(lasso.coef_)
-    print(lasso.sparse_coef_)
-    return coeff_used

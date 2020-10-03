@@ -7,7 +7,7 @@ import treelib as tl
 import tensorflow as tf
 
 from classes.interpretableNode import InterpretableNode
-from classes.tree_utils import load_test_image, compute_g, optimize_g, vectorify_on_depth, STOP, L, DTYPE, LAMBDA_0, NUM_FILTERS, FAKE
+from classes.tree_utils import load_test_image, compute_g, optimize_g, optimize_alpha, vectorify_on_depth, STOP, L, DTYPE, LAMBDA_0, NUM_FILTERS, FAKE
 
 from math import sqrt, log, exp
 from datetime import datetime as dt
@@ -192,7 +192,6 @@ class InterpretableTree(tl.Tree):
             node.g = tf.multiply(tf.math.scalar_mul(1/L, self.s), vectorify_on_depth(node.g))
             node.x = tf.divide(vectorify_on_depth(node.x), self.s)
             node.x = tf.reshape(node.x, shape=(512, 1))     # reshape in order to use mat_mul in vectorify
-            x_dict.update({node.tag: node.x})
             # normalization of g and b
             norm_g = tf.norm(node.g, ord=2)
             node.b = tf.divide(node.b, norm_g)
@@ -241,12 +240,35 @@ class InterpretableTree(tl.Tree):
         Finds g, alpha and b optimal for the new node
         Computes also w and l
         """
+        #start = dt.now()
+
         b = 0
-        g = optimize_g(n1.g, n2.g, fake=FAKE)
-        alpha = tf.ones(shape=[NUM_FILTERS,1], dtype=DTYPE)
+        g = optimize_g(n1.g, n2.g)
+        
+        Xs = []
+        Ys = []
+        if n1.is_leaf():
+            Xs.append(tf.reshape(tf.multiply(g, n1.x), shape=[512]))
+            Ys.append(n1.y)
+        else:
+            for leaf in self.leaves(nid=n1.identifier):
+                Xs.append(tf.reshape(tf.multiply(g, leaf.x), shape=[512]))
+                Ys.append(leaf.y)
+
+        if n2.is_leaf():
+            Xs.append(tf.reshape(tf.multiply(g, n1.x), shape=[512]))
+            Ys.append(n1.y)
+        else:
+            for leaf in self.leaves(nid=n2.identifier):
+                Xs.append(tf.reshape(tf.multiply(g, leaf.x), shape=[512]))
+                Ys.append(leaf.y)
+    
+        alpha = optimize_alpha(Xs, Ys)
+
         w = tf.math.multiply(alpha, g)
         l = LAMBDA_0 * sqrt(len(self.leaves(n1.identifier)) +
                             len(self.leaves(n2.identifier)))
+        #print("       >> optimizing params took: ", dt.now()-start)
         return g, alpha, b, w, l
 
     def try_pair(self, nid1, nid2, new_id, tag):
@@ -292,7 +314,7 @@ class InterpretableTree(tl.Tree):
         if self.contains(pid.identifier):
             self.remove_node(pid.identifier)
         else:
-            print("[[[ERR]]]: i tried to delete this node: <tag:", pid.tag, ", id:", pid.identifier, "> but it was not in the tree! So strange...")
+            print("[[[ERR]]]: i tried to delete this node: <tag:", pid.tag, ", id:", pid.identifier, "> but it was not in the tree! ur such a git dumbass")
             print("let's see the tree")
             self.show()
 
