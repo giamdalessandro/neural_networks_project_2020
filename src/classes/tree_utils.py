@@ -292,7 +292,7 @@ def txt_log(tree, start_time, path="./log.txt"):
     raise NotImplementedError
 
 
-def alpha_b(Xs, Y, lambda):
+def alpha_b(Xs, Y, l):
     '''
     Xs = #insieme di x
     y = #y
@@ -308,7 +308,7 @@ def alpha_b(Xs, Y, lambda):
     print(lasso_regressor.best_params_)
     '''
 
-    sel_ = SelectFromModel(LogisticRegression(C=1, penalty='l1'), threshold= lambda)
+    sel_ = SelectFromModel(LogisticRegression(C=1, penalty='l1'), threshold= l)
     sel_.fit(Xs, np.ravel(Y,order='C'))
     sel_.get_support()
 
