@@ -16,7 +16,7 @@ from tensorflow.keras.preprocessing.image import ImageDataGenerator, load_img, i
 
 
 L = 14*14
-STOP = 100
+STOP = 10
 DTYPE = tf.float32
 LAMBDA_0 = 0.000001
 NUM_FILTERS = 512
@@ -155,9 +155,7 @@ def grow(old_tree, y_dict, x_dict):
                     delta, theta = old_tree.compute_delta(node, v1, v2)
                     delta = delta.numpy()[0][0]
                     
-                    if max_delta is None:
-                        max_delta = delta
-                    if max_delta is not None and delta > max_delta:  
+                    if max_delta is None or (max_delta is not None and delta > max_delta):
                         nid1 = v1
                         nid2 = v2
                         new_node = node
@@ -166,17 +164,18 @@ def grow(old_tree, y_dict, x_dict):
                         
                     new_tree.ctrlz(node, v1, v2)
                     tested += 1
-                    if tested % 10 == 0:
+                    if tested % (STOP / 10) == 0:
                         print("       >> tested couples :", str(tested)+"/"+str(num_couples), "in ", dt.now()-start2)
             z += 1
         t += 1
-        
+
         if len(second_layer) == 1:
             print("len(second_layer) == 1")
             break
 
         print("       >> best delta     :", max_delta)
         if max_delta <= 0 or new_node is None:
+            print("new node is None or max_delta ")
             break
 
         unbornify(second_layer, nid1.identifier, nid2.identifier, nodes_dict)
