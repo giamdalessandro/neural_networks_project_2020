@@ -169,7 +169,8 @@ def grow(old_tree, y_dict, x_dict):
                     if tested % 10 == 0:
                         print("       >> tested couples :", str(tested)+"/"+str(num_couples), "in ", dt.now()-start2)
             z += 1
-
+        t += 1
+        
         if len(second_layer) == 1:
             print("len(second_layer) == 1")
             break
@@ -178,7 +179,6 @@ def grow(old_tree, y_dict, x_dict):
         if max_delta <= 0 or new_node is None:
             break
 
-        t += 1
         unbornify(second_layer, nid1.identifier, nid2.identifier, nodes_dict)
         new_tree.parentify(pid=new_node, nid1=nid1, nid2=nid2, theta=new_theta)
         old_tree = new_tree
