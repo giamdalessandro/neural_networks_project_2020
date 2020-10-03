@@ -1,0 +1,5 @@
+https://medium.com/@sabarirajan.kumarappan/feature-selection-by-lasso-and-ridge-regression-python-code-examples-1e8ab451b94b
+
+https://towardsdatascience.com/feature-selection-using-regularisation-a3678b71e499
+
+https://towardsdatascience.com/ridge-and-lasso-regression-a-complete-guide-with-python-scikit-learn-e20e34bcbf0b
