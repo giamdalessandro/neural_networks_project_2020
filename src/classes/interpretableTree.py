@@ -55,11 +55,11 @@ class InterpretableTree(tl.Tree):
         data = {
             "alpha" : str(self[nid].alpha.numpy()),
             "b"     : str(self[nid].b.numpy()) if not isinstance(self[nid].b, int) else self[nid].b,
-            "g"     : str(self[nid].g.numpy()),
-            "w"     : str(self[nid].w.numpy()),
-            "x"     : str(self[nid].x.numpy()),
-            "l"     : self[nid].l,
-            "exph"  : self[nid].exph_val 
+            "g"     : str(self[nid].g.numpy()) if self[nid].g is not None else 0,
+            "w"     : str(self[nid].w.numpy()) if self[nid].w is not None else 0,
+            "x"     : str(self[nid].x.numpy()) if not isinstance(self[nid].x, int) else self[nid].x,
+            "l"     : str(self[nid].l)         if not isinstance(self[nid].l, float) else LAMBDA_0,
+            "exph"  : str(self[nid].exph_val)  if self[nid].exph_val is not None else 0
         }
         if with_data:
             tree_dict[ntag]["data"] = data
@@ -80,13 +80,13 @@ class InterpretableTree(tl.Tree):
 
     # OVERRIDE #
     def create_node(self, tag=None, identifier=None, parent=None, g=np.zeros(shape=(NUM_FILTERS)),
-                    alpha=np.ones(shape=(NUM_FILTERS)), b=0, l=LAMBDA_0, x=0, w=None, h_val=None, exph_val=None):
+                    alpha=np.ones(shape=(NUM_FILTERS)), b=0, l=LAMBDA_0, x=0, y=0, w=None, h_val=None, exph_val=None):
         """
         Create a child node for given @parent node. If ``identifier`` is absent,
         a UUID will be generated automatically.
         """
         node = self.node_class(tag=tag, identifier=identifier,
-                               data=None, g=g, alpha=alpha, b=b, l=l, x=x, w=w, h_val=h_val, exph_val=exph_val)
+                               data=None, g=g, alpha=alpha, b=b, l=l, x=x, y=y, w=w, h_val=h_val, exph_val=exph_val)
         self.add_node(node, parent)
         return node
 
@@ -111,10 +111,10 @@ class InterpretableTree(tl.Tree):
             - save_folder: folder where to save JSON trees
         """
         tree_data = {
-            "E"     : self.E,
-            "s"     : self.s,
-            "theta" : self.theta,
-            "gamma" : self.gamma
+            "E"     : str(self.E.numpy()),
+            "s"     : str(self.s.numpy()),
+            "theta" : str(self.theta),
+            "gamma" : str(self.gamma.numpy())
         }
         json_tree = json.loads(self.to_json(with_data=True))
         json_tree.update({"tree_data" : tree_data})
@@ -149,7 +149,7 @@ class InterpretableTree(tl.Tree):
                 flat_output = flat_model.predict(test_image)
                 # we take only the positive prediction score
                 fc3_output = fc3_model.predict(test_image)[0][0]
-
+                y = trained_model.predict(test_image)[0][0]          # after softmax
                 y_dict.update({img[:-4]: fc3_output})
 
                 g = compute_g(trained_model, flat_output)
@@ -160,7 +160,7 @@ class InterpretableTree(tl.Tree):
                 s = tf.math.reduce_mean(x, axis=[0, 1])
                 s_list.append(s)
                 self.create_node(tag=img[:-4], identifier=img[:-4],
-                                parent='root', g=g, alpha=tf.ones(shape=512), b=b, x=x)
+                                parent='root', g=g, alpha=tf.ones(shape=512), b=b, x=x, y=y)
                 i += 1
                 print(">> created", i, "nodes")
                 if i==STOP:
@@ -327,19 +327,4 @@ class InterpretableTree(tl.Tree):
         self.move_node(nid1.identifier, pid.identifier)
         self.move_node(nid2.identifier, pid.identifier)
         
-    '''
-    def unbornify(self, nid1, nid2, nodes_dict):
-        """
-        Kill 'em all
-        Removes unused entry in the nodes_dict
-        """
-        second_layer = self.children(self.root)
-        for v in second_layer:
-            if v.identifier != nid1.identifier and v.identifier != nid2.identifier:
-                id_tocheck = IDentify(nid1.identifier, v.identifier)
-                if id_tocheck in nodes_dict:
-                    nodes_dict.pop(id_tocheck)
-                id_tocheck = IDentify(nid2.identifier, v.identifier)
-                if id_tocheck in nodes_dict:
-                    nodes_dict.pop(id_tocheck)
-    '''
+ 
