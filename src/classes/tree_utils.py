@@ -292,17 +292,24 @@ def txt_log(tree, start_time, path="./log.txt"):
     raise NotImplementedError
 
 
-def alpha_b(Xs, Y, l=LAMBDA_0):
+def alpha_b(Xs, Ys, l=LAMBDA_0):
     '''
     Xs = #insieme di x
     y = #y
     '''
     from sklearn.linear_model import Lasso, LogisticRegression
     from sklearn.feature_selection import SelectFromModel
-
+    '''
     sel_ = SelectFromModel(LogisticRegression(C=1, penalty='l1'), threshold= l)
     sel_.fit(Xs, np.ravel(Y,order='C'))
     sel_.get_support()
-
+    
     removed_feats = X.columns[(sel_.estimator_.coef_ == 0).ravel().tolist()]
     return removed_feats
+    '''
+    lasso = Lasso(l)
+    lasso.fit(Xs, Ys)
+    coeff_used = np.sum(lasso.coef_ != 0)
+    print(lasso.coef_)
+    print(lasso.sparse_coef_)
+    return coeff_used

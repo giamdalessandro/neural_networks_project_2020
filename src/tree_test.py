@@ -42,11 +42,11 @@ trained_model = tf.keras.models.load_model(
 #fc3_model = Model(inputs=trained_model.input,outputs=trained_model.get_layer("fc3").output)
 
 test_image = load_test_image(folder="./dataset/train_val/test/bird/", fileid='2010_005603.jpg')
-y1 = trained_model.predict(test_image)[0]
+y1 = trained_model.predict(test_image)[0][0]
 print(y1)
 
 test_image = load_test_image(folder="./dataset/train_val/test/bird/", fileid='2010_005608.jpg')
-y2 = trained_model.predict(test_image)[0]
+y2 = trained_model.predict(test_image)[0][0]
 print(y2)
 
 Ys = []
