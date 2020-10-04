@@ -7,7 +7,7 @@ import treelib as tl
 import tensorflow as tf
 
 from classes.interpretableNode import InterpretableNode
-from classes.tree_utils import load_test_image, compute_g, optimize_g, vectorify_on_depth, STOP, L, DTYPE, LAMBDA_0, NUM_FILTERS
+from classes.tree_utils import load_test_image, compute_g, optimize_g, optimize_alpha, vectorify_on_depth, STOP, L, DTYPE, LAMBDA_0, NUM_FILTERS, FAKE
 
 from math import sqrt, log, exp
 from datetime import datetime as dt
@@ -55,11 +55,11 @@ class InterpretableTree(tl.Tree):
         data = {
             "alpha" : str(self[nid].alpha.numpy()),
             "b"     : str(self[nid].b.numpy()) if not isinstance(self[nid].b, int) else self[nid].b,
-            "g"     : str(self[nid].g.numpy()),
-            "w"     : str(self[nid].w.numpy()) if self[nid].w is not None else 0.0,
+            "g"     : str(self[nid].g.numpy()) if self[nid].g is not None else 0,
+            "w"     : str(self[nid].w.numpy()) if self[nid].w is not None else 0,
             "x"     : str(self[nid].x.numpy()) if not isinstance(self[nid].x, int) else self[nid].x,
-            "l"     : self[nid].l,
-            "exph"  : self[nid].exph_val if self[nid].exph_val is not None else 0.0
+            "l"     : str(self[nid].l)         if not isinstance(self[nid].l, float) else LAMBDA_0,
+            "exph"  : str(self[nid].exph_val)  if self[nid].exph_val is not None else 0
         }
         if with_data:
             tree_dict[ntag]["data"] = data
@@ -80,13 +80,13 @@ class InterpretableTree(tl.Tree):
 
     # OVERRIDE #
     def create_node(self, tag=None, identifier=None, parent=None, g=np.zeros(shape=(NUM_FILTERS)),
-                    alpha=np.ones(shape=(NUM_FILTERS)), b=0, l=LAMBDA_0, x=0, w=None, h_val=None, exph_val=None):
+                    alpha=np.ones(shape=(NUM_FILTERS)), b=0, l=LAMBDA_0, x=0, y=0, w=None, h_val=None, exph_val=None):
         """
         Create a child node for given @parent node. If ``identifier`` is absent,
         a UUID will be generated automatically.
         """
         node = self.node_class(tag=tag, identifier=identifier,
-                               data=None, g=g, alpha=alpha, b=b, l=l, x=x, w=w, h_val=h_val, exph_val=exph_val)
+                               data=None, g=g, alpha=alpha, b=b, l=l, x=x, y=y, w=w, h_val=h_val, exph_val=exph_val)
         self.add_node(node, parent)
         return node
 
@@ -113,8 +113,8 @@ class InterpretableTree(tl.Tree):
         tree_data = {
             "E"     : str(self.E.numpy()),
             "s"     : str(self.s.numpy()),
-            "theta" : self.theta,
-            "gamma" : str(self.gamma.numpy)
+            "theta" : str(self.theta),
+            "gamma" : str(self.gamma.numpy())
         }
         json_tree = json.loads(self.to_json(with_data=True))
         json_tree.update({"tree_data" : tree_data})
@@ -149,7 +149,7 @@ class InterpretableTree(tl.Tree):
                 flat_output = flat_model.predict(test_image)
                 # we take only the positive prediction score
                 fc3_output = fc3_model.predict(test_image)[0][0]
-
+                y = trained_model.predict(test_image)[0][0]          # after softmax
                 y_dict.update({img[:-4]: fc3_output})
 
                 g = compute_g(trained_model, flat_output)
@@ -160,7 +160,7 @@ class InterpretableTree(tl.Tree):
                 s = tf.math.reduce_mean(x, axis=[0, 1])
                 s_list.append(s)
                 self.create_node(tag=img[:-4], identifier=img[:-4],
-                                parent='root', g=g, alpha=tf.ones(shape=512), b=b, x=x)
+                                parent='root', g=g, alpha=tf.ones(shape=512), b=b, x=x, y=y)
                 i += 1
                 print(">> created", i, "nodes")
                 if i==STOP:
@@ -192,7 +192,6 @@ class InterpretableTree(tl.Tree):
             node.g = tf.multiply(tf.math.scalar_mul(1/L, self.s), vectorify_on_depth(node.g))
             node.x = tf.divide(vectorify_on_depth(node.x), self.s)
             node.x = tf.reshape(node.x, shape=(512, 1))     # reshape in order to use mat_mul in vectorify
-            x_dict.update({node.tag: node.x})
             # normalization of g and b
             norm_g = tf.norm(node.g, ord=2)
             node.b = tf.divide(node.b, norm_g)
@@ -241,12 +240,35 @@ class InterpretableTree(tl.Tree):
         Finds g, alpha and b optimal for the new node
         Computes also w and l
         """
+        #start = dt.now()
+
         b = 0
         g = optimize_g(n1.g, n2.g)
-        alpha = tf.ones(shape=[NUM_FILTERS,1], dtype=DTYPE)
+        
+        Xs = []
+        Ys = []
+        if n1.is_leaf():
+            Xs.append(tf.reshape(tf.multiply(g, n1.x), shape=[512]))
+            Ys.append(n1.y)
+        else:
+            for leaf in self.leaves(nid=n1.identifier):
+                Xs.append(tf.reshape(tf.multiply(g, leaf.x), shape=[512]))
+                Ys.append(leaf.y)
+
+        if n2.is_leaf():
+            Xs.append(tf.reshape(tf.multiply(g, n1.x), shape=[512]))
+            Ys.append(n1.y)
+        else:
+            for leaf in self.leaves(nid=n2.identifier):
+                Xs.append(tf.reshape(tf.multiply(g, leaf.x), shape=[512]))
+                Ys.append(leaf.y)
+    
+        alpha = optimize_alpha(Xs, Ys)
+
         w = tf.math.multiply(alpha, g)
         l = LAMBDA_0 * sqrt(len(self.leaves(n1.identifier)) +
                             len(self.leaves(n2.identifier)))
+        #print("       >> optimizing params took: ", dt.now()-start)
         return g, alpha, b, w, l
 
     def try_pair(self, nid1, nid2, new_id, tag):
@@ -291,7 +313,7 @@ class InterpretableTree(tl.Tree):
         if self.contains(pid.identifier):
             self.remove_node(pid.identifier)
         else:
-            print("[[[ERR]]]: i tried to delete this node: <tag:", pid.tag, ", id:", pid.identifier, "> but it was not in the tree! So strange...")
+            print("[[[ERR]]]: i tried to delete this node: <tag:", pid.tag, ", id:", pid.identifier, "> but it was not in the tree! ur such a git dumbass")
             print("let's see the tree")
             self.show()
 
@@ -303,4 +325,5 @@ class InterpretableTree(tl.Tree):
         self.add_node(pid, parent=self.root)
         self.move_node(nid1.identifier, pid.identifier)
         self.move_node(nid2.identifier, pid.identifier)
-
+        
+ 

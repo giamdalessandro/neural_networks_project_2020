@@ -30,6 +30,7 @@ class InterpretableNode(tl.Node):
     def __init__(self,
                  x=0,
                  b=0,
+                 y=0,
                  w=None,
                  tag=None,
                  data=None,
@@ -52,7 +53,7 @@ class InterpretableNode(tl.Node):
         self.x = x
         self.g = g if tf.is_tensor(g) else tf.convert_to_tensor(g)
         self.alpha = alpha if tf.is_tensor(alpha) else tf.convert_to_tensor(alpha)
-        
+        self.y = y      # prediction AFTER softmax
         self.w = w
         self.h_val = h_val
         self.exph_val = exph_val

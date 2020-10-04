@@ -20,8 +20,8 @@ if STOP <= 20:
 else:
     POS_IMAGE_SET_TEST = "./dataset/train_val/bird/"
 
+POS_IMAGE_SET_TEST = "./dataset/train_val/bird/"
 start = dt.now()
-
 tree, y_dict, x_dict = sow(m_trained, POS_IMAGE_SET_TEST)
 tree.info()
 #tree.show()
@@ -37,7 +37,6 @@ print("[TIME] -- test on ", STOP, " images took ", dt.now()-start)
 print("Evvai.")
 '''
 TODO
-    - scrivere "find_gab"       - ro
     - calcolare matrice A       - ???
 '''
 

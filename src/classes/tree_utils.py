@@ -16,7 +16,8 @@ from tensorflow.keras.preprocessing.image import ImageDataGenerator, load_img, i
 
 
 L = 14*14
-STOP = 10
+STOP = 100
+FAKE = False
 DTYPE = tf.float32
 LAMBDA_0 = 0.000001
 NUM_FILTERS = 512
@@ -51,6 +52,25 @@ def optimize_g(g1, g2):
     cons = ([{'type': 'eq', 'fun': constraint1}])
     solution = minimize(objective, x0, bounds=bnds, constraints=cons)
     return tf.reshape(tf.convert_to_tensor(solution.x, dtype=DTYPE), shape=[512,1])
+
+
+def optimize_alpha(Xs, Ys, l=LAMBDA_0):
+    '''
+    Execute the LASSO problem to find the best value for alpha
+        - Xs = list of g°x
+        - Ys = list of y AFTER the softmax
+    '''
+    from sklearn.linear_model import Lasso
+
+    lasso = Lasso(l, max_iter=5000)
+    lasso.fit(Xs, Ys)
+    coeff_used = np.sum(lasso.coef_ != 0)
+    alpha = np.zeros(shape=[512])
+    for þ in lasso.sparse_coef_.nonzero()[1]:
+        alpha[þ] = 1
+
+    return tf.reshape(tf.convert_to_tensor(alpha, dtype=DTYPE), shape=[512,1])
+
 
 def vectorify_on_depth(x):
     """
@@ -164,8 +184,8 @@ def grow(old_tree, y_dict, x_dict):
                         
                     new_tree.ctrlz(node, v1, v2)
                     tested += 1
-                    if tested % (STOP / 10) == 0:
-                        print("       >> tested couples :", str(tested)+"/"+str(num_couples), "in ", dt.now()-start2)
+                    if tested % STOP == 0:
+                        print("       >> tested couples :", tested, "on", num_couples, "in ", dt.now()-start2)
             z += 1
         t += 1
 
@@ -306,3 +326,5 @@ def txt_log(tree, start_time, path="./log.txt"):
         #f.write(tree.info())
     f.close()'''
     raise NotImplementedError
+
+
