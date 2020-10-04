@@ -1,14 +1,28 @@
 import math
 
-def outFromIn(conv, layerIn):
+IMG_SIZE = 224
+CONV_ARCH =     [[3,1,1],[3,1,1],[2,2,0],
+                [3,1,1],[3,1,1],[2,2,0],
+                [3,1,1],[3,1,1],[3,1,1],[2,2,0],
+                [3,1,1],[3,1,1],[3,1,1],[2,2,0],
+                [3,1,1],[3,1,1],[3,1,1],[2,2,0]]
+VGG16_LAYERS =  ["conv1-1","conv1-2","pool1",
+                "conv2-1","conv2-2","pool2",
+                "conv3-1","conv3-2","conv3-3","pool3",
+                "conv4-1","conv4-2","conv4-3","pool3",
+                "conv5-1","conv5-2","conv5-3","pool5"]
+
+
+def out_from_in(conv, layer_in):
     """
-    Computes the receptive field in a matrix after a single convolution 
-    operation, with conv = [filter size, stride, padding] parameters
+    Computes the receptive field in a matrix after a single convolution operation, with given parameters
+        - conv      : int array with convoultion parameters ([filter size, stride, padding])
+        - layer_in   : int array with previous layer parameters ([n_out, j_out, r_out, start_out])
     """
-    n_in = layerIn[0]
-    j_in = layerIn[1]
-    r_in = layerIn[2]
-    start_in = layerIn[3]
+    n_in = layer_in[0]
+    j_in = layer_in[1]
+    r_in = layer_in[2]
+    start_in = layer_in[3]
     k = conv[0]
     s = conv[1]
     p = conv[2]
@@ -24,7 +38,7 @@ def outFromIn(conv, layerIn):
     return n_out, j_out, r_out, start_out
   
 
-def printLayer(layer, layer_name):
+def print_layer(layer, layer_name):
     print(layer_name + ":")
     print("\t n features: %s \n \t jump: %s \n \t receptive size: %s \t start: %s " % (layer[0], layer[1], layer[2], layer[3]))
  
@@ -33,32 +47,20 @@ def setup_net_arch():
     """
     Precomputes net receptive fields from each layer in the given convolutional architecture
     """
-    IMG_SIZE = 224
-    CONV_ARCH = [[3,1,1],[3,1,1],[2,2,0],
-                [3,1,1],[3,1,1],[2,2,0],
-                [3,1,1],[3,1,1],[3,1,1],[2,2,0],
-                [3,1,1],[3,1,1],[3,1,1],[2,2,0],
-                [3,1,1],[3,1,1],[3,1,1],[2,2,0]]
     layers_info = []
     currentLayer = [IMG_SIZE, 1, 1, 0.5]      # input layer
     for i in range(len(CONV_ARCH)):
-        currentLayer = outFromIn(CONV_ARCH[i], currentLayer)
+        currentLayer = out_from_in(CONV_ARCH[i], currentLayer)
         layers_info.append(currentLayer)
 
     return layers_info
 
-def receptive_field(layer_name, f_idx):
+def receptive_field(f_idx, layer_name="conv5-3"):
     """
     Returns receptive field size and center in the input image, given a feature index (i,j) and layer
-        - layer_name: (string) layer from which compute the receptive field
         - f_idx     : index (i,j) of the feature at 'layer_name' layer
+        - layer_name: (string) layer from which compute the receptive field
     """
-    VGG16_LAYERS = ["conv1-1","conv1-2","pool1",
-                    "conv2-1","conv2-2","pool2",
-                    "conv3-1","conv3-2","conv3-3","pool3",
-                    "conv4-1","conv4-2","conv4-3","pool3",
-                    "conv5-1","conv5-2","conv5-3","pool5"]
-
     layers_info = setup_net_arch() 
     layer_idx = VGG16_LAYERS.index(layer_name)
     
@@ -73,4 +75,4 @@ def receptive_field(layer_name, f_idx):
     print ("center: (%s, %s)" % (start+f_i*j, start+f_j*j))
 
 
-receptive_field("conv5-3", 12, 3)
+receptive_field((12, 3))
