@@ -1,12 +1,10 @@
 import math
 
-CONV_ARCH   = [[3,1,1],[3,1,1],[2,2,0],[3,1,1],[3,1,1],[2,2,0],[3,1,1],[3,1,1],[3,1,1],[2,2,0],
-                [3,1,1],[3,1,1],[3,1,1],[2,2,0],[3,1,1],[3,1,1],[3,1,1],[2,2,0]]
-LAYERS      = ["conv1-1","conv1-2","pool1","conv2-1","conv2-2","pool2","conv3-1","conv3-2","conv3-3","pool3",
-                "conv4-1","conv4-2","conv4-3","pool3","conv5-1","conv5-2","conv5-3","pool5"]
-IMG_SIZE    = 224
-
 def outFromIn(conv, layerIn):
+    """
+    Computes the receptive field in a matrix after a single convolution 
+    operation, with conv = [filter size, stride, padding] parameters
+    """
     n_in = layerIn[0]
     j_in = layerIn[1]
     r_in = layerIn[2]
@@ -32,21 +30,37 @@ def printLayer(layer, layer_name):
  
 
 def setup_net_arch():
+    """
+    Precomputes net receptive fields from each layer in the given convolutional architecture
+    """
+    IMG_SIZE = 224
+    CONV_ARCH = [[3,1,1],[3,1,1],[2,2,0],
+                [3,1,1],[3,1,1],[2,2,0],
+                [3,1,1],[3,1,1],[3,1,1],[2,2,0],
+                [3,1,1],[3,1,1],[3,1,1],[2,2,0],
+                [3,1,1],[3,1,1],[3,1,1],[2,2,0]]
     layers_info = []
-    print ("-------Net summary------")
     currentLayer = [IMG_SIZE, 1, 1, 0.5]      # input layer
-    printLayer(currentLayer, "input image")
     for i in range(len(CONV_ARCH)):
         currentLayer = outFromIn(CONV_ARCH[i], currentLayer)
         layers_info.append(currentLayer)
-        printLayer(currentLayer, LAYERS[i])
-    print ("------------------------")
 
     return layers_info
 
-def receptive_field(layer_name, f_i, f_j):
+def receptive_field(layer_name, f_idx):
+    """
+    Returns receptive field size and center in the input image, given a feature index (i,j) and layer
+        - layer_name: (string) layer from which compute the receptive field
+        - f_idx     : index (i,j) of the feature at 'layer_name' layer
+    """
+    VGG16_LAYERS = ["conv1-1","conv1-2","pool1",
+                    "conv2-1","conv2-2","pool2",
+                    "conv3-1","conv3-2","conv3-3","pool3",
+                    "conv4-1","conv4-2","conv4-3","pool3",
+                    "conv5-1","conv5-2","conv5-3","pool5"]
+
     layers_info = setup_net_arch() 
-    layer_idx = LAYERS.index(layer_name)
+    layer_idx = VGG16_LAYERS.index(layer_name)
     
     n = layers_info[layer_idx][0]
     j = layers_info[layer_idx][1]
