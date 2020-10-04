@@ -9,7 +9,7 @@ CONV_ARCH =     [[3,1,1],[3,1,1],[2,2,0],
 VGG16_LAYERS =  ["conv1-1","conv1-2","pool1",
                 "conv2-1","conv2-2","pool2",
                 "conv3-1","conv3-2","conv3-3","pool3",
-                "conv4-1","conv4-2","conv4-3","pool3",
+                "conv4-1","conv4-2","conv4-3","pool4",
                 "conv5-1","conv5-2","conv5-3","pool5"]
 
 
