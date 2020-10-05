@@ -31,8 +31,7 @@ tf.config.experimental.set_memory_growth(gpus[0], True)
 #new_tree.show()
 #
 #saved = tree.save2json(save_name="test_tree_"+str(STOP)+"_imgs")
-loaded = from_json(InterpretableTree(), "./forest/test_tree_10_imgs.json")
-loaded.show()
+loaded = from_json(InterpretableTree(), "./forest/test_tree_100_imgs.json")
 
 #print("[TIME] -- test on ", STOP, " images took ", dt.now()-start)
 print("Evvai.")

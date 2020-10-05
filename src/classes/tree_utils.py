@@ -281,9 +281,9 @@ def __parse_json_tree(tree, current, parent=None):
                     g=str_to_tensor(data["g"]),
                     b=data["b"] if isinstance(data["b"],int) else str_to_tensor(data["b"]),
                     x=data["x"] if isinstance(data["b"],int) else str_to_tensor(data["x"]),
-                    w=data["w"] if isinstance(data["w"],float) else str_to_tensor(data["w"]),
+                    w=data["w"] if (isinstance(data["w"],int) or isinstance(data["w"],float)) else str_to_tensor(data["w"]),
                     l=data["l"],
-                    exph_val=data["exph"])
+                    exph_val=data["exph"] if "exph" in data else None)
 
     if "children" not in current[curr_tag].keys():
         # print(" | -- on leaf ", curr_tag)
