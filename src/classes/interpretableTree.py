@@ -54,8 +54,8 @@ class InterpretableTree(tl.Tree):
         tree_dict = {ntag: {"children": []}}
         data = {
             "alpha" : str(self[nid].alpha.numpy()),
+            "g"     : str(self[nid].g.numpy()),
             "b"     : str(self[nid].b.numpy()) if not isinstance(self[nid].b, int) else self[nid].b,
-            "g"     : str(self[nid].g.numpy()) if self[nid].g is not None else 0,
             "w"     : str(self[nid].w.numpy()) if self[nid].w is not None else 0,
             "x"     : str(self[nid].x.numpy()) if not isinstance(self[nid].x, int) else self[nid].x,
             "l"     : str(self[nid].l)         if not isinstance(self[nid].l, float) else LAMBDA_0,

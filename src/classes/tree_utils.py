@@ -252,17 +252,16 @@ def unbornify(root_children, nid1, nid2, nodes_dict):
 
 def str_to_tensor(str_val, dtype="float32"):
     """
-    Converts string np.array to tf.Tensor
+    Converts np.array string to tf.Tensor
     """
     stripped = []
     list_val = str_val.strip('[]\n').split()
     for elem in list_val:
-        e = elem.strip("[]").strip("]")
+        e = elem.strip("[]")
         if e != "" and e != "]":
             stripped.append(e)
 
-    np_val = np.array(stripped, dtype=dtype)
-    return tf.convert_to_tensor(np_val)
+    return tf.convert_to_tensor(np.array(stripped, dtype=dtype))
 
 
 def __parse_json_tree(tree, current, parent=None):
@@ -279,10 +278,10 @@ def __parse_json_tree(tree, current, parent=None):
     data = current[curr_tag]["data"]
     tree.create_node(tag=curr_tag, identifier=curr_tag, parent=par_tag, 
                     alpha=str_to_tensor(data["alpha"]),
+                    g=str_to_tensor(data["g"]),
                     b=data["b"] if isinstance(data["b"],int) else str_to_tensor(data["b"]),
-                    g=str_to_tensor(data["g"]),  
-                    w=data["w"] if isinstance(data["w"],float) else str_to_tensor(data["w"]),
                     x=data["x"] if isinstance(data["b"],int) else str_to_tensor(data["x"]),
+                    w=data["w"] if isinstance(data["w"],float) else str_to_tensor(data["w"]),
                     l=data["l"],
                     exph_val=data["exph"])
 
