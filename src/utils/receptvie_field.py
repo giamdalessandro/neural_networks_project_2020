@@ -55,7 +55,7 @@ def setup_net_arch():
 
     return layers_info
 
-def receptive_field(f_idx, layer_name="conv5-3"):
+def receptive_field(f_idx, layer_name="pool5"):
     """
     Returns receptive field size and center in the input image, given a feature index (i,j) and layer
         - f_idx     : index (i,j) of the feature at 'layer_name' layer
@@ -68,11 +68,13 @@ def receptive_field(f_idx, layer_name="conv5-3"):
     j = layers_info[layer_idx][1]
     r = layers_info[layer_idx][2]
     start = layers_info[layer_idx][3]
-    assert(f_i < n)
-    assert(f_j < n)
+    assert(f_idx[0] < n)
+    assert(f_idx[1] < n)
     
-    print ("receptive field: (%s, %s)" % (r, r))
-    print ("center: (%s, %s)" % (start+f_i*j, start+f_j*j))
+    #print ("receptive field: (%s, %s)" % (r, r))
+    #print ("center: (%s, %s)" % (start+f_idx[0]*j, start+f_idx[1]*j))
+
+    return (start+f_idx[0]*j, start+f_idx[1]*j), r
 
 
-receptive_field((12, 3))
+#center = receptive_field((6, 3))
