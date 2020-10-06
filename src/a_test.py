@@ -45,14 +45,18 @@ def read_part_annotations(img_name, anno_path=ANNOTATIONS):
         if cat in anno_dict:
             anno_dict[cat]["bbox"].append(c[2][0])
             for p in list(c[3][0]):
-                anno_dict[cat]["parts"].append(p)
+                norm = (p[0][0],p[1])
+                anno_dict[cat]["parts"].append(norm)
 
         else:
             anno_dict[cat] = {
                 "cat_id": c[1][0][0],
                 "bbox": [c[2][0]],
-                "parts": list(c[3][0])
+                "parts": []
             }
+            for p in list(c[3][0]):
+                norm = (p[0][0],p[1])
+                anno_dict[cat]["parts"].append(norm)
 
     return anno_dict
 
