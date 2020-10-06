@@ -38,7 +38,7 @@ def display_RF(rf_center):
                 boh[i, j, d] = 1
 
     tens_boh = boh[:,:,d]
-    image = cv2.resize(cv2.imread(POS_IMAGE_SET_TEST+img), (224,224))
+    image = cv2.resize(cv2.imread(POS_IMAGE_SET_TEST+img), (224,224), interpolation=INTER_LINEAR)
     masked_image = cv2.bitwise_and(image,image,mask=tens_boh)
 
     name, boxes = read_content(img[:-4])
@@ -60,12 +60,13 @@ def binarify(matrix):
                 matrix[f, i] = 1
 
 def find_a_center(a):
+    a = cv2.resize(a, [224, 224], interpolation=INTER_LINEAR)
     previ = 0
     prevj = 0
     maxx  = 0
     maxy  = 0
-    minx  = a.shape[0]
-    miny  = a.shape[1]
+    minx  = 224
+    miny  = 224
     for i in range(a.shape[0]):
         for j in range(a.shape[1]):
             if previ == 0 and a[i,j] == 1:
