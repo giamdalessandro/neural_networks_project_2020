@@ -147,56 +147,41 @@ def compute_A(test_image):
     """
     Computes A binary matrix
     """""
-    pool_output = max_pool_model.predict(test_image)
-    rows_idx = tf.math.argmax(tf.reduce_max(pool_output[0], axis=1), output_type=tf.int32)
-    cols_idx = tf.math.argmax(tf.reduce_max(pool_output[0], axis=0), output_type=tf.int32)
-    annotations = read_part_annotations(img)
-    if annotations is not None:
-        a_centers = []
-        for a in annotations['bird']['parts']:
-            a_centers.append([a[0], find_a_center(a)])
-            # print(len(a_centers), "centers computed for image", img)
-            # print(a_centers)
-
-            for d in range(512):
-                max_i = rows_idx[d].numpy()
-                max_j = cols_idx[d].numpy()
-                rf_center, rf_size = receptive_field((max_i, max_j))
-                # print("::: RF center of filter", d, "--", rf_center)
-                mindist = THRESOLD
-                obj_part = None
-                center = None
-                for c in range(len(a_centers)):      # a = ('part name', mask_matrix)
-                    # manhattan distance
-                    aux = abs(rf_center[0] - a_centers[c][1][0]) + \
-                        abs(rf_center[1] - a_centers[c][1][1])
-                    if aux < mindist:
-                        mindist = aux
-                        obj_part = a_centers[c][0]
-                        center = a_centers[c][1]
-
-                # print("Matched with", obj_part, center, "distance:", mindist)
-                updateA(A, d, obj_part)
-
-
-
-start = dt.now()
-m_trained = tf.keras.models.load_model(MASKED1, custom_objects={"MaskLayer":MaskLayer()})
-
-max_pool_model = Model(inputs=m_trained.input, outputs=m_trained.get_layer("final_max_pool").output)
-
-A = np.zeros(shape=(512, 4))
-i = 0
-for img in os.listdir(POS_IMAGE_SET_TEST):
-    if img.endswith('.jpg') and img[0] == '2':
-        print(">> Analyzing image", img)
-        test_image = load_test_image(folder=POS_IMAGE_SET_TEST, fileid=img)
-        compute_A(test_image)
+    start = dt.now()
+    m_trained = tf.keras.models.load_model(MASKED1, custom_objects={"MaskLayer": MaskLayer()})
+    max_pool_model = Model(inputs=m_trained.input,outputs=m_trained.get_layer("final_max_pool").output)
+    A = np.zeros(shape=(512, 4))
+    i = 0
+    for img in os.listdir(POS_IMAGE_SET_TEST):
+        if img.endswith('.jpg') and img[0] == '2':
+            print(">> Analyzing image", img)
+            test_image = load_test_image(folder=POS_IMAGE_SET_TEST, fileid=img)
+            pool_output = max_pool_model.predict(test_image)
+            rows_idx = tf.math.argmax(tf.reduce_max(pool_output[0], axis=1), output_type=tf.int32)
+            cols_idx = tf.math.argmax(tf.reduce_max(pool_output[0], axis=0), output_type=tf.int32)
+            annotations = read_part_annotations(img)
+            if annotations is not None:
+                a_centers = []
+                for a in annotations['bird']['parts']:
+                    a_centers.append([a[0], find_a_center(a)])
+                    for d in range(512):
+                        max_i = rows_idx[d].numpy()
+                        max_j = cols_idx[d].numpy()
+                        rf_center, rf_size = receptive_field((max_i, max_j))
+                        mindist = THRESOLD
+                        obj_part = None
+                        center = None
+                        for c in range(len(a_centers)):
+                            aux = abs(rf_center[0] - a_centers[c][1][0]) + abs(rf_center[1] - a_centers[c][1][1])
+                            if aux < mindist:
+                                mindist = aux
+                                obj_part = a_centers[c][0]
+                                center = a_centers[c][1]
+                        updateA(A, d, obj_part)
         if i == STOP:
             break
         i += 1
 
-print(A)
-binarify(A)
-print(A)
-print("TIME : ", dt.now()-start, "for", i, "images.")
+    binarify(A)
+    print("TIME : ", dt.now()-start, "for", i, "images.")
+    return A

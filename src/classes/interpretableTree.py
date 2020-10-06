@@ -332,7 +332,7 @@ class InterpretableTree(tl.Tree):
         """
         Computes rho and g parameters of the image 'img' using the loaded interpretable tree
         """
-        A = compute_a(img)
+        A = binarify(compute_a(img))
         g = compute_g(fc3_model, x_i)
         g = tf.multiply(tf.math.scalar_mul(1/L, self.s), vectorify_on_depth(g))
         g = tf.norm(g, ord=2)
