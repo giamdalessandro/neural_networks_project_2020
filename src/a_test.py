@@ -4,6 +4,7 @@ import numpy as np
 import tensorflow as tf
 import matplotlib.pyplot as plt
 
+from scipy.io import loadmat
 from tensorflow.keras import Model
 from tensorflow.keras.preprocessing.image import img_to_array
 from classes.maskLayer import MaskLayer
@@ -29,6 +30,32 @@ RF_SIZE = 54
 NUM_FILTERS = 512
 NUM_OBJ_PARTS = 4
 
+
+ANNOTATIONS = "./dataset/raw_data/PascalVOC_2010_part/annotations_trainval/Annotations_Part/"
+
+
+def read_part_annotations(img_name, anno_path=ANNOTATIONS):
+    anno_file = os.path.join(anno_path, img_name[:-4] + ".mat")
+    anno = loadmat(anno_file)
+    categories = anno["anno"][0][0][1][0]     # matlab shit
+
+    anno_dict = {}
+    for c in categories:
+        cat = c[0][0]
+        if cat in anno_dict:
+            anno_dict[cat]["bbox"].append(c[2][0])
+            for p in list(c[3][0]):
+                anno_dict[cat]["parts"].append(p)
+
+        else:
+            anno_dict[cat] = {
+                "cat_id": c[1][0][0],
+                "bbox": [c[2][0]],
+                "parts": list(c[3][0])
+            }
+
+    return anno_dict
+
 def display_RF(rf_center):
     boh = np.zeros(shape=(224, 224, 512), dtype=np.uint8)
 
@@ -38,7 +65,7 @@ def display_RF(rf_center):
                 boh[i, j, d] = 1
 
     tens_boh = boh[:,:,d]
-    image = cv2.resize(cv2.imread(POS_IMAGE_SET_TEST+img), (224,224), interpolation=INTER_LINEAR)
+    image = cv2.resize(cv2.imread(POS_IMAGE_SET_TEST+img), (224,224), interpolation=cv2.INTER_LINEAR)
     masked_image = cv2.bitwise_and(image,image,mask=tens_boh)
 
     name, boxes = read_content(img[:-4])
@@ -46,7 +73,6 @@ def display_RF(rf_center):
     print(boxes)
 
     cv2.imshow("Falcone (non Giovanni)", masked_image)
-    #cv2.imshow("Falcone (not Giovanni)", image)
     cv2.waitKey(0)
     cv2.destroyAllWindows()
 
@@ -59,34 +85,36 @@ def binarify(matrix):
             else:
                 matrix[f, i] = 1
 
-def find_a_center(a):
-    a = cv2.resize(a, [224, 224], interpolation=INTER_LINEAR)
+def find_a_center(annotation):
+    mask = cv2.resize(annotation[1], (224, 224), interpolation=cv2.INTER_LINEAR)
     previ = 0
     prevj = 0
     maxx  = 0
     maxy  = 0
     minx  = 224
     miny  = 224
-    for i in range(a.shape[0]):
-        for j in range(a.shape[1]):
-            if previ == 0 and a[i,j] == 1:
-                previ = i
-                if i < minx:
-                    minx = i
-                if i > maxx:
-                    maxx = i
-            if prevj == 0 and a[i,j] == 1:
-                prevj = j
-                if j < miny:
-                    miny = j
-                if j > maxy:
-                    maxy = j
+    for i in range(mask.shape[0]):
+        for j in range(mask.shape[1]):
+            if mask[previ, j] == 0 and mask[i, j] == 1 and i < minx:
+                minx = i
+            if mask[previ, j] == 1 and mask[i, j] == 0 and i > maxx:
+                maxx = i
+            if mask[i, prevj] == 0 and mask[i, j] == 1 and j < miny:
+                miny = j
+            if mask[i, prevj] == 1 and mask[i, j] == 0 and j > maxy:
+                maxy = j
+            prevj = j
+        previ = i
     x = int((maxx - minx)*0.5)
     y = int((maxy - miny)*0.5)
+    print(x,y)
+    image = cv2.resize(cv2.imread(POS_IMAGE_SET_TEST+img), (224, 224), interpolation=cv2.INTER_LINEAR)
+    masked_image = cv2.bitwise_and(image, image, mask=mask)
+    cv2.imshow(str(annotation[0]), masked_image)
+    cv2.waitKey(0)
     return [x,y]
 
-
-def updateA(A, obj_part):
+def updateA(A, f, obj_part):
     if obj_part is not None:
         if obj_part in parts[HEAD_PARTS]:
             A[f, HEAD_PARTS] += 1
@@ -100,8 +128,7 @@ def updateA(A, obj_part):
             print("[ERRO] :: didn't know how to handle", obj_part)
             return
     else:
-        print*("[WARN] :: no obj part matching for filter #", f)
-
+        print("[WARN] :: no obj part matching for filter #", f)
 
 #with tf.device("/CPU:0"):
 m_trained = tf.keras.models.load_model(MASKED1, custom_objects={"MaskLayer":MaskLayer()})
@@ -126,14 +153,15 @@ for img in os.listdir(POS_IMAGE_SET_TEST):
             
             for f in range(NUM_FILTERS):
                 mindist = None
-                annotations = load_annotation(img) 
+                annotations = read_part_annotations(img)
+                obj_part = None
                 for a in annotations['bird']['parts']:      # a = ('part name', mask_matrix)
-                    a_center = find_a_center(a[1])
+                    a_center = find_a_center(a)
                     aux = abs(rf_center[0] - a_center[0]) + abs(rf_center[1] - a_center[1])                 # manhattan distance
                     if (mindist is None and aux < THRESOLD) or (mindist is not None and aux < mindist):
                         mindist = aux
                         obj_part = a[0]
-                updateA(A, obj_part)
+                updateA(A, f, obj_part)
 
 print(matrix)
 binarify(A)
