@@ -145,8 +145,6 @@ def updateA(A, f, obj_part):
     #print(A[f])
 
 
-read_part_annotations("2008_001673.jpg")
-'''
 #with tf.device("/CPU:0"):
 start = dt.now()
 m_trained = tf.keras.models.load_model(MASKED1, custom_objects={"MaskLayer":MaskLayer()})
@@ -200,4 +198,3 @@ print(A)
 binarify(A)
 print(A)
 print("TIME : ", dt.now()-start)
-'''
