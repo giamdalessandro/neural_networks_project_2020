@@ -87,10 +87,9 @@ def binarify(matrix):
     for f in range(NUM_FILTERS):
         if np.sum(matrix[f]) > 0:
             l = np.argmax(matrix[f])
-            array = [0, 0, 0, 0]
-            array[l] = 1
-            matrix[f] = array
-
+            matrix[f] = [0, 0, 0, 0]
+            matrix[f][l] =  1
+            
 def find_a_center(annotation):
     mask = cv2.resize(annotation[1], (224, 224), interpolation=cv2.INTER_LINEAR)
     previ = 0
@@ -99,8 +98,8 @@ def find_a_center(annotation):
     maxy  = 0
     minx  = 224
     miny  = 224
-    for i in range(mask.shape[0]):
-        for j in range(mask.shape[1]):
+    for i in range(224):
+        for j in range(224):
             if mask[previ, j] == 0 and mask[i, j] == 1 and i < minx:
                 minx = i
             if mask[previ, j] == 1 and mask[i, j] == 0 and i > maxx:
@@ -189,7 +188,6 @@ max_pool_model = Model(inputs=m_trained.input, outputs=m_trained.get_layer("fina
 A = np.zeros(shape=(512, 4))
 i = 0
 for img in os.listdir(POS_IMAGE_SET_TEST):
-    print(img)
     if img.endswith('.jpg') and img[0] == '2':
         print(">> Analyzing image", img)
         test_image = load_test_image(folder=POS_IMAGE_SET_TEST, fileid=img)
