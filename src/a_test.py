@@ -109,8 +109,8 @@ def find_a_center(annotation):
                 maxy = j
             prevj = j
         previ = i
-    x = int((maxx - minx)*0.5)
-    y = int((maxy - miny)*0.5)
+    x = int((maxx - minx)*0.5 + minx)
+    y = int((maxy - miny)*0.5 + miny)
     print(x,y)
     image = cv2.resize(cv2.imread(POS_IMAGE_SET_TEST+img), (224, 224), interpolation=cv2.INTER_LINEAR)
     masked_image = cv2.bitwise_and(image, image, mask=mask)
