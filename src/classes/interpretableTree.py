@@ -8,6 +8,8 @@ import tensorflow as tf
 
 from classes.interpretableNode import InterpretableNode
 from classes.tree_utils import load_test_image, compute_g, optimize_g, optimize_alpha, vectorify_on_depth, STOP, L, DTYPE, LAMBDA_0, NUM_FILTERS, FAKE
+from utils.A_utils import compute_A 
+
 
 from math import sqrt, log, exp
 from datetime import datetime as dt
