@@ -6,6 +6,7 @@ import matplotlib.pyplot as plt
 
 from scipy.io import loadmat
 from tensorflow.keras import Model
+from datetime import datetime as dt
 from tensorflow.keras.preprocessing.image import img_to_array
 from classes.maskLayer import MaskLayer
 from utils.dataset_utils import load_test_image
@@ -13,17 +14,17 @@ from utils.receptvie_field import receptive_field
 
 MODELS  = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'models'))
 MASKED1 = os.path.join(MODELS, "masked1_no_dropout_binary_50_epochs_24_9_2020_14_7.h5")
-POS_IMAGE_SET_TEST = "./dataset/train_val/test/bird/"
-
+POS_IMAGE_SET_TEST = "./dataset/train_val/bird/"
+STOP = 100
 HEAD_PARTS   = 0
 TORSO_PARTS  = 1
 LEG_PARTS    = 2
 TAIL_PARTS   = 3
 
-parts = {HEAD_PARTS:  ['head', 'beak', 'leye', 'reye'],
-         TORSO_PARTS: ['torso', 'neck', 'lwing', 'rwing'],
-         LEG_PARTS:   ['lleg', 'rleg', 'lfoot', 'rfoot'],
-         TAIL_PARTS:  ['tail']}
+parts = {'HEAD_PARTS':  ['head', 'beak', 'leye', 'reye'],
+         'TORSO_PARTS': ['torso', 'neck', 'lwing', 'rwing'],
+         'LEG_PARTS':   ['lleg', 'rleg', 'lfoot', 'rfoot'],
+         'TAIL_PARTS':  ['tail']}
 
 THRESOLD = 20   # number of max distance in pixel between two centers (annotation's and RF's) 
 RF_SIZE = 54
@@ -84,12 +85,11 @@ def display_RF(rf_center):
 
 def binarify(matrix):
     for f in range(NUM_FILTERS):
-        l = np.argmax(matrix[f])
-        for i in range(NUM_OBJ_PARTS):
-            if i != l:
-                matrix[f, i] = 0
-            else:
-                matrix[f, i] = 1
+        if np.sum(matrix[f]) > 0:
+            l = np.argmax(matrix[f])
+            array = [0, 0, 0, 0]
+            array[l] = 1
+            matrix[f] = array
 
 def find_a_center(annotation):
     mask = cv2.resize(annotation[1], (224, 224), interpolation=cv2.INTER_LINEAR)
@@ -113,37 +113,48 @@ def find_a_center(annotation):
         previ = i
     x = int((maxx - minx)*0.5 + minx)
     y = int((maxy - miny)*0.5 + miny)
-    print(x,y)
+    # print("Annotation part", annotation[0], y, x)
     image = cv2.resize(cv2.imread(POS_IMAGE_SET_TEST+img), (224, 224), interpolation=cv2.INTER_LINEAR)
     masked_image = cv2.bitwise_and(image, image, mask=mask)
-    cv2.imshow(str(annotation[0]), masked_image)
-    cv2.waitKey(0)
-    return [x,y]
+    # cv2.imshow(str(annotation[0]), masked_image)
+    # cv2.waitKey(0)
+    # cv2.destroyAllWindows()
+    return [y, x]    # leave this this way   
 
 def updateA(A, f, obj_part):
     if obj_part is not None:
-        if obj_part in parts[HEAD_PARTS]:
-            A[f, HEAD_PARTS] += 1
-        elif obj_part in parts[TORSO_PARTS]:
-            A[f, TORSO_PARTS] += 1
-        elif obj_part in parts[LEG_PARTS]:
-            A[f, LEG_PARTS] += 1
-        elif obj_part in parts[TAIL_PARTS]:
-            A[f, TAIL_PARTS] += 1
+        if obj_part in parts['HEAD_PARTS']:
+            A[f][HEAD_PARTS] += 1
+        
+        elif obj_part in parts['TORSO_PARTS']:
+            A[f][TORSO_PARTS] += 1
+        
+        elif obj_part in parts['LEG_PARTS']:
+            A[f][LEG_PARTS] += 1
+        
+        elif obj_part in parts['TAIL_PARTS']:
+            A[f][TAIL_PARTS] += 1
+
         else:
             print("[ERRO] :: didn't know how to handle", obj_part)
             return
     else:
-        print("[WARN] :: no obj part matching for filter #", f)
+        # print("[WARN] :: no obj part matching for filter #", f)
+        pass
+
+    #print(A[f])
 
 #with tf.device("/CPU:0"):
+start = dt.now()
 m_trained = tf.keras.models.load_model(MASKED1, custom_objects={"MaskLayer":MaskLayer()})
 
 max_pool_model = Model(inputs=m_trained.input, outputs=m_trained.get_layer("final_max_pool").output)
 
-A = []
+A = np.zeros(shape=(512, 4))
+i = 0
 for img in os.listdir(POS_IMAGE_SET_TEST):
-    if img.endswith('.jpg'):
+    if img.endswith('.jpg') and img[0] == '2':
+        print("Analyzing image", img)
         test_image = load_test_image(folder=POS_IMAGE_SET_TEST, fileid=img)
         
         pool_output = max_pool_model.predict(test_image)
@@ -151,24 +162,38 @@ for img in os.listdir(POS_IMAGE_SET_TEST):
         rows_idx = tf.math.argmax(tf.reduce_max(pool_output[0], axis=1), output_type=tf.int32)
         cols_idx = tf.math.argmax(tf.reduce_max(pool_output[0], axis=0), output_type=tf.int32)
 
+        annotations = read_part_annotations(img)
+        if annotations is None:
+            continue
+        a_centers = []
+        for a in annotations['bird']['parts']:
+            a_centers.append([a[0], find_a_center(a)])
+        print(len(a_centers), "centers computed for image", img)
+        # print(a_centers)
+
         for d in range(len(rows_idx)):
             max_i = rows_idx[d].numpy()
             max_j = cols_idx[d].numpy()
-
             rf_center, rf_size = receptive_field((max_i, max_j))
-            
-            for f in range(NUM_FILTERS):
-                mindist = None
-                annotations = read_part_annotations(img)
-                obj_part = None
-                for a in annotations['bird']['parts']:      # a = ('part name', mask_matrix)
-                    a_center = find_a_center(a)
-                    aux = abs(rf_center[0] - a_center[0]) + abs(rf_center[1] - a_center[1])                 # manhattan distance
-                    if (mindist is None and aux < THRESOLD) or (mindist is not None and aux < mindist):
-                        mindist = aux
-                        obj_part = a[0]
-                updateA(A, f, obj_part)
+            # print("::: RF center of filter", d, "--", rf_center)
+            mindist = THRESOLD
+            obj_part = None
+            center = None
+            for c in range(len(a_centers)):      # a = ('part name', mask_matrix)
+                aux = abs(rf_center[0] - a_centers[c][1][0]) + abs(rf_center[1] - a_centers[c][1][1])                 # manhattan distance
+                if aux < mindist:
+                    mindist = aux
+                    obj_part = a_centers[c][0]
+                    center = a_centers[c][1]
 
-print(matrix)
+            # print("Matched with", obj_part, center, "distance:", mindist)
+            updateA(A, d, obj_part)
+    if i == STOP:
+        break
+    i += 1
+
+
+print(A)
 binarify(A)
 print(A)
+print("TIME : ", dt.now()-start)

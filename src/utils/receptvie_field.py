@@ -74,7 +74,7 @@ def receptive_field(f_idx, layer_name="pool5"):
     #print ("receptive field: (%s, %s)" % (r, r))
     #print ("center: (%s, %s)" % (start+f_idx[0]*j, start+f_idx[1]*j))
 
-    return (start+f_idx[0]*j, start+f_idx[1]*j), r
+    return (start+f_idx[1]*j, start+f_idx[0]*j), r
 
 
 #center = receptive_field((6, 3))
