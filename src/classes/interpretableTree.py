@@ -326,4 +326,28 @@ class InterpretableTree(tl.Tree):
         self.move_node(nid1.identifier, pid.identifier)
         self.move_node(nid2.identifier, pid.identifier)
         
- 
+    def def_note(self, x_i, img, fc3_model):
+        """
+        Computes rho and g parameters of the image 'img' using the loaded interpretable tree
+        """
+        A = compute_a(img)
+        g = compute_g(fc3_model, x_i)
+        g = tf.multiply(tf.math.scalar_mul(1/L, self.s), vectorify_on_depth(g))
+        g = tf.norm(g, ord=2)
+
+        second_layer = self.children(self.root)
+        max_similarity = 0
+        dec_node = second_layer[0]
+        for node in second_layer:
+            normalize_g = tf.nn.l2_normalize(g,0)        
+            normalize_w = tf.nn.l2_normalize(node.w,0)
+            cos_similarity = tf.reduce_sum(tf.multiply(normalize_a,normalize_b))
+            if cos_similarity > max_similarity:
+                max_similarity = cos_similarity
+                dec_node = node
+
+        w_v = dec_node.w
+        rho = tf.multiply(w_v,x_i)
+        g_strano = tf.matmul(A,rho)
+
+        return rho, g_strano
