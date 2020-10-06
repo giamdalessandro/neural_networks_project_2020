@@ -41,6 +41,8 @@ def read_part_annotations(img_name, anno_path=ANNOTATIONS):
 
     anno_dict = {}
     for c in categories:
+        if len(c[3]) <= 0:
+            return None
         cat = c[0][0]
         if cat in anno_dict:
             anno_dict[cat]["bbox"].append(c[2][0])
