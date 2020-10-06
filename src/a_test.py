@@ -10,7 +10,6 @@ from classes.maskLayer import MaskLayer
 from utils.dataset_utils import load_test_image
 from utils.receptvie_field import receptive_field
 
-RF_SIZE = 54
 MODELS  = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'models'))
 MASKED1 = os.path.join(MODELS, "masked1_no_dropout_binary_50_epochs_24_9_2020_14_7.h5")
 POS_IMAGE_SET_TEST = "./dataset/train_val/test/bird/"
@@ -26,6 +25,9 @@ parts = {HEAD_PARTS:  ['head', 'beak', 'leye', 'reye'],
          TAIL_PARTS:  ['tail']}
 
 THRESOLD = 20   # number of max distance in pixel between two centers (annotation's and RF's) 
+RF_SIZE = 54
+NUM_FILTERS = 512
+NUM_OBJ_PARTS = 4
 
 def display_RF(rf_center):
     boh = np.zeros(shape=(224, 224, 512), dtype=np.uint8)
@@ -48,6 +50,57 @@ def display_RF(rf_center):
     cv2.waitKey(0)
     cv2.destroyAllWindows()
 
+def binarify(matrix):
+    for f in range(NUM_FILTERS):
+        l = np.argmax(matrix[f])
+        for i in range(NUM_OBJ_PARTS):
+            if i != l:
+                matrix[f, i] = 0
+            else:
+                matrix[f, i] = 1
+
+def find_a_center(a):
+    previ = 0
+    prevj = 0
+    maxx  = 0
+    maxy  = 0
+    minx  = a.shape[0]
+    miny  = a.shape[1]
+    for i in range(a.shape[0]):
+        for j in range(a.shape[1]):
+            if previ == 0 and a[i,j] == 1:
+                previ = i
+                if i < minx:
+                    minx = i
+                if i > maxx:
+                    maxx = i
+            if prevj == 0 and a[i,j] == 1:
+                prevj = j
+                if j < miny:
+                    miny = j
+                if j > maxy:
+                    maxy = j
+    x = int((maxx - minx)*0.5)
+    y = int((maxy - miny)*0.5)
+    return [x,y]
+
+
+def updateA(A, obj_part):
+    if obj_part is not None:
+        if obj_part in parts[HEAD_PARTS]:
+            A[f, HEAD_PARTS] += 1
+        elif obj_part in parts[TORSO_PARTS]:
+            A[f, TORSO_PARTS] += 1
+        elif obj_part in parts[LEG_PARTS]:
+            A[f, LEG_PARTS] += 1
+        elif obj_part in parts[TAIL_PARTS]:
+            A[f, TAIL_PARTS] += 1
+        else:
+            print("[ERRO] :: didn't know how to handle", obj_part)
+            return
+    else:
+        print*("[WARN] :: no obj part matching for filter #", f)
+
 
 #with tf.device("/CPU:0"):
 m_trained = tf.keras.models.load_model(MASKED1, custom_objects={"MaskLayer":MaskLayer()})
@@ -68,37 +121,19 @@ for img in os.listdir(POS_IMAGE_SET_TEST):
             max_i = rows_idx[d].numpy()
             max_j = cols_idx[d].numpy()
 
-            rf_center, rf_size = receptive_field((max_i,max_j))
+            rf_center, rf_size = receptive_field((max_i, max_j))
             
-            for f in range(512):
+            for f in range(NUM_FILTERS):
                 mindist = None
                 annotations = load_annotation(img) 
-                for a in annotations:
-                    aux = abs(rf_center[0] - a.center[0]) + abs(rf_center[1] - a.center[1])                 # manhattan distance
+                for a in annotations['bird']['parts']:      # a = ('part name', mask_matrix)
+                    a_center = find_a_center(a[1])
+                    aux = abs(rf_center[0] - a_center[0]) + abs(rf_center[1] - a_center[1])                 # manhattan distance
                     if (mindist is None and aux < THRESOLD) or (mindist is not None and aux < mindist):
                         mindist = aux
-                        obj_part = a.tag
-                if obj_part is not None:
-                    if obj_part in parts[HEAD_PARTS]:
-                        A[f, HEAD_PARTS]  += 1
-                    elif obj_part in parts[TORSO_PARTS]:
-                        A[f, TORSO_PARTS] += 1
-                    elif obj_part in parts[LEG_PARTS]:
-                        A[f, LEG_PARTS]   += 1
-                    elif obj_part in parts[TAIL_PARTS]:
-                        A[f, TAIL_PARTS]  += 1
-                    else:
-                        print("[WARN] :: didn't know how to handle", obj_part)
-                else:
-                    print*("[INFO] :: no obj part matching for filter #", f)
+                        obj_part = a[0]
+                updateA(A, obj_part)
 
-            break
-    break
-
-for f in range(512):
-    l = argmax(A[f])
-    for i in range(4):
-        if i != l:
-            A[f, i] = 0 
-
+print(matrix)
+binarify(A)
 print(A)
