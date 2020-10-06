@@ -111,12 +111,13 @@ def find_a_center(annotation):
         previ = i
     x = int((maxx - minx)*0.5 + minx)
     y = int((maxy - miny)*0.5 + miny)
-    print(x,y)
+    # print("Annotation part", annotation[0], y, x)
     image = cv2.resize(cv2.imread(POS_IMAGE_SET_TEST+img), (224, 224), interpolation=cv2.INTER_LINEAR)
     masked_image = cv2.bitwise_and(image, image, mask=mask)
-    cv2.imshow(str(annotation[0]), masked_image)
-    cv2.waitKey(0)
-    return [x,y]
+    # cv2.imshow(str(annotation[0]), masked_image)
+    # cv2.waitKey(0)
+    # cv2.destroyAllWindows()
+    return [y, x]    # leave this this way   
 
 def updateA(A, f, obj_part):
     if obj_part is not None:
@@ -139,7 +140,7 @@ m_trained = tf.keras.models.load_model(MASKED1, custom_objects={"MaskLayer":Mask
 
 max_pool_model = Model(inputs=m_trained.input, outputs=m_trained.get_layer("final_max_pool").output)
 
-A = []
+A = np.zeros(shape=(512, 4))
 for img in os.listdir(POS_IMAGE_SET_TEST):
     if img.endswith('.jpg'):
         test_image = load_test_image(folder=POS_IMAGE_SET_TEST, fileid=img)
@@ -154,18 +155,21 @@ for img in os.listdir(POS_IMAGE_SET_TEST):
             max_j = cols_idx[d].numpy()
 
             rf_center, rf_size = receptive_field((max_i, max_j))
-            
-            for f in range(NUM_FILTERS):
-                mindist = None
-                annotations = read_part_annotations(img)
-                obj_part = None
-                for a in annotations['bird']['parts']:      # a = ('part name', mask_matrix)
-                    a_center = find_a_center(a)
-                    aux = abs(rf_center[0] - a_center[0]) + abs(rf_center[1] - a_center[1])                 # manhattan distance
-                    if (mindist is None and aux < THRESOLD) or (mindist is not None and aux < mindist):
-                        mindist = aux
-                        obj_part = a[0]
-                updateA(A, f, obj_part)
+            print("RF center", rf_center)
+            mindist = THRESOLD
+            annotations = read_part_annotations(img)
+            obj_part = None
+            center = None
+            for a in annotations['bird']['parts']:      # a = ('part name', mask_matrix)
+                a_center = find_a_center(a)
+                aux = abs(rf_center[0] - a_center[0]) + abs(rf_center[1] - a_center[1])                 # manhattan distance
+                if aux < mindist:
+                    mindist = aux
+                    obj_part = a[0]
+                    center = a_center
+
+            print("Matched with", obj_part, center, "distance:", mindist)
+            updateA(A, d, obj_part)
 
 print(matrix)
 binarify(A)
