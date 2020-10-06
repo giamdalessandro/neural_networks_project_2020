@@ -15,7 +15,7 @@ from utils.receptvie_field import receptive_field
 MODELS  = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'models'))
 MASKED1 = os.path.join(MODELS, "masked1_no_dropout_binary_50_epochs_24_9_2020_14_7.h5")
 POS_IMAGE_SET_TEST = "./dataset/train_val/bird/"
-STOP = 100
+STOP = 10
 HEAD_PARTS   = 0
 TORSO_PARTS  = 1
 LEG_PARTS    = 2
@@ -144,8 +144,43 @@ def updateA(A, f, obj_part):
 
     #print(A[f])
 
+def compute_A(test_image):
+    """
+    Computes A binary matrix
+    """""
+    pool_output = max_pool_model.predict(test_image)
+    rows_idx = tf.math.argmax(tf.reduce_max(pool_output[0], axis=1), output_type=tf.int32)
+    cols_idx = tf.math.argmax(tf.reduce_max(pool_output[0], axis=0), output_type=tf.int32)
+    annotations = read_part_annotations(img)
+    if annotations is not None:
+        a_centers = []
+        for a in annotations['bird']['parts']:
+            a_centers.append([a[0], find_a_center(a)])
+            # print(len(a_centers), "centers computed for image", img)
+            # print(a_centers)
 
-#with tf.device("/CPU:0"):
+            for d in range(512):
+                max_i = rows_idx[d].numpy()
+                max_j = cols_idx[d].numpy()
+                rf_center, rf_size = receptive_field((max_i, max_j))
+                # print("::: RF center of filter", d, "--", rf_center)
+                mindist = THRESOLD
+                obj_part = None
+                center = None
+                for c in range(len(a_centers)):      # a = ('part name', mask_matrix)
+                    # manhattan distance
+                    aux = abs(rf_center[0] - a_centers[c][1][0]) + \
+                        abs(rf_center[1] - a_centers[c][1][1])
+                    if aux < mindist:
+                        mindist = aux
+                        obj_part = a_centers[c][0]
+                        center = a_centers[c][1]
+
+                # print("Matched with", obj_part, center, "distance:", mindist)
+                updateA(A, d, obj_part)
+
+
+
 start = dt.now()
 m_trained = tf.keras.models.load_model(MASKED1, custom_objects={"MaskLayer":MaskLayer()})
 
@@ -154,47 +189,16 @@ max_pool_model = Model(inputs=m_trained.input, outputs=m_trained.get_layer("fina
 A = np.zeros(shape=(512, 4))
 i = 0
 for img in os.listdir(POS_IMAGE_SET_TEST):
+    print(img)
     if img.endswith('.jpg') and img[0] == '2':
-        print("Analyzing image", img)
+        print(">> Analyzing image", img)
         test_image = load_test_image(folder=POS_IMAGE_SET_TEST, fileid=img)
-        
-        pool_output = max_pool_model.predict(test_image)
-
-        rows_idx = tf.math.argmax(tf.reduce_max(pool_output[0], axis=1), output_type=tf.int32)
-        cols_idx = tf.math.argmax(tf.reduce_max(pool_output[0], axis=0), output_type=tf.int32)
-
-        annotations = read_part_annotations(img)
-        if annotations is None:
-            continue
-        a_centers = []
-        for a in annotations['bird']['parts']:
-            a_centers.append([a[0], find_a_center(a)])
-        print(len(a_centers), "centers computed for image", img)
-        # print(a_centers)
-
-        for d in range(len(rows_idx)):
-            max_i = rows_idx[d].numpy()
-            max_j = cols_idx[d].numpy()
-            rf_center, rf_size = receptive_field((max_i, max_j))
-            # print("::: RF center of filter", d, "--", rf_center)
-            mindist = THRESOLD
-            obj_part = None
-            center = None
-            for c in range(len(a_centers)):      # a = ('part name', mask_matrix)
-                aux = abs(rf_center[0] - a_centers[c][1][0]) + abs(rf_center[1] - a_centers[c][1][1])                 # manhattan distance
-                if aux < mindist:
-                    mindist = aux
-                    obj_part = a_centers[c][0]
-                    center = a_centers[c][1]
-
-            # print("Matched with", obj_part, center, "distance:", mindist)
-            updateA(A, d, obj_part)
-    if i == STOP:
-        break
-    i += 1
-
+        compute_A(test_image)
+        if i == STOP:
+            break
+        i += 1
 
 print(A)
 binarify(A)
 print(A)
-print("TIME : ", dt.now()-start)
+print("TIME : ", dt.now()-start, "for", i, "images.")
