@@ -46,12 +46,25 @@ with tf.device("/CPU:0"):
     flat_output = flat_model.predict(test_image)
     y = m_trained.predict(test_image)[0][0]
     
-    rho = twA.def_note(flat_output, m_trained)["1"]["rho"]
-    g_outo = twA.def_note(flat_output, m_trained)["1"]["g_outo"]
-    g_outo = tf.multiply(100/tf.reduce_sum(g_outo), g_outo)
-    print("Contribution of head parts  --", g_outo[0][0].numpy())
-    print("Contribution of torso parts --", g_outo[1][0].numpy())
-    print("Contribution of leg parts   --", g_outo[2][0].numpy())
-    print("Contribution of tail parts  --", g_outo[3][0].numpy())
+    decision_path = twA.def_note(flat_output, m_trained)
+    for i in range(len(decision_path)):
+        g_outo = decision_path[str(i+1)]['g_outo']
+        g_outo = tf.multiply(100/tf.reduce_sum(g_outo), g_outo)
+        tab = "  "*(i+1)
+        print(("  "*i)+"[LEVEL] --", str(i+1))
+        print(tab, ' ├──', "Contribution of leg parts   --", g_outo[2][0].numpy())
+        print(tab, ' ├──', "Contribution of torso parts --", g_outo[1][0].numpy())
+        print(tab, ' ├──', "Contribution of head parts  --", g_outo[0][0].numpy())
+        print(tab, ' └──', "Contribution of tail parts  --", g_outo[3][0].numpy())
 
     visualize_objpart_RF(m_trained, test_image, twA.A,os.path.join(POS_IMAGE_SET_TEST, "2010_005603.jpg"))
+
+
+'''
+TODO:
+    - test metrics albero fake
+    - computazione metrics su albero vero
+    - printare fiorellini albero vero
+    - scrivere slide e report
+    - scrivere README
+'''
