@@ -335,27 +335,28 @@ class InterpretableTree(tl.Tree):
         self.move_node(nid1.identifier, pid.identifier)
         self.move_node(nid2.identifier, pid.identifier)
         
-    def def_note(self, img, x_i, fc3_model, A):
+    def def_note(self, flat_x, trained_model):
         """
         Computes rho and g parameters of the image 'img' using the loaded interpretable tree
         """
-        g = compute_g(fc3_model, x_i)
-        g = tf.multiply(tf.math.scalar_mul(1/L, self.s), vectorify_on_depth(g))
-        g = tf.norm(g, ord=2)
-
+        g = compute_g(trained_model, flat_x)
+        g = tf.multiply(tf.math.scalar_mul(1/L,self.s), vectorify_on_depth(g))
+        
         second_layer = self.children(self.root)
         max_similarity = 0
         dec_node = second_layer[0]
         for node in second_layer:
             normalize_g = tf.nn.l2_normalize(g,0)        
             normalize_w = tf.nn.l2_normalize(node.w,0)
-            cos_similarity = tf.reduce_sum(tf.multiply(normalize_a,normalize_b))
+            cos_similarity = tf.reduce_sum(tf.multiply(normalize_g,normalize_w))
             if cos_similarity > max_similarity:
                 max_similarity = cos_similarity
                 dec_node = node
 
+        x_i = tf.reshape(flat_x, shape=(7, 7, 512))
+        x_i = tf.multiply(tf.math.scalar_mul(1/L,self.s), vectorify_on_depth(x_i))
         w_v = dec_node.w
-        rho = tf.multiply(w_v,x_i)
-        g_strano = tf.matmul(A,rho)
+        rho = tf.reshape(tf.multiply(w_v,x_i), shape=(512,1))
+        g_outo = tf.matmul(self.A, rho, transpose_a=True)
 
-        return rho, g_strano
+        return rho, g_outo
