@@ -12,7 +12,7 @@ from classes.maskLayer import MaskLayer
 from utils.dataset_utils import load_test_image
 from utils.receptvie_field import receptive_field
 
-MODELS  = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'models'))
+MODELS  = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', 'models'))
 MASKED1 = os.path.join(MODELS, "masked1_no_dropout_binary_50_epochs_24_9_2020_14_7.h5")
 POS_IMAGE_SET_TEST = "./dataset/train_val/bird/"
 STOP = 10
@@ -187,10 +187,3 @@ def compute_A(dataset_folder=POS_IMAGE_SET_TEST, stop=STOP):
     print("TIME : ", dt.now()-start, "for", i, "images.")
     return A
 
-
-# CODE FOR COMPUTING AND SAVING A #
-A = compute_A(stop=10)   # stop = 0 means it will do all images
-loaded = from_json(InterpretableTree(), "./forest/test_tree_100_imgs.json")
-loaded.A = A
-saved = tree.save2json(save_name="./forest/test_tree_100_imgs_with_A")
-print("A done.")

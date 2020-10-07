@@ -117,7 +117,7 @@ class InterpretableTree(tl.Tree):
             "E"     : str(self.E.numpy()),
             "s"     : str(self.s.numpy()),
             "theta" : str(self.theta),
-            "gamma" : str(self.gamma.numpy())
+            "gamma" : str(self.gamma.numpy()),
             "A"     : str(self.A)
         }
         json_tree = json.loads(self.to_json(with_data=True))

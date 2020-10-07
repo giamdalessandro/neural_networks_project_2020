@@ -1,8 +1,8 @@
 import tensorflow as tf
+from utils.A_utils import *
 from classes.tree_utils import *
 from classes.interpretableNode import InterpretableNode
 from classes.interpretableTree import InterpretableTree
-
 from classes.maskLayer import MaskLayer
 
 MODELS  = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'models'))
@@ -31,9 +31,19 @@ tf.config.experimental.set_memory_growth(gpus[0], True)
 #new_tree.show()
 #
 #saved = tree.save2json(save_name="test_tree_"+str(STOP)+"_imgs")
-loaded = from_json(InterpretableTree(), "./forest/test_tree_20._imgs.json")
+#loaded = from_json(InterpretableTree(), "./forest/test_tree_20._imgs.json")
 
 #print("[TIME] -- test on ", STOP, " images took ", dt.now()-start)
+
+
+# CODE FOR COMPUTING AND SAVING A #
+A = compute_A(stop=10)   # stop = 0 means it will do all images
+loaded = from_json(InterpretableTree(), "./forest/test_tree_100_imgs.json")
+loaded.A = A
+saved = loaded.save2json(save_name="./forest/test_tree_100_imgs_with_A")
+print("A done.")
+
+
 print("Evvai.")
 
 
