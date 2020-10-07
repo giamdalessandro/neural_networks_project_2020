@@ -54,4 +54,5 @@ with tf.device("/CPU:0"):
     print("Contribution of torso parts --", g_outo[1][0].numpy())
     print("Contribution of leg parts   --", g_outo[2][0].numpy())
     print("Contribution of tail parts  --", g_outo[3][0].numpy())
-
+    visualize_objpart_RF(m_trained, test_image, twA.A,
+                         os.path.join(POS_IMAGE_SET_TEST, "2010_005603.jpg"))
