@@ -310,6 +310,7 @@ def from_json(res_tree, save_path):
     res_tree.s = dict_tree["tree_data"]["s"]
     res_tree.theta = dict_tree["tree_data"]["theta"]
     res_tree.gamma = dict_tree["tree_data"]["gamma"]
+    res_tree.A = dict_tree["tree_data"]["A"]
     __parse_json_tree(res_tree, dict_tree, parent=None)
 
     res_tree.show()
