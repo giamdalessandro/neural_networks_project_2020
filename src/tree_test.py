@@ -45,7 +45,8 @@ test_image = load_test_image(folder=POS_IMAGE_SET_TEST, fileid="2010_005603.jpg"
 flat_output = flat_model.predict(test_image)
 y = m_trained.predict(test_image)[0][0]
 
-rho, g_outo = twA.def_note(flat_output, m_trained)
+rho = twA.def_note(flat_output, m_trained)["1"]["rho"]
+g_outo = twA.def_note(flat_output, m_trained)["1"]["g_outo"]
 g_outo = tf.multiply(100/tf.reduce_sum(g_outo), g_outo)
 print(rho)
 print("Contribution of head parts  --", g_outo[0][0].numpy())
