@@ -189,7 +189,7 @@ def compute_A(dataset_folder=POS_IMAGE_SET_TEST, stop=STOP):
 
 
 # CODE FOR COMPUTING AND SAVING A #
-A = compute_A(stop=0)   # stop = 0 means it will do all images
+A = compute_A(stop=10)   # stop = 0 means it will do all images
 loaded = from_json(InterpretableTree(), "./forest/test_tree_100_imgs.json")
 loaded.A = A
 saved = tree.save2json(save_name="./forest/test_tree_100_imgs_with_A")
