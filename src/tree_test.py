@@ -15,12 +15,8 @@ tf.config.experimental.set_memory_growth(gpus[0], True)
 
 #with tf.device("/CPU:0"):
 m_trained = tf.keras.models.load_model(MASKED1, custom_objects={"MaskLayer":MaskLayer()})
-if STOP <= 20:
-    POS_IMAGE_SET_TEST = "./dataset/train_val/test/bird/"
-else:
-    POS_IMAGE_SET_TEST = "./dataset/train_val/bird/"
 
-POS_IMAGE_SET_TEST = "./dataset/train_val/bird/"
+POS_IMAGE_SET_TEST = "./dataset/train_val/bird"
 start = dt.now()
 tree, y_dict, x_dict = sow(m_trained, POS_IMAGE_SET_TEST)
 tree.info()

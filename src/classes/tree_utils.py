@@ -16,7 +16,7 @@ from tensorflow.keras.preprocessing.image import ImageDataGenerator, load_img, i
 
 
 L = 14*14
-STOP = 100
+STOP = 10
 FAKE = False
 DTYPE = tf.float32
 LAMBDA_0 = 0.000001
