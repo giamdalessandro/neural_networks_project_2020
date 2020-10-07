@@ -60,7 +60,7 @@ class InterpretableTree(tl.Tree):
             "g"     : str(self[nid].g.numpy()),
             "b"     : str(self[nid].b.numpy()) if not isinstance(self[nid].b, int) else self[nid].b,
             "w"     : str(self[nid].w.numpy()) if self[nid].w is not None else 0,
-            "x"     : str(self[nid].x.numpy()) if not isinstance(self[nid].x, int) else self[nid].x,
+            "x"     : str(self[nid].x.numpy()) if not isinstance(self[nid].x, int) or self[nid].x is not None else self[nid].x,
             "l"     : str(self[nid].l)         if not isinstance(self[nid].l, float) else LAMBDA_0,
             "exph"  : str(self[nid].exph_val)  if self[nid].exph_val is not None else 0
         }
@@ -114,11 +114,11 @@ class InterpretableTree(tl.Tree):
             - save_folder: folder where to save JSON trees
         """
         tree_data = {
-            "E"     : str(self.E.numpy()),
-            "s"     : str(self.s.numpy()),
-            "theta" : str(self.theta),
-            "gamma" : str(self.gamma.numpy()),
-            "A"     : str(self.A)
+            "E"     : str(self.E)               if isinstance(self.E, int) else str(self.E.numpy()),
+            "s"     : str(self.s.numpy())       if tf.is_tensor(self.s) else str(self.s),
+            "A"     : str(self.A)               if self.A is not None else self.A,
+            "gamma" : str(self.gamma.numpy())   if tf.is_tensor(self.gamma) else str(self.gamma),
+            "theta" : str(self.theta)
         }
         json_tree = json.loads(self.to_json(with_data=True))
         json_tree.update({"tree_data" : tree_data})
@@ -158,6 +158,7 @@ class InterpretableTree(tl.Tree):
 
                 g = compute_g(trained_model, flat_output)
                 x = tf.reshape(flat_output, shape=(7, 7, 512))
+                
                 # inner product between g and x
                 b = tf.subtract(fc3_output, tf.reduce_sum(tf.math.multiply(g, x), axis=None))
 
@@ -166,7 +167,7 @@ class InterpretableTree(tl.Tree):
                 self.create_node(tag=img[:-4], identifier=img[:-4],
                                 parent='root', g=g, alpha=tf.ones(shape=512), b=b, x=x, y=y)
                 i += 1
-                print(">> created", i, "nodes")
+                print(">> created", i, "nodes --", img)
                 if i==STOP:
                     break
                 # TEST IF g and b ARE ACCURATE ENOUGH - IS WORKING! #
@@ -266,7 +267,7 @@ class InterpretableTree(tl.Tree):
             for leaf in self.leaves(nid=n2.identifier):
                 Xs.append(tf.reshape(tf.multiply(g, leaf.x), shape=[512]))
                 Ys.append(leaf.y)
-    
+        print(Xs)
         alpha = optimize_alpha(Xs, Ys)
 
         w = tf.math.multiply(alpha, g)

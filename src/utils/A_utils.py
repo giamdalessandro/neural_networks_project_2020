@@ -9,7 +9,7 @@ from tensorflow.keras import Model
 from datetime import datetime as dt
 from tensorflow.keras.preprocessing.image import img_to_array
 from classes.maskLayer import MaskLayer
-from utils.dataset_utils import load_test_image
+from classes.tree_utils import load_test_image
 from utils.receptvie_field import receptive_field
 
 MODELS  = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', 'models'))

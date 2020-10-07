@@ -16,7 +16,7 @@ from tensorflow.keras.preprocessing.image import ImageDataGenerator, load_img, i
 
 
 L = 14*14
-STOP = 100
+STOP = 7
 FAKE = False
 DTYPE = tf.float32
 LAMBDA_0 = 0.000001
@@ -267,14 +267,14 @@ def str_to_tensor(str_val, dtype="float32"):
 def __parse_json_tree(tree, current, parent=None):
     """
     Parse a tree from a JSON object returned by from_json()
-        - tree      : tree instance where the parsed json_tree will be saved 
+        - tree      : tree instance where the parsed json_tree will be loaded
         - current   : node to parse, initially the JSON tree returned by from_json() 
         - parent    : parent node of current, initially None
     """
     par_tag = list(parent.keys())[0] if parent is not None else parent
     curr_tag = current if isinstance(current,str) else list(current.keys())[0]
     # print("<On node ->", curr_tag)
-
+    '''
     data = current[curr_tag]["data"]
     tree.create_node(tag=curr_tag, identifier=curr_tag, parent=par_tag, 
                     alpha=str_to_tensor(data["alpha"]),
@@ -284,6 +284,24 @@ def __parse_json_tree(tree, current, parent=None):
                     w=data["w"] if (isinstance(data["w"],int) or isinstance(data["w"],float)) else str_to_tensor(data["w"]),
                     l=data["l"],
                     exph_val=data["exph"] if "exph" in data else None)
+    '''
+    data = current[curr_tag]['data']
+    node = tree.create_node(tag=curr_tag, identifier=curr_tag, parent=par_tag)
+    values = {}
+    for k, v in data.items():
+        if v is None:
+            values.update({k:None})
+        elif isinstance(v, int) or isinstance(v, float):
+            values.update({k:v})
+        else:
+            values.update({k:str_to_tensor(v)})
+    node.g = values["g"]
+    node.b = values["b"]
+    node.x = values["x"]
+    node.w = values["w"]
+    node.l = values["l"]
+    node.alpha = values["alpha"]
+    node.exph_val = values["exph"]
 
     if "children" not in current[curr_tag].keys():
         # print(" | -- on leaf ", curr_tag)
