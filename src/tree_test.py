@@ -46,13 +46,12 @@ with tf.device("/CPU:0"):
     flat_output = flat_model.predict(test_image)
     y = m_trained.predict(test_image)[0][0]
 
-    rho, g_outo = twA.def_note(flat_output, m_trained)
+    rho = twA.def_note(flat_output, m_trained)["1"]["rho"]
+    g_outo = twA.def_note(flat_output, m_trained)["1"]["g_outo"]
     g_outo = tf.multiply(100/tf.reduce_sum(g_outo), g_outo)
     print(rho)
     print("Contribution of head parts  --", g_outo[0][0].numpy())
     print("Contribution of torso parts --", g_outo[1][0].numpy())
     print("Contribution of leg parts   --", g_outo[2][0].numpy())
     print("Contribution of tail parts  --", g_outo[3][0].numpy())
-    visualize_objpart_RF(m_trained, test_image, twA.A,
-                         os.path.join(POS_IMAGE_SET_TEST,"2010_005603.jpg"))
 

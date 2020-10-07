@@ -315,7 +315,6 @@ def __parse_json_tree(tree, current, parent=None):
             
     return
 
-
 def from_json(res_tree, save_path):
     """
     Loads a tree from a JSON file
