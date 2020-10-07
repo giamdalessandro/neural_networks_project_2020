@@ -186,6 +186,7 @@ def compute_A(dataset_folder, stop=STOP):
 
 
 def visualize_objpart_RF(m_trained, test_image, A, filepath):
+    
     max_pool_model = Model(inputs=m_trained.input,outputs=m_trained.get_layer("final_max_pool").output)
     pool_output = max_pool_model.predict(test_image)
     x = tf.reshape(pool_output, shape=(7,7,512))
@@ -196,36 +197,40 @@ def visualize_objpart_RF(m_trained, test_image, A, filepath):
     for i in range(512):
         heados.append(A[i][HEAD_PARTS])
         torsos.append(A[i][TORSO_PARTS])
-        legos.append( A[i][LEGS_PARTS])
-        tailos.append(A[i][TAILS_PARTS])
+        legos.append( A[i][LEG_PARTS])
+        tailos.append(A[i][TAIL_PARTS])
     
-    x_heados = tf.reduce_sum(tf.multiply(heados, x), axis=2)
-    x_torsos = tf.reduce_sum(tf.multiply(torsos, x), axis=2)
-    x_legos  = tf.reduce_sum(tf.multiply(legos,  x), axis=2)
-    x_tailos = tf.reduce_sum(tf.multiply(tailos, x), axis=2)
+    x_heados = tf.reduce_mean(tf.multiply(heados, x), axis=2)
+    x_torsos = tf.reduce_mean(tf.multiply(torsos, x), axis=2)
+    x_legos  = tf.reduce_mean(tf.multiply(legos,  x), axis=2)
+    x_tailos = tf.reduce_mean(tf.multiply(tailos, x), axis=2)
 
-    heados_i = tf.math.argmax(x_heados, axis=1)
-    heados_j = tf.math.argmax(x_heados, axis=0)
-    heados_center, size = receptive_field((heados_i, heados_i))
+    heados_i = tf.math.argmax(tf.reduce_max(x_heados, axis=1),output_type=tf.int32).numpy()
+    heados_j = tf.math.argmax(tf.reduce_max(x_heados, axis=0),output_type=tf.int32).numpy()
+    heados_center, size = receptive_field((heados_j, heados_i))
 
-    torsos_i = tf.math.argmax(x_torsos, axis=1)
-    torsos_j = tf.math.argmax(x_torsos, axis=0)
-    torsos_center, size = receptive_field((torsos_i, torsos_i))
+    torsos_i = tf.math.argmax(tf.reduce_max(x_torsos, axis=1),output_type=tf.int32).numpy()
+    torsos_j = tf.math.argmax(tf.reduce_max(x_torsos, axis=0),output_type=tf.int32).numpy()
+    torsos_center, size = receptive_field((torsos_j, torsos_i))
 
-    legos_i  = tf.math.argmax(x_legos,  axis=1)
-    legos_j  = tf.math.argmax(x_legos,  axis=0)
-    legoos_center, size = receptive_field((legos_i, legos_i))
+    legos_i  = tf.math.argmax(tf.reduce_max(x_legos,  axis=1),output_type=tf.int32).numpy()
+    legos_j  = tf.math.argmax(tf.reduce_max(x_legos,  axis=0),output_type=tf.int32).numpy()
+    legos_center, size = receptive_field((legos_j, legos_i))
 
-    tailos_i = tf.math.argmax(x_tailos, axis=1)
-    tailos_j = tf.math.argmax(x_tailos, axis=0)
-    tailos_center, size = receptive_field((tailos_i, tailos_i))
+    tailos_i = tf.math.argmax(tf.reduce_max(x_tailos, axis=1),output_type=tf.int32).numpy()
+    tailos_j = tf.math.argmax(tf.reduce_max(x_tailos, axis=0),output_type=tf.int32).numpy()
+    tailos_center, size = receptive_field((tailos_j, tailos_i))
 
     display_RF(heados_center, filepath, 'head')
     display_RF(torsos_center, filepath, 'torso')
     display_RF(legos_center,  filepath, 'legs')
     display_RF(tailos_center, filepath, 'tail')
 
+    i = tf.math.argmax(tf.reduce_max(tf.reduce_mean(x, axis=2), axis=1), output_type=tf.int32).numpy()
+    j = tf.math.argmax(tf.reduce_max(tf.reduce_mean(x, axis=2), axis=0), output_type=tf.int32).numpy()
 
+    center, size = receptive_field((j,i))
+    display_RF(center, filepath, 'all')
 
 
 
@@ -268,7 +273,8 @@ def visualize_objpart_RF(m_trained, test_image, A, filepath):
     for k, v in rfs.items():
         print("computing rf of", k)
         v = tf.tile(tf.reshape(tf.convert_to_tensor(v), (224,224,1)),[1,1,3]).numpy()
-        cv2.imshow(k, cv2.addWeighted(image, 0.2, v, 0.8, 0))
+        cv2.imshow(k, cv2.addWeighted(image, 0.5, v, 0.5, 0))
         cv2.waitKey(0)
         cv2.destroyAllWindows()
     '''
+    
