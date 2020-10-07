@@ -148,7 +148,7 @@ class InterpretableTree(tl.Tree):
         fc3_model = Model(inputs=trained_model.input, outputs=trained_model.get_layer("fc3").output)
 
         for img in os.listdir(pos_image_folder):
-            if img.endswith('.jpg'):
+            if img.endswith('.jpg') and img[0] == '2':
                 test_image = load_test_image(folder=pos_image_folder, fileid=img)
                 flat_output = flat_model.predict(test_image)
                 # we take only the positive prediction score
@@ -267,7 +267,6 @@ class InterpretableTree(tl.Tree):
             for leaf in self.leaves(nid=n2.identifier):
                 Xs.append(tf.reshape(tf.multiply(g, leaf.x), shape=[512]))
                 Ys.append(leaf.y)
-        print(Xs)
         alpha = optimize_alpha(Xs, Ys)
 
         w = tf.math.multiply(alpha, g)

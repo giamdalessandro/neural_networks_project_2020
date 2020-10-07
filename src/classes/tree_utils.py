@@ -143,6 +143,7 @@ def grow(old_tree, y_dict, x_dict):
     nodes_dict = {}
 
     while True:
+        print("[GROW] -- Step", t)
         z = 1
         nid1 = None
         nid2 = None
