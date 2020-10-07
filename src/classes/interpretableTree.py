@@ -7,7 +7,7 @@ import treelib as tl
 import tensorflow as tf
 
 from classes.interpretableNode import InterpretableNode
-from classes.tree_utils import load_test_image, compute_g, optimize_g, optimize_alpha, vectorify_on_depth, STOP, L, DTYPE, LAMBDA_0, NUM_FILTERS, FAKE
+from classes.tree_utils import *
 from utils.A_utils import compute_A 
 
 
@@ -55,6 +55,7 @@ class InterpretableTree(tl.Tree):
         nid = self.root if (nid is None) else nid
         ntag = self[nid].tag
         tree_dict = {ntag: {"children": []}}
+        '''
         data = {
             "alpha" : str(self[nid].alpha.numpy()),
             "g"     : str(self[nid].g.numpy()),
@@ -63,6 +64,16 @@ class InterpretableTree(tl.Tree):
             "x"     : self[nid].x              if (isinstance(self[nid].x, int) or self[nid].x is None) else str(self[nid].x.numpy()),
             "l"     : str(self[nid].l)         if not isinstance(self[nid].l, float) else LAMBDA_0,
             "exph"  : str(self[nid].exph_val)  if self[nid].exph_val is not None else 0
+        }
+        '''
+        data = {
+            "g": sanitize((self[nid].g)),
+            "b": sanitize(self[nid].b),
+            "w": sanitize(self[nid].w),
+            "x": sanitize(self[nid].x),
+            "l": sanitize(self[nid].l),
+            "exph": sanitize(self[nid].exph),
+            "alpha": sanitize(self[nid].alpha)
         }
         if with_data:
             tree_dict[ntag]["data"] = data

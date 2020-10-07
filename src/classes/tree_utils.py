@@ -265,6 +265,21 @@ def str_to_tensor(str_val, dtype="float32"):
     return tf.convert_to_tensor(np.array(stripped, dtype=dtype))
 
 
+def sanitize(i):
+    """
+    Sanitizes the values before writing them in the to_dict
+    """
+    if i is None or isinstance(i, int) or isinstance(i, float):
+        return i
+    elif isinstance(i, np.ndarray):
+        return str(i)
+    elif tf.is_tensor(i):
+        return str(i.numpy())
+    else:
+        print("Uè uglio che cazz m'hai dato")
+        print(i)
+        raise SystemError
+
 def __parse_json_tree(tree, current, parent=None):
     """
     Parse a tree from a JSON object returned by from_json()
@@ -274,25 +289,11 @@ def __parse_json_tree(tree, current, parent=None):
     """
     par_tag = list(parent.keys())[0] if parent is not None else parent
     curr_tag = current if isinstance(current,str) else list(current.keys())[0]
-    # print("<On node ->", curr_tag)
-    '''
-    data = current[curr_tag]["data"]
-    tree.create_node(tag=curr_tag, identifier=curr_tag, parent=par_tag, 
-                    alpha=str_to_tensor(data["alpha"]),
-                    g=str_to_tensor(data["g"]),
-                    b=data["b"] if isinstance(data["b"],int) else str_to_tensor(data["b"]),
-                    x=data["x"] if isinstance(data["b"],int) else str_to_tensor(data["x"]),
-                    w=data["w"] if (isinstance(data["w"],int) or isinstance(data["w"],float)) else str_to_tensor(data["w"]),
-                    l=data["l"],
-                    exph_val=data["exph"] if "exph" in data else None)
-    '''
     data = current[curr_tag]['data']
     node = tree.create_node(tag=curr_tag, identifier=curr_tag, parent=par_tag)
     values = {}
     for k, v in data.items():
-        if v is None:
-            values.update({k:None})
-        elif isinstance(v, int) or isinstance(v, float):
+        if v is None or isinstance(v, int) or isinstance(v, float):
             values.update({k:v})
         else:
             values.update({k:str_to_tensor(v)})
