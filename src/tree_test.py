@@ -9,7 +9,7 @@ POS_IMAGE_SET_TEST = "./dataset/train_val/bird"
 MODELS  = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'models'))
 MASKED1 = os.path.join(MODELS, "masked1_no_dropout_binary_50_epochs_24_9_2020_14_7.h5")
 
-TEST = False
+TEST = True
 
 gpus = tf.config.experimental.list_physical_devices('GPU')          #    partially resolves CUBLAS errors
 tf.config.experimental.set_memory_growth(gpus[0], True)
