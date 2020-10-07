@@ -60,7 +60,7 @@ class InterpretableTree(tl.Tree):
             "g"     : str(self[nid].g.numpy()),
             "b"     : str(self[nid].b.numpy()) if not isinstance(self[nid].b, int) else self[nid].b,
             "w"     : str(self[nid].w.numpy()) if self[nid].w is not None else 0,
-            "x"     : str(self[nid].x.numpy()) if not isinstance(self[nid].x, int) or self[nid].x is not None else self[nid].x,
+            "x"     : self[nid].x              if (isinstance(self[nid].x, int) or self[nid].x is None) else str(self[nid].x.numpy()),
             "l"     : str(self[nid].l)         if not isinstance(self[nid].l, float) else LAMBDA_0,
             "exph"  : str(self[nid].exph_val)  if self[nid].exph_val is not None else 0
         }
@@ -83,7 +83,7 @@ class InterpretableTree(tl.Tree):
 
     # OVERRIDE #
     def create_node(self, tag=None, identifier=None, parent=None, g=np.zeros(shape=(NUM_FILTERS)),
-                    alpha=np.ones(shape=(NUM_FILTERS)), b=0, l=LAMBDA_0, x=0, y=0, w=None, h_val=None, exph_val=None):
+                    alpha=np.ones(shape=(NUM_FILTERS)), b=0, l=LAMBDA_0, x=None, y=0, w=None, h_val=None, exph_val=None):
         """
         Create a child node for given @parent node. If ``identifier`` is absent,
         a UUID will be generated automatically.
