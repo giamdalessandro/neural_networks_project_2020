@@ -7,7 +7,9 @@ import treelib as tl
 import tensorflow as tf
 
 from classes.interpretableNode import InterpretableNode
-from classes.tree_utils import load_test_image, compute_g, optimize_g, optimize_alpha, vectorify_on_depth, STOP, L, DTYPE, LAMBDA_0, NUM_FILTERS, FAKE
+from classes.tree_utils import *
+from utils.A_utils import compute_A 
+
 
 from math import sqrt, log, exp
 from datetime import datetime as dt
@@ -35,6 +37,7 @@ class InterpretableTree(tl.Tree):
         self.E = E
         self.theta = theta
         self.gamma = gamma
+        self.A = None
         super(InterpretableTree, self).__init__(tree=tree, deep=deep, node_class=InterpretableNode, identifier=identifier)
 
     # OVERLOAD #
@@ -53,13 +56,13 @@ class InterpretableTree(tl.Tree):
         ntag = self[nid].tag
         tree_dict = {ntag: {"children": []}}
         data = {
-            "alpha" : str(self[nid].alpha.numpy()),
-            "b"     : str(self[nid].b.numpy()) if not isinstance(self[nid].b, int) else self[nid].b,
-            "g"     : str(self[nid].g.numpy()) if self[nid].g is not None else 0,
-            "w"     : str(self[nid].w.numpy()) if self[nid].w is not None else 0,
-            "x"     : str(self[nid].x.numpy()) if not isinstance(self[nid].x, int) else self[nid].x,
-            "l"     : str(self[nid].l)         if not isinstance(self[nid].l, float) else LAMBDA_0,
-            "exph"  : str(self[nid].exph_val)  if self[nid].exph_val is not None else 0
+            "g": sanitize((self[nid].g)),
+            "b": sanitize(self[nid].b),
+            "w": sanitize(self[nid].w),
+            "x": sanitize(self[nid].x),
+            "l": sanitize(self[nid].l),
+            "exph_val": sanitize(self[nid].exph_val),
+            "alpha": sanitize(self[nid].alpha)
         }
         if with_data:
             tree_dict[ntag]["data"] = data
@@ -80,7 +83,7 @@ class InterpretableTree(tl.Tree):
 
     # OVERRIDE #
     def create_node(self, tag=None, identifier=None, parent=None, g=np.zeros(shape=(NUM_FILTERS)),
-                    alpha=np.ones(shape=(NUM_FILTERS)), b=0, l=LAMBDA_0, x=0, y=0, w=None, h_val=None, exph_val=None):
+                    alpha=np.ones(shape=(NUM_FILTERS)), b=0, l=LAMBDA_0, x=None, y=0, w=None, h_val=None, exph_val=None):
         """
         Create a child node for given @parent node. If ``identifier`` is absent,
         a UUID will be generated automatically.
@@ -111,10 +114,11 @@ class InterpretableTree(tl.Tree):
             - save_folder: folder where to save JSON trees
         """
         tree_data = {
-            "E"     : str(self.E.numpy()),
-            "s"     : str(self.s.numpy()),
-            "theta" : str(self.theta),
-            "gamma" : str(self.gamma.numpy())
+            "E"     : str(self.E)               if isinstance(self.E, int) or isinstance(self.E, float) else str(self.E.numpy()),
+            "s"     : str(self.s.numpy())       if tf.is_tensor(self.s) else str(self.s),
+            "gamma" : str(self.gamma.numpy())   if tf.is_tensor(self.gamma) else self.gamma,
+            "A"     : str(self.A.numpy())       if self.A is not None else self.A,
+            "theta" : str(self.theta)
         }
         json_tree = json.loads(self.to_json(with_data=True))
         json_tree.update({"tree_data" : tree_data})
@@ -144,9 +148,14 @@ class InterpretableTree(tl.Tree):
         fc3_model = Model(inputs=trained_model.input, outputs=trained_model.get_layer("fc3").output)
 
         for img in os.listdir(pos_image_folder):
-            if img.endswith('.jpg'):
+            if img.endswith('.jpg') and img[0] == '2':
                 test_image = load_test_image(folder=pos_image_folder, fileid=img)
                 flat_output = flat_model.predict(test_image)
+                # check if the flat output contains nan values
+                if 'nan' in str(flat_output):
+                    print("[WARN] -- nan value found in", img)
+                    continue
+
                 # we take only the positive prediction score
                 fc3_output = fc3_model.predict(test_image)[0][0]
                 y = trained_model.predict(test_image)[0][0]          # after softmax
@@ -154,6 +163,7 @@ class InterpretableTree(tl.Tree):
 
                 g = compute_g(trained_model, flat_output)
                 x = tf.reshape(flat_output, shape=(7, 7, 512))
+                
                 # inner product between g and x
                 b = tf.subtract(fc3_output, tf.reduce_sum(tf.math.multiply(g, x), axis=None))
 
@@ -162,7 +172,7 @@ class InterpretableTree(tl.Tree):
                 self.create_node(tag=img[:-4], identifier=img[:-4],
                                 parent='root', g=g, alpha=tf.ones(shape=512), b=b, x=x, y=y)
                 i += 1
-                print(">> created", i, "nodes")
+                print(">> created", i, "nodes --", img)
                 if i==STOP:
                     break
                 # TEST IF g and b ARE ACCURATE ENOUGH - IS WORKING! #
@@ -262,7 +272,6 @@ class InterpretableTree(tl.Tree):
             for leaf in self.leaves(nid=n2.identifier):
                 Xs.append(tf.reshape(tf.multiply(g, leaf.x), shape=[512]))
                 Ys.append(leaf.y)
-    
         alpha = optimize_alpha(Xs, Ys)
 
         w = tf.math.multiply(alpha, g)
@@ -326,4 +335,28 @@ class InterpretableTree(tl.Tree):
         self.move_node(nid1.identifier, pid.identifier)
         self.move_node(nid2.identifier, pid.identifier)
         
- 
+    def def_note(self, x_i, img, fc3_model):
+        """
+        Computes rho and g parameters of the image 'img' using the loaded interpretable tree
+        """
+        A = binarify(compute_a(img))
+        g = compute_g(fc3_model, x_i)
+        g = tf.multiply(tf.math.scalar_mul(1/L, self.s), vectorify_on_depth(g))
+        g = tf.norm(g, ord=2)
+
+        second_layer = self.children(self.root)
+        max_similarity = 0
+        dec_node = second_layer[0]
+        for node in second_layer:
+            normalize_g = tf.nn.l2_normalize(g,0)        
+            normalize_w = tf.nn.l2_normalize(node.w,0)
+            cos_similarity = tf.reduce_sum(tf.multiply(normalize_a,normalize_b))
+            if cos_similarity > max_similarity:
+                max_similarity = cos_similarity
+                dec_node = node
+
+        w_v = dec_node.w
+        rho = tf.multiply(w_v,x_i)
+        g_strano = tf.matmul(A,rho)
+
+        return rho, g_strano

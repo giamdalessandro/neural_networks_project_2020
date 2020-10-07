@@ -16,7 +16,7 @@ from tensorflow.keras.preprocessing.image import ImageDataGenerator, load_img, i
 
 
 L = 14*14
-STOP = 10
+STOP = 100
 FAKE = False
 DTYPE = tf.float32
 LAMBDA_0 = 0.000001
@@ -143,6 +143,7 @@ def grow(old_tree, y_dict, x_dict):
     nodes_dict = {}
 
     while True:
+        print("[GROW] -- Step", t)
         z = 1
         nid1 = None
         nid2 = None
@@ -252,39 +253,57 @@ def unbornify(root_children, nid1, nid2, nodes_dict):
 
 def str_to_tensor(str_val, dtype="float32"):
     """
-    Converts string np.array to tf.Tensor
+    Converts np.array string to tf.Tensor
     """
     stripped = []
     list_val = str_val.strip('[]\n').split()
     for elem in list_val:
-        e = elem.strip("[]").strip("]")
+        e = elem.strip("[]")
         if e != "" and e != "]":
             stripped.append(e)
 
-    np_val = np.array(stripped, dtype=dtype)
-    return tf.convert_to_tensor(np_val)
+    return tf.convert_to_tensor(np.array(stripped, dtype=dtype))
 
+
+def sanitize(i):
+    """
+    Sanitizes the values before writing them in the to_dict
+    """
+    if i is None or isinstance(i, int) or isinstance(i, float):
+        return i
+    elif isinstance(i, np.ndarray):
+        return str(i)
+    elif tf.is_tensor(i):
+        return str(i.numpy())
+    else:
+        print("Uè uglio che cazz m'hai dato")
+        print(i)
+        raise SystemError
 
 def __parse_json_tree(tree, current, parent=None):
     """
     Parse a tree from a JSON object returned by from_json()
-        - tree      : tree instance where the parsed json_tree will be saved 
+        - tree      : tree instance where the parsed json_tree will be loaded
         - current   : node to parse, initially the JSON tree returned by from_json() 
         - parent    : parent node of current, initially None
     """
     par_tag = list(parent.keys())[0] if parent is not None else parent
     curr_tag = current if isinstance(current,str) else list(current.keys())[0]
-    # print("<On node ->", curr_tag)
-
-    data = current[curr_tag]["data"]
-    tree.create_node(tag=curr_tag, identifier=curr_tag, parent=par_tag, 
-                    alpha=str_to_tensor(data["alpha"]),
-                    b=data["b"] if isinstance(data["b"],int) else str_to_tensor(data["b"]),
-                    g=str_to_tensor(data["g"]),  
-                    w=data["w"] if isinstance(data["w"],float) else str_to_tensor(data["w"]),
-                    x=data["x"] if isinstance(data["b"],int) else str_to_tensor(data["x"]),
-                    l=data["l"],
-                    exph_val=data["exph"])
+    data = current[curr_tag]['data']
+    node = tree.create_node(tag=curr_tag, identifier=curr_tag, parent=par_tag)
+    values = {}
+    for k, v in data.items():
+        if v is None or isinstance(v, int) or isinstance(v, float):
+            values.update({k:v})
+        else:
+            values.update({k:str_to_tensor(v)})
+    node.g = values["g"]
+    node.b = values["b"]
+    node.x = values["x"]
+    node.w = values["w"]
+    node.l = values["l"]
+    node.alpha = values["alpha"]
+    node.exph_val = values["exph_val"]
 
     if "children" not in current[curr_tag].keys():
         # print(" | -- on leaf ", curr_tag)
@@ -307,24 +326,12 @@ def from_json(res_tree, save_path):
         dict_tree = json.load(f)
         #print(dict_tree)
 
-    res_tree.E = dict_tree["tree_data"]["E"]
+    res_tree.A = dict_tree["tree_data"]["A"]
     res_tree.s = dict_tree["tree_data"]["s"]
-    res_tree.theta = dict_tree["tree_data"]["theta"]
-    res_tree.gamma = dict_tree["tree_data"]["gamma"]
+    res_tree.E = float(dict_tree["tree_data"]["E"])
+    res_tree.theta = float(dict_tree["tree_data"]["theta"])
+    res_tree.gamma = float(dict_tree["tree_data"]["gamma"])
     __parse_json_tree(res_tree, dict_tree, parent=None)
-
     res_tree.show()
+    print("[TREE] --", save_path, "loaded.")
     return res_tree
-
-
-def txt_log(tree, start_time, path="./log.txt"):
-    '''with open(path, "a") as f:
-        f.write("####################################################")
-        f.write("Time elapsed: {}\n".format(dt.now() - start_time))
-        #f.write(tree.show())
-        f.write("--------------------------------")
-        #f.write(tree.info())
-    f.close()'''
-    raise NotImplementedError
-
-

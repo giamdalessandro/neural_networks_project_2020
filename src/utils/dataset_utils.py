@@ -24,17 +24,6 @@ POSITIVE_IMAGE_SET = os.path.join(TRAIN_VAL_PATH, 'bird')
 FILE_ID = '2010_006084.jpg'
 
 
-def load_test_image(folder=POSITIVE_IMAGE_SET, fileid=FILE_ID):
-    """
-    loads and preprocesses default img specified in 'visualize.py' in variable 'path'
-    """
-    path = os.path.join(folder, fileid)
-    img = load_img(path, target_size=(224, 224))      # test image
-    img = img_to_array(img)
-    img = np.expand_dims(img, axis=0)
-    img = preprocess_input(img)
-    return img
-
 def load_keras(name="our_interpretable_cnn"):
     print("\n[1] Loading vgg16 from keras...")
     pretrained = VGG16(
