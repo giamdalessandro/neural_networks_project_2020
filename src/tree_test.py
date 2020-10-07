@@ -26,8 +26,6 @@ if TEST:
     new_tree.show()
     saved = new_tree.save2json(save_name="test_tree_"+str(STOP)+"_imgs")
     print("[TIME] -- test on ", STOP, " images took ", dt.now()-start)
-    new_tree.A = compute_A(POS_IMAGE_SET_TEST, stop=STOP)
-    saved = new_tree.save2json(save_name="test_tree_"+str(STOP)+"_imgs_with_A")
 
 
 # CODE FOR COMPUTING AND SAVING A #
