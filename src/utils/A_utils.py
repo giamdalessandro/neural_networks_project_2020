@@ -14,7 +14,6 @@ from utils.receptvie_field import receptive_field
 
 MODELS  = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', 'models'))
 MASKED1 = os.path.join(MODELS, "masked1_no_dropout_binary_50_epochs_24_9_2020_14_7.h5")
-POS_IMAGE_SET_TEST = "./dataset/train_val/bird/"
 STOP = 10
 HEAD_PARTS   = 0
 TORSO_PARTS  = 1
@@ -63,7 +62,7 @@ def read_part_annotations(img_name, anno_path=ANNOTATIONS):
 
     return anno_dict
 
-def display_RF(rf_center):
+def display_RF(rf_center, dataset_folder):
     boh = np.zeros(shape=(224, 224, 512), dtype=np.uint8)
 
     for i in range(224):
@@ -72,7 +71,7 @@ def display_RF(rf_center):
                 boh[i, j, d] = 1
 
     tens_boh = boh[:,:,d]
-    image = cv2.resize(cv2.imread(POS_IMAGE_SET_TEST+img), (224,224), interpolation=cv2.INTER_LINEAR)
+    image = cv2.resize(cv2.imread(dataset_folder+img), (224,224), interpolation=cv2.INTER_LINEAR)
     masked_image = cv2.bitwise_and(image,image,mask=tens_boh)
 
     name, boxes = read_content(img[:-4])
@@ -90,7 +89,7 @@ def binarify(matrix):
             matrix[f] = [0, 0, 0, 0]
             matrix[f][l] =  1
             
-def find_a_center(annotation):
+def find_a_center(annotation, dataset_folder):
     mask = cv2.resize(annotation[1], (224, 224), interpolation=cv2.INTER_LINEAR)
     previ = 0
     prevj = 0
@@ -113,8 +112,8 @@ def find_a_center(annotation):
     x = int((maxx - minx)*0.5 + minx)
     y = int((maxy - miny)*0.5 + miny)
     # print("Annotation part", annotation[0], y, x)
-    image = cv2.resize(cv2.imread(POS_IMAGE_SET_TEST+img), (224, 224), interpolation=cv2.INTER_LINEAR)
-    masked_image = cv2.bitwise_and(image, image, mask=mask)
+    #image = cv2.resize(cv2.imread(dataset_folder+img), (224, 224), interpolation=cv2.INTER_LINEAR)
+    #masked_image = cv2.bitwise_and(image, image, mask=mask)
     # cv2.imshow(str(annotation[0]), masked_image)
     # cv2.waitKey(0)
     # cv2.destroyAllWindows()
@@ -144,7 +143,7 @@ def updateA(A, f, obj_part):
     #print(A[f])
 
 
-def compute_A(dataset_folder=POS_IMAGE_SET_TEST, stop=STOP):
+def compute_A(dataset_folder, stop=STOP):
     """
     Computes A binary matrix
     """""
@@ -153,6 +152,7 @@ def compute_A(dataset_folder=POS_IMAGE_SET_TEST, stop=STOP):
     max_pool_model = Model(inputs=m_trained.input,outputs=m_trained.get_layer("final_max_pool").output)
     A = np.zeros(shape=(512, 4))
     i = 0
+    print("searchinig in ", dataset_folder)
     for img in os.listdir(dataset_folder):
         if img.endswith('.jpg') and img[0] == '2':
             print(">> Analyzing image", img)
@@ -164,7 +164,7 @@ def compute_A(dataset_folder=POS_IMAGE_SET_TEST, stop=STOP):
             if annotations is not None:
                 a_centers = []
                 for a in annotations['bird']['parts']:
-                    a_centers.append([a[0], find_a_center(a)])
+                    a_centers.append([a[0], find_a_center(a, dataset_folder)])
                     for d in range(512):
                         max_i = rows_idx[d].numpy()
                         max_j = cols_idx[d].numpy()
@@ -179,11 +179,12 @@ def compute_A(dataset_folder=POS_IMAGE_SET_TEST, stop=STOP):
                                 obj_part = a_centers[c][0]
                                 center = a_centers[c][1]
                         updateA(A, d, obj_part)
+            i += 1
         if stop != 0 and i == stop:
             break
-        i += 1
 
     binarify(A)
-    print("TIME : ", dt.now()-start, "for", i, "images.")
-    return A
+    print("[TIME] : ", dt.now()-start, "for", i, "images.")
+    print(tf.convert_to_tensor(A))
+    return tf.convert_to_tensor(A)
 

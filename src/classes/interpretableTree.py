@@ -55,24 +55,13 @@ class InterpretableTree(tl.Tree):
         nid = self.root if (nid is None) else nid
         ntag = self[nid].tag
         tree_dict = {ntag: {"children": []}}
-        '''
-        data = {
-            "alpha" : str(self[nid].alpha.numpy()),
-            "g"     : str(self[nid].g.numpy()),
-            "b"     : str(self[nid].b.numpy()) if not isinstance(self[nid].b, int) else self[nid].b,
-            "w"     : str(self[nid].w.numpy()) if self[nid].w is not None else 0,
-            "x"     : self[nid].x              if (isinstance(self[nid].x, int) or self[nid].x is None) else str(self[nid].x.numpy()),
-            "l"     : str(self[nid].l)         if not isinstance(self[nid].l, float) else LAMBDA_0,
-            "exph"  : str(self[nid].exph_val)  if self[nid].exph_val is not None else 0
-        }
-        '''
         data = {
             "g": sanitize((self[nid].g)),
             "b": sanitize(self[nid].b),
             "w": sanitize(self[nid].w),
             "x": sanitize(self[nid].x),
             "l": sanitize(self[nid].l),
-            "exph": sanitize(self[nid].exph),
+            "exph_val": sanitize(self[nid].exph_val),
             "alpha": sanitize(self[nid].alpha)
         }
         if with_data:
@@ -125,10 +114,10 @@ class InterpretableTree(tl.Tree):
             - save_folder: folder where to save JSON trees
         """
         tree_data = {
-            "E"     : str(self.E)               if isinstance(self.E, int) else str(self.E.numpy()),
+            "E"     : str(self.E)               if isinstance(self.E, int) or isinstance(self.E, float) else str(self.E.numpy()),
             "s"     : str(self.s.numpy())       if tf.is_tensor(self.s) else str(self.s),
-            "A"     : str(self.A)               if self.A is not None else self.A,
-            "gamma" : str(self.gamma.numpy())   if tf.is_tensor(self.gamma) else str(self.gamma),
+            "gamma" : str(self.gamma.numpy())   if tf.is_tensor(self.gamma) else self.gamma,
+            "A"     : str(self.A.numpy())       if self.A is not None else self.A,
             "theta" : str(self.theta)
         }
         json_tree = json.loads(self.to_json(with_data=True))
@@ -162,6 +151,11 @@ class InterpretableTree(tl.Tree):
             if img.endswith('.jpg') and img[0] == '2':
                 test_image = load_test_image(folder=pos_image_folder, fileid=img)
                 flat_output = flat_model.predict(test_image)
+                # check if the flat output contains nan values
+                if 'nan' in str(flat_output):
+                    print("[WARN] -- nan value found in", img)
+                    continue
+
                 # we take only the positive prediction score
                 fc3_output = fc3_model.predict(test_image)[0][0]
                 y = trained_model.predict(test_image)[0][0]          # after softmax

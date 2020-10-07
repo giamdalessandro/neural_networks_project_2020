@@ -303,7 +303,7 @@ def __parse_json_tree(tree, current, parent=None):
     node.w = values["w"]
     node.l = values["l"]
     node.alpha = values["alpha"]
-    node.exph_val = values["exph"]
+    node.exph_val = values["exph_val"]
 
     if "children" not in current[curr_tag].keys():
         # print(" | -- on leaf ", curr_tag)
@@ -326,25 +326,12 @@ def from_json(res_tree, save_path):
         dict_tree = json.load(f)
         #print(dict_tree)
 
-    res_tree.E = dict_tree["tree_data"]["E"]
+    res_tree.A = dict_tree["tree_data"]["A"]
     res_tree.s = dict_tree["tree_data"]["s"]
-    res_tree.theta = dict_tree["tree_data"]["theta"]
-    res_tree.gamma = dict_tree["tree_data"]["gamma"]
-    res_tree.A = dict_tree["tree_data"]["A"] if 'A' in dict_tree["tree_data"] else None
+    res_tree.E = float(dict_tree["tree_data"]["E"])
+    res_tree.theta = float(dict_tree["tree_data"]["theta"])
+    res_tree.gamma = float(dict_tree["tree_data"]["gamma"])
     __parse_json_tree(res_tree, dict_tree, parent=None)
-
     res_tree.show()
+    print("[TREE] --", save_path, "loaded.")
     return res_tree
-
-
-def txt_log(tree, start_time, path="./log.txt"):
-    '''with open(path, "a") as f:
-        f.write("####################################################")
-        f.write("Time elapsed: {}\n".format(dt.now() - start_time))
-        #f.write(tree.show())
-        f.write("--------------------------------")
-        #f.write(tree.info())
-    f.close()'''
-    raise NotImplementedError
-
-
