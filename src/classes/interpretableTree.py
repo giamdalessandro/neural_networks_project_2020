@@ -117,7 +117,7 @@ class InterpretableTree(tl.Tree):
             "E"     : str(self.E)               if isinstance(self.E, int) or isinstance(self.E, float) else str(self.E.numpy()),
             "s"     : str(self.s.numpy())       if tf.is_tensor(self.s) else str(self.s),
             "gamma" : str(self.gamma.numpy())   if tf.is_tensor(self.gamma) else self.gamma,
-            "A"     : str(self.A.numpy())       if self.A is not None else self.A,
+            "A"     : str([list(self.A[d]) for d in range(len(self.A))])   if self.A is not None else self.A,
             "theta" : str(self.theta)
         }
         json_tree = json.loads(self.to_json(with_data=True))
@@ -335,11 +335,10 @@ class InterpretableTree(tl.Tree):
         self.move_node(nid1.identifier, pid.identifier)
         self.move_node(nid2.identifier, pid.identifier)
         
-    def def_note(self, x_i, img, fc3_model):
+    def def_note(self, img, x_i, fc3_model, A):
         """
         Computes rho and g parameters of the image 'img' using the loaded interpretable tree
         """
-        A = binarify(compute_a(img))
         g = compute_g(fc3_model, x_i)
         g = tf.multiply(tf.math.scalar_mul(1/L, self.s), vectorify_on_depth(g))
         g = tf.norm(g, ord=2)

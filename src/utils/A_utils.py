@@ -148,7 +148,8 @@ def compute_A(dataset_folder, stop=STOP):
     Computes A binary matrix
     """""
     start = dt.now()
-    m_trained = tf.keras.models.load_model(MASKED1, custom_objects={"MaskLayer": MaskLayer()})
+    with tf.device("/CPU:0"):
+        m_trained = tf.keras.models.load_model(MASKED1, custom_objects={"MaskLayer": MaskLayer()})
     max_pool_model = Model(inputs=m_trained.input,outputs=m_trained.get_layer("final_max_pool").output)
     A = np.zeros(shape=(512, 4))
     i = 0
@@ -185,6 +186,6 @@ def compute_A(dataset_folder, stop=STOP):
 
     binarify(A)
     print("[TIME] : ", dt.now()-start, "for", i, "images.")
-    print(tf.convert_to_tensor(A))
-    return tf.convert_to_tensor(A)
+    print(A)
+    return A
 
