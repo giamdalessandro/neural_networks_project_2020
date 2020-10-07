@@ -62,23 +62,19 @@ def read_part_annotations(img_name, anno_path=ANNOTATIONS):
 
     return anno_dict
 
-def display_RF(rf_center, dataset_folder):
-    boh = np.zeros(shape=(224, 224, 512), dtype=np.uint8)
 
+
+def display_RF(rf_center, filepath, name):
+    mask = np.zeros(shape=(224, 224), dtype=np.uint8)
     for i in range(224):
         for j in range(224):
             if (i >= rf_center[0]-(RF_SIZE/2) and i <= rf_center[0]+(RF_SIZE/2)) and (j >= rf_center[1]-(RF_SIZE/2) and j <= rf_center[1]+(RF_SIZE/2)):
-                boh[i, j, d] = 1
+                mask[i, j] = 1
 
-    tens_boh = boh[:,:,d]
-    image = cv2.resize(cv2.imread(dataset_folder+img), (224,224), interpolation=cv2.INTER_LINEAR)
-    masked_image = cv2.bitwise_and(image,image,mask=tens_boh)
+    image = cv2.resize(cv2.imread(filepath), (224,224), interpolation=cv2.INTER_LINEAR)
+    masked_image = cv2.bitwise_and(image, image, mask=mask)
 
-    name, boxes = read_content(img[:-4])
-    print(name)
-    print(boxes)
-
-    cv2.imshow("Falcone (non Giovanni)", masked_image)
+    cv2.imshow(name, masked_image)
     cv2.waitKey(0)
     cv2.destroyAllWindows()
 
@@ -192,13 +188,59 @@ def compute_A(dataset_folder, stop=STOP):
 def visualize_objpart_RF(m_trained, test_image, A, filepath):
     max_pool_model = Model(inputs=m_trained.input,outputs=m_trained.get_layer("final_max_pool").output)
     pool_output = max_pool_model.predict(test_image)
+    x = tf.reshape(pool_output, shape=(7,7,512))
+    heados = []
+    torsos = []
+    legos  = []
+    tailos = []
+    for i in range(512):
+        heados.append(A[i][HEAD_PARTS])
+        torsos.append(A[i][TORSO_PARTS])
+        legos.append( A[i][LEGS_PARTS])
+        tailos.append(A[i][TAILS_PARTS])
+    
+    x_heados = tf.reduce_sum(tf.multiply(heados, x), axis=2)
+    x_torsos = tf.reduce_sum(tf.multiply(torsos, x), axis=2)
+    x_legos  = tf.reduce_sum(tf.multiply(legos,  x), axis=2)
+    x_tailos = tf.reduce_sum(tf.multiply(tailos, x), axis=2)
+
+    heados_i = tf.math.argmax(x_heados, axis=1)
+    heados_j = tf.math.argmax(x_heados, axis=0)
+    heados_center, size = receptive_field((heados_i, heados_i))
+
+    torsos_i = tf.math.argmax(x_torsos, axis=1)
+    torsos_j = tf.math.argmax(x_torsos, axis=0)
+    torsos_center, size = receptive_field((torsos_i, torsos_i))
+
+    legos_i  = tf.math.argmax(x_legos,  axis=1)
+    legos_j  = tf.math.argmax(x_legos,  axis=0)
+    legoos_center, size = receptive_field((legos_i, legos_i))
+
+    tailos_i = tf.math.argmax(x_tailos, axis=1)
+    tailos_j = tf.math.argmax(x_tailos, axis=0)
+    tailos_center, size = receptive_field((tailos_i, tailos_i))
+
+    display_RF(heados_center, filepath, 'head')
+    display_RF(torsos_center, filepath, 'torso')
+    display_RF(legos_center,  filepath, 'legs')
+    display_RF(tailos_center, filepath, 'tail')
+
+
+
+
+
+
+
+
+
+
+    '''
+
+
     rows_idx = tf.math.argmax(tf.reduce_max(pool_output[0], axis=1), output_type=tf.int32)
     cols_idx = tf.math.argmax(tf.reduce_max(pool_output[0], axis=0), output_type=tf.int32)
     
     image = cv2.imread(filepath)
-    #cv2.imshow("k", image)
-    #cv2.waitKey(0)
-    #cv2.destroyAllWindows()
     image = cv2.resize(image, (224, 224), interpolation=cv2.INTER_LINEAR)
     
     connection = {0: 'head parts', 1: 'torso parts', 2: 'leg parts', 3: 'tail parts'}
@@ -229,3 +271,4 @@ def visualize_objpart_RF(m_trained, test_image, A, filepath):
         cv2.imshow(k, cv2.addWeighted(image, 0.2, v, 0.8, 0))
         cv2.waitKey(0)
         cv2.destroyAllWindows()
+    '''
