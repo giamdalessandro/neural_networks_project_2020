@@ -37,6 +37,7 @@ class InterpretableTree(tl.Tree):
         self.E = E
         self.theta = theta
         self.gamma = gamma
+        self.A = None
         super(InterpretableTree, self).__init__(tree=tree, deep=deep, node_class=InterpretableNode, identifier=identifier)
 
     # OVERLOAD #

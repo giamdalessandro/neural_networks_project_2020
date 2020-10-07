@@ -143,7 +143,8 @@ def updateA(A, f, obj_part):
 
     #print(A[f])
 
-def compute_A(test_image):
+
+def compute_A(dataset_folder=POS_IMAGE_SET_TEST, stop=STOP):
     """
     Computes A binary matrix
     """""
@@ -152,10 +153,10 @@ def compute_A(test_image):
     max_pool_model = Model(inputs=m_trained.input,outputs=m_trained.get_layer("final_max_pool").output)
     A = np.zeros(shape=(512, 4))
     i = 0
-    for img in os.listdir(POS_IMAGE_SET_TEST):
+    for img in os.listdir(dataset_folder):
         if img.endswith('.jpg') and img[0] == '2':
             print(">> Analyzing image", img)
-            test_image = load_test_image(folder=POS_IMAGE_SET_TEST, fileid=img)
+            test_image = load_test_image(folder=dataset_folder, fileid=img)
             pool_output = max_pool_model.predict(test_image)
             rows_idx = tf.math.argmax(tf.reduce_max(pool_output[0], axis=1), output_type=tf.int32)
             cols_idx = tf.math.argmax(tf.reduce_max(pool_output[0], axis=0), output_type=tf.int32)
@@ -178,10 +179,18 @@ def compute_A(test_image):
                                 obj_part = a_centers[c][0]
                                 center = a_centers[c][1]
                         updateA(A, d, obj_part)
-        if i == STOP:
+        if stop != 0 and i == stop:
             break
         i += 1
 
     binarify(A)
     print("TIME : ", dt.now()-start, "for", i, "images.")
     return A
+
+
+# CODE FOR COMPUTING AND SAVING A #
+A = compute_A(stop=0)   # stop = 0 means it will do all images
+loaded = from_json(InterpretableTree(), "./forest/test_tree_100_imgs.json")
+loaded.A = A
+saved = tree.save2json(save_name="./forest/test_tree_100_imgs_with_A")
+print("A done.")
