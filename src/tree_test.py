@@ -11,8 +11,8 @@ MASKED1 = os.path.join(MODELS, "masked1_no_dropout_binary_50_epochs_24_9_2020_14
 
 TEST = False
 
-gpus = tf.config.experimental.list_physical_devices('GPU')          #    partially resolves CUBLAS errors
-tf.config.experimental.set_memory_growth(gpus[0], True)
+# gpus = tf.config.experimental.list_physical_devices('GPU')          #    partially resolves CUBLAS errors
+# tf.config.experimental.set_memory_growth(gpus[0], True)
 
 with tf.device("/CPU:0"):
     m_trained = tf.keras.models.load_model(MASKED1, custom_objects={"MaskLayer":MaskLayer()})
