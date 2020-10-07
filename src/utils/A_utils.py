@@ -188,3 +188,44 @@ def compute_A(dataset_folder, stop=STOP):
     print(A)
     return A
 
+
+def visualize_objpart_RF(m_trained, test_image, A, filepath):
+    max_pool_model = Model(inputs=m_trained.input,outputs=m_trained.get_layer("final_max_pool").output)
+    pool_output = max_pool_model.predict(test_image)
+    rows_idx = tf.math.argmax(tf.reduce_max(pool_output[0], axis=1), output_type=tf.int32)
+    cols_idx = tf.math.argmax(tf.reduce_max(pool_output[0], axis=0), output_type=tf.int32)
+    
+    image = cv2.imread(filepath)
+    #cv2.imshow("k", image)
+    #cv2.waitKey(0)
+    #cv2.destroyAllWindows()
+    image = cv2.resize(image, (224, 224), interpolation=cv2.INTER_LINEAR)
+    
+    connection = {0: 'head parts', 1: 'torso parts', 2: 'leg parts', 3: 'tail parts'}
+    rfs = {'head parts': None, 'torso parts': None, 'leg parts': None,
+           'tail parts': None}          # where to save rfs of all objparts
+
+    for d in range(512):
+        max_i = rows_idx[d].numpy()
+        max_j = cols_idx[d].numpy()
+        rf_center, rf_size = receptive_field((max_i, max_j))
+        
+        objpart_index = np.argmax(A[d])
+        if A[d][objpart_index] == 1:    # può essere 0 nel caso non ci si un massimo
+            mask = np.zeros(shape=(224, 224), dtype=np.uint8)
+            for i in range(224):
+                for j in range(224):
+                    if (i >= rf_center[0]-(RF_SIZE/2) and i <= rf_center[0]+(RF_SIZE/2)) and (j >= rf_center[1]-(RF_SIZE/2) and j <= rf_center[1]+(RF_SIZE/2)):
+                        mask[i, j] = 1
+            if rfs[connection[objpart_index]] is None:
+                rfs[connection[objpart_index]] = mask
+            else:
+                rfs[connection[objpart_index]] = cv2.add(mask, rfs[connection[objpart_index]])
+            
+    
+    for k, v in rfs.items():
+        print("computing rf of", k)
+        v = tf.tile(tf.reshape(tf.convert_to_tensor(v), (224,224,1)),[1,1,3]).numpy()
+        cv2.imshow(k, cv2.addWeighted(image, 0.2, v, 0.8, 0))
+        cv2.waitKey(0)
+        cv2.destroyAllWindows()
