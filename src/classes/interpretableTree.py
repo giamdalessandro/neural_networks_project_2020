@@ -335,43 +335,47 @@ class InterpretableTree(tl.Tree):
         self.move_node(nid1.identifier, pid.identifier)
         self.move_node(nid2.identifier, pid.identifier)
 
+    ########## METRICS ###########
+
     def cos_similarity(self, x, y):
+        """
+        Computes cosine similarity between x and y tensors
+        """
         norm_x = tf.nn.l2_normalize(x,0)        
         norm_y = tf.nn.l2_normalize(y,0)
         return tf.reduce_sum(tf.multiply(norm_x,norm_y))
 
     def decision_path(self, curr_dec_node, x, g, path_dict, level):
-        #print("visiting :",self[curr_dec_node])
-        if self[curr_dec_node].is_leaf():
+        """
+        Parse recursively the interpretable tree to get the decision path of an image given its prediction
+        """
+        if curr_dec_node is None:
+            print("[ERR]: Cannot parse 'None' node!")
+            return None
+
+        elif curr_dec_node.is_leaf():
             return path_dict
         else:
-            children = self.children(curr_dec_node)
+            children = self.children(curr_dec_node.identifier)
             max_similarity = 0
             next_dec_node = children[0]
             for child in children:
-                similarity = self.cos_similarity(g,self.get_node(child).w)
+                similarity = self.cos_similarity(g,child.w)
                 if similarity > max_similarity:
                     max_similarity = similarity
                     next_dec_node = child
 
             level += 1
-            w_v = self[next_dec_node].w
+            w_v = next_dec_node.w
             rho = tf.reshape(tf.multiply(w_v,x), shape=(512,1))
             g_outo = tf.matmul(self.A, rho, transpose_a=True)
-            path_dict.update({
-                str(level) : {
-                    "dec_node"  : next_dec_node,
-                    "rho"       : rho,
-                    "g_outo"    : g_outo
-                }
-            })
+            path_dict.update({str(level) : {"dec_node" : next_dec_node, "rho" : rho, "g_outo" : g_outo}})
 
             return self.decision_path(next_dec_node,x,g,path_dict,level)
 
-
     def def_note(self, flat_x, trained_model):
         """
-        Computes rho and g parameters of the image 'img' using the loaded interpretable tree
+        Computes rho and g parameters of an image using the loaded interpretable tree
         """
         path_dict = {}
         g = compute_g(trained_model, flat_x)
@@ -379,20 +383,4 @@ class InterpretableTree(tl.Tree):
         x = tf.reshape(flat_x, shape=(7, 7, 512))
         x = tf.multiply(tf.math.scalar_mul(1/L,self.s), vectorify_on_depth(x))
         
-        second_layer = self.children(self.root)
-
-        path_dict = self.decision_path(self.root,x,g,path_dict,0)
-        '''
-        max_similarity = 0
-        dec_node = second_layer[0]
-        for node in second_layer:
-            similarity = self.cos_similarity(g,node.w)
-            if similarity > max_similarity:
-                max_similarity = similarity
-                dec_node = node
-        
-        w_v = dec_node.w
-        rho = tf.reshape(tf.multiply(w_v,x), shape=(512,1))
-        g_outo = tf.matmul(self.A, rho, transpose_a=True)
-        '''
-        return path_dict
+        return self.decision_path(self[self.root],x,g,path_dict,0)
