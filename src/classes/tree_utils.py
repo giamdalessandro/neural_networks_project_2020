@@ -250,7 +250,6 @@ def unbornify(root_children, nid1, nid2, nodes_dict):
 
 ######### SAVE & LOAD ###########
 
-
 def str_to_tensor(str_val, dtype="float32"):
     """
     Converts np.array string to tf.Tensor

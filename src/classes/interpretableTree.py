@@ -371,8 +371,20 @@ class InterpretableTree(tl.Tree):
             w_v = next_dec_node.w
             rho = tf.reshape(tf.multiply(w_v,x), shape=(512,1))
             g_outo = tf.matmul(self.A, rho, transpose_a=True)
-            m_1  = tf.multiply(tf.subtract(g_outo,q), 1/y)
-            path_dict.update({str(level) : {"dec_node":next_dec_node, "rho":rho, "g_outo":g_outo, "m1":m_1}})
+
+            m_1 = tf.multiply(tf.subtract(g_outo,q), 1/y)
+            # compute m_2
+            m_3 = next_dec_node.h(xx=x)
+            
+            path_dict.update({str(level) : {
+                    "dec_node": next_dec_node, 
+                    "rho"     : rho, 
+                    "g_outo"  : g_outo, 
+                    "m1"      : m_1,
+                    #"m2"     : m_2,
+                    "m3"     : m_3
+                }
+            })
 
             return self.decision_path(next_dec_node,x,g,q,y,path_dict,level)
 
