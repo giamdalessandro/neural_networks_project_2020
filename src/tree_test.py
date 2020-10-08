@@ -41,12 +41,18 @@ else:
 with tf.device("/CPU:0"):
     twA = from_json(InterpretableTree(), "./forest/test_tree_"+str(STOP)+"_imgs_with_A.json")
     flat_model = Model(inputs=m_trained.input, outputs=m_trained.get_layer("flatten").output)
+    fc_model = tf.keras.Sequential([
+        m_trained.get_layer("fc1"),
+        m_trained.get_layer("fc2"),
+        m_trained.get_layer("fc3"),
+        m_trained.get_layer("activation")
+    ])
     
     test_image = load_test_image(folder=POS_IMAGE_SET_TEST, fileid="2010_005603.jpg")
     flat_output = flat_model.predict(test_image)
     y = m_trained.predict(test_image)[0][0]
     
-    decision_path = twA.def_note(flat_output, m_trained)
+    decision_path = twA.def_note(flat_output, fc_model, y)
     for i in range(len(decision_path)):
         g_outo = decision_path[str(i+1)]['g_outo']
         g_outo = tf.multiply(100/tf.reduce_sum(g_outo), g_outo)

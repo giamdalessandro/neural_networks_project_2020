@@ -335,6 +335,7 @@ class InterpretableTree(tl.Tree):
         self.move_node(nid1.identifier, pid.identifier)
         self.move_node(nid2.identifier, pid.identifier)
 
+
     ########## METRICS ###########
 
     def cos_similarity(self, x, y):
@@ -345,7 +346,7 @@ class InterpretableTree(tl.Tree):
         norm_y = tf.nn.l2_normalize(y,0)
         return tf.reduce_sum(tf.multiply(norm_x,norm_y))
 
-    def decision_path(self, curr_dec_node, x, g, path_dict, level):
+    def decision_path(self, curr_dec_node, x, g, q, y, path_dict, level):
         """
         Parse recursively the interpretable tree to get the decision path of an image given its prediction
         """
@@ -369,18 +370,29 @@ class InterpretableTree(tl.Tree):
             w_v = next_dec_node.w
             rho = tf.reshape(tf.multiply(w_v,x), shape=(512,1))
             g_outo = tf.matmul(self.A, rho, transpose_a=True)
-            path_dict.update({str(level) : {"dec_node" : next_dec_node, "rho" : rho, "g_outo" : g_outo}})
+            m_1  = tf.multiply(tf.subtract(g_outo,q), 1/y)
+            path_dict.update({str(level) : {"dec_node":next_dec_node, "rho":rho, "g_outo":g_outo, "m1":m_1}})
 
-            return self.decision_path(next_dec_node,x,g,path_dict,level)
+            return self.decision_path(next_dec_node,x,g,q,y,path_dict,level)
 
-    def def_note(self, flat_x, trained_model):
+    def def_note(self, flat_x, fc_model, y):
         """
         Computes rho and g parameters of an image using the loaded interpretable tree
         """
+        q = []
         path_dict = {}
-        g = compute_g(trained_model, flat_x)
+        g = compute_g(fc_model, flat_x)
         g = tf.multiply(tf.math.scalar_mul(1/L,self.s), vectorify_on_depth(g))
         x = tf.reshape(flat_x, shape=(7, 7, 512))
+
+        A = tf.reshape(self.A, shape=(4,512)).numpy()
+        for p in range(4):
+            x_p = tf.multiply(x,A[p])
+            flat_x_p = tf.reshape(x_p, shape=(1,25088))
+            y_p = fc_model.predict(flat_x_p)[0][0]
+            q.append(y-y_p)
+
         x = tf.multiply(tf.math.scalar_mul(1/L,self.s), vectorify_on_depth(x))
+        path_dict = self.decision_path(self[self.root],x,g,q,y,path_dict,0)
         
-        return self.decision_path(self[self.root],x,g,path_dict,0)
+        return path_dict
