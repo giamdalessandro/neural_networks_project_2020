@@ -347,7 +347,7 @@ class InterpretableTree(tl.Tree):
         norm_y = tf.nn.l2_normalize(y,0)
         return tf.reduce_sum(tf.multiply(norm_x,norm_y))
 
-    def decision_path(self, curr_dec_node, x, g, q, path_dict, level):
+    def decision_path(self, curr_dec_node, x, g, y, q, path_dict, level):
         """
         Parse recursively the interpretable tree to get the decision path of an image given its prediction
         """
@@ -379,18 +379,19 @@ class InterpretableTree(tl.Tree):
             m_2 = tf.divide(tf.minimum(hat_rho,tf.abs(t)), tf.maximum(tf.maximum(hat_rho,tf.abs(t)), 0.0000000001))
             
             m_3 = next_dec_node.h(xx=x)
-            
+            norm_g = tf.norm(next_dec_node.g, ord=2)
             path_dict.update({str(level) : {
                     "dec_node" : next_dec_node, 
                     "rho" : rho, 
                     "g_outo" : g_outo, 
                     "m1" : m_1,
                     "m2" : m_2,
-                    "m3" : m_3     
+                    "m3" : tf.nn.softmax(m_3),
+                    "pred" : tf.divide(y, norm_g)    
                 }
             })
 
-            return self.decision_path(next_dec_node,x,g,q,path_dict,level)
+            return self.decision_path(next_dec_node,x,g,y,q,path_dict,level)
 
     def def_note(self, flat_x, fc_model, y):
         """
@@ -399,7 +400,9 @@ class InterpretableTree(tl.Tree):
         q = []
         path_dict = {}
         g = compute_g(fc_model, flat_x)
-        g = tf.multiply(tf.math.scalar_mul(1/L,self.s), vectorify_on_depth(g))
+        #g = tf.multiply(tf.math.scalar_mul(1/L,self.s), vectorify_on_depth(g))
+        norm_g = tf.norm(g, ord=2)
+        g = tf.divide(g, norm_g)  
         x = tf.reshape(flat_x, shape=(7, 7, 512))
 
         A = tf.reshape(self.A, shape=(4,512)).numpy()
@@ -413,6 +416,5 @@ class InterpretableTree(tl.Tree):
         #print("q: ", q)
 
         x = tf.multiply(tf.math.scalar_mul(1/L,self.s), vectorify_on_depth(x))
-        path_dict = self.decision_path(self[self.root],x,g,q,path_dict,0)
-        path_dict.update({'pred':y})
+        path_dict = self.decision_path(self[self.root],x,g,y,q,path_dict,0)
         return path_dict

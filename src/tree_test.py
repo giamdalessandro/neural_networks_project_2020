@@ -47,7 +47,7 @@ fc_model = tf.keras.Sequential([
     m_trained.get_layer("fc1"),
     m_trained.get_layer("fc2"),
     m_trained.get_layer("fc3"),
-    m_trained.get_layer("activation")
+    #m_trained.get_layer("activation")
 ])
 
 N = 5
@@ -98,14 +98,14 @@ M3_L9 = 0
 
 miny = 1
 maxy = 0
-
+m3 = 0
 for i in range(len(decision_paths)):
     # M1 #
     M1_L2[i] = tf.reshape(decision_paths[i]['1']['m1'], shape=(4,))
     M1_L5[i] = tf.reshape(decision_paths[i]['4']['m1'], shape=(4,))
     if '8' in decision_paths[i]:
         M1_L9[i] = tf.reshape(decision_paths[i]['8']['m1'], shape=(4,))
-    ys += decision_paths[i]['pred']
+    ys += decision_paths[i]['1']['pred']
 
     # M2 #
     M2_L2 = tf.add(M2_L2, decision_paths[i]['1']['m2'])
@@ -114,25 +114,26 @@ for i in range(len(decision_paths)):
         M2_L9 = tf.add(M2_L9, decision_paths[i]['8']['m2'])
 
     # M3 #
-    print("decision_paths[i]['1']['m3']", decision_paths[i]['1']['m3'])
-    M3_L2 += abs(decision_paths[i]['1']['m3'] - decision_paths[i]['pred'])
-    M3_L5 += abs(decision_paths[i]['4']['m3'] - decision_paths[i]['pred'])
+    print("h(x)", decision_paths[i]['1']['m3'])
+    M3_L2 += abs(decision_paths[i]['1']['m3'] - decision_paths[i]['1']['pred'])
+    m3 += decision_paths[i]['1']['m3']
+    M3_L5 += abs(decision_paths[i]['4']['m3'] - decision_paths[i]['4']['pred'])
     if '8' in decision_paths[i]:
-        M3_L9 += abs(decision_paths[i]['8']['m3'] - decision_paths[i]['pred'])
+        M3_L9 += abs(decision_paths[i]['8']['m3'] - decision_paths[i]['8']['pred'])
     
-    if decision_paths[i]['pred'] > maxy:
-        maxy = decision_paths[i]['pred']
-    if decision_paths[i]['pred'] < miny:
-        miny = decision_paths[i]['pred']
+    if decision_paths[i]['1']['pred'] > maxy:
+        maxy = decision_paths[i]['1']['pred']
+    if decision_paths[i]['1']['pred'] < miny:
+        miny = decision_paths[i]['1']['pred']
 
 #ys = ys/len(decision_paths)                                    # tralalà
-M1_L2 = tf.divide(tf.reduce_mean(M1_L2, axis=0), ys)
-M1_L5 = tf.divide(tf.reduce_mean(M1_L5, axis=0), ys)
-M1_L9 = tf.divide(tf.reduce_mean(M1_L9, axis=0), ys)
+M1_L2 = tf.divide(tf.reduce_mean(tf.convert_to_tensor(M1_L2, dtype=tf.float32), axis=0), ys)
+#M1_L5 = tf.divide(tf.reduce_mean(M1_L5, axis=0), ys)
+#M1_L9 = tf.divide(tf.reduce_mean(M1_L9, axis=0), ys)
 
 print("M1_L2", M1_L2.numpy())
-print("M1_L5", M1_L5.numpy())
-print("M1_L9", M1_L9.numpy())
+#print("M1_L5", M1_L5.numpy())
+#print("M1_L9", M1_L9.numpy())
 print("----------------------------------------")
 print("----------------------------------------")
 print("----------------------------------------")
@@ -150,11 +151,12 @@ print("----------------------------------------")
 print("----------------------------------------")
 
 M3_L2 = M3_L2/(maxy - miny)
-M3_L5 = M3_L5/(maxy - miny)
-M3_L9 = M3_L9/(maxy - miny)
-print("M3_L2", M3_L2.numpy())
-print("M3_L5", M3_L5.numpy())
-print("M3_L9", M3_L9.numpy())
+#M3_L5 = M3_L5/(maxy - miny)
+#M3_L9 = M3_L9/(maxy - miny)
+print("M3_L2 - ERROR", M3_L2.numpy())
+print("M3_L2 ", m3)
+#print("M3_L5", M3_L5.numpy())
+#print("M3_L9", M3_L9.numpy())
 
 
 '''
