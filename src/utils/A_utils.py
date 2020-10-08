@@ -75,8 +75,7 @@ def display_RF(rf_center, filepath, name):
     masked_image = cv2.bitwise_and(image, image, mask=mask)
 
     cv2.imshow(name, masked_image)
-    cv2.waitKey(0)
-    cv2.destroyAllWindows()
+    
 
 def binarify(matrix):
     for f in range(NUM_FILTERS):
@@ -233,7 +232,8 @@ def visualize_objpart_RF(m_trained, test_image, A, filepath):
 
     center, size = receptive_field((j,i))
     display_RF(center, filepath, 'all')
-
+    cv2.waitKey(0)
+    cv2.destroyAllWindows()
 
 
 

@@ -377,7 +377,7 @@ class InterpretableTree(tl.Tree):
             t = tf.multiply(next_dec_node.g,x)
             hat_rho = tf.maximum(0,tf.multiply(rho,tf.math.sign(t)))
             m_2 = tf.divide(tf.minimum(hat_rho,tf.abs(t)),tf.maximum(hat_rho,tf.abs(t)))
-            m_3 = next_dec_node.h(xx=x)
+            m_3 = next_dec_node.h(xx=tf.reshape(x, shape=(512,1)))
             
             path_dict.update({str(level) : {
                     "dec_node" : next_dec_node, 

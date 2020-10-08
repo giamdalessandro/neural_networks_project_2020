@@ -68,14 +68,14 @@ class InterpretableNode(tl.Node):
         w = self.w if self.w.shape == [512, 1] else tf.reshape(self.w, shape=[512, 1])
         x = tf.reshape(x, shape=[512, 1]) if (x is not None and x.shape != [512, 1]) else x
 
-        if self.w is None:
+        if w is None:
             print("[ERR] >> w is None ------------------------------------------------")
         if x is None:
             print("[ERR] >> x is None ------------------------------------------------")
         if self.b is None:
             print("[ERR] >> b is None ------------------------------------------------")
         
-        return tf.matmul(self.w, x, transpose_a=True) + self.b
+        return tf.matmul(w, x, transpose_a=True) + self.b
 
     def exph(self, gamma, x=None):
         """
