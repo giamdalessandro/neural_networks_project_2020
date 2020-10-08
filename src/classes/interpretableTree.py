@@ -347,7 +347,7 @@ class InterpretableTree(tl.Tree):
         norm_y = tf.nn.l2_normalize(y,0)
         return tf.reduce_sum(tf.multiply(norm_x,norm_y))
 
-    def decision_path(self, curr_dec_node, x, g, q, y, path_dict, level):
+    def decision_path(self, curr_dec_node, x, g, q, path_dict, level):
         """
         Parse recursively the interpretable tree to get the decision path of an image given its prediction
         """
@@ -371,9 +371,8 @@ class InterpretableTree(tl.Tree):
             w_v = next_dec_node.w
             rho = tf.multiply(w_v,x)
             g_outo = tf.matmul(self.A, tf.reshape(rho, shape=(512, 1)), transpose_a=True)
-
-            # compute metrics data, m1, m2, m3
-            m_1 = tf.multiply(tf.subtract(g_outo,q), 1/y)
+            g_outo = tf.multiply(1/tf.reduce_sum(g_outo), g_outo)
+            m_1 = tf.abs(tf.subtract(g_outo,q))
             t = tf.multiply(next_dec_node.g,x)
             hat_rho = tf.maximum(0,tf.multiply(rho,tf.math.sign(t)))
             m_2 = tf.divide(tf.minimum(hat_rho,tf.abs(t)),tf.maximum(hat_rho,tf.abs(t)))
@@ -385,12 +384,11 @@ class InterpretableTree(tl.Tree):
                     "g_outo" : g_outo, 
                     "m1" : m_1,
                     "m2" : m_2,
-                    "m3" : m_3,
-                    "y" : y     
+                    "m3" : m_3     
                 }
             })
 
-            return self.decision_path(next_dec_node,x,g,q,y,path_dict,level)
+            return self.decision_path(next_dec_node,x,g,q,path_dict,level)
 
     def def_note(self, flat_x, fc_model, y):
         """
@@ -410,7 +408,9 @@ class InterpretableTree(tl.Tree):
             q.append(y-y_p)
 
         q = tf.reshape(tf.convert_to_tensor(q), shape=(4,1))
+        #print("q: ", q)
+
         x = tf.multiply(tf.math.scalar_mul(1/L,self.s), vectorify_on_depth(x))
-        path_dict = self.decision_path(self[self.root],x,g,q,y,path_dict,0)
-        
+        path_dict = self.decision_path(self[self.root],x,g,q,path_dict,0)
+        path_dict.update({'pred':y})
         return path_dict

@@ -50,18 +50,19 @@ fc_model = tf.keras.Sequential([
     m_trained.get_layer("activation")
 ])
 
-
+N = 500
 decision_paths = []
 tested = 0
+start = dt.now()
 for img in os.listdir(POS_IMAGE_SET_TEST):
     if img.endswith('.jpg') and img[0] == '2':
-        print(">> Analyzing image", img)
+        print(">> Analyzing image", img, "test", str(tested+1))
         test_image = load_test_image(folder=POS_IMAGE_SET_TEST, fileid=img)
         flat_output = flat_model.predict(test_image)
         y = m_trained.predict(test_image)[0][0]
 
         decision_paths.append(twA.def_note(flat_output, fc_model, y))
-
+        '''
         for i in range(len(decision_paths[-1])):
             g_outo = decision_paths[-1][str(i+1)]['g_outo']
             tab = "  "*(i+1)
@@ -74,11 +75,33 @@ for img in os.listdir(POS_IMAGE_SET_TEST):
             #print(tab, ' ─M2', decision_paths[-1][str(i+1)]['m2'])
             #print(tab, ' ─M3', decision_paths[-1][str(i+1)]['m3'])
             break
-        visualize_objpart_RF(m_trained, test_image, twA.A,os.path.join(POS_IMAGE_SET_TEST, img))
+        #visualize_objpart_RF(m_trained, test_image, twA.A,os.path.join(POS_IMAGE_SET_TEST, img))
+        '''
         tested += 1
-        if tested == 10:
+        if tested == N:
             break
-        
+print(dt.now()-start)
+
+# METRIC 1 #
+M1_L2 = np.zeros((N, 4))
+M1_L5 = np.zeros((N, 4))
+M1_L9 = np.zeros((N, 4))
+ys = 0
+for i in range(len(decision_paths)):
+    M1_L2[i] = tf.reshape(decision_paths[i]['1']['m1'], shape=(4,))
+    M1_L5[i] = tf.reshape(decision_paths[i]['4']['m1'], shape=(4,))
+    if '8' in decision_paths[i]:
+        M1_L9[i] = tf.reshape(decision_paths[i]['8']['m1'], shape=(4,))
+    ys += decision_paths[i]['pred']
+ys = ys/len(decision_paths)
+
+M1_L2 = tf.divide(tf.reduce_mean(M1_L2, axis=0), ys)
+M1_L5 = tf.divide(tf.reduce_mean(M1_L5, axis=0), ys)
+M1_L9 = tf.divide(tf.reduce_mean(M1_L9, axis=0), ys)
+
+print("M1_L2", M1_L2.numpy())
+print("M1_L5", M1_L5.numpy())
+print("M1_L9", M1_L9.numpy())
 
 
 
