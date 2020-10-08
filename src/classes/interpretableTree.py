@@ -103,6 +103,7 @@ class InterpretableTree(tl.Tree):
         print("[TREE] -- nodes:...........", size)
         print("       -- generic nodes:...", size - leaves - 1)
         print("       -- leaves:..........", leaves)
+        print("       -- depth:...........", self.depth())
         print("       -- gamma:...........", self.gamma.numpy())
         print("       -- s (shape):.......", self.s.shape)
         print("-------------------------------------------------")
@@ -369,6 +370,7 @@ class InterpretableTree(tl.Tree):
             w_v = next_dec_node.w
             rho = tf.reshape(tf.multiply(w_v,x), shape=(512,1))
             g_outo = tf.matmul(self.A, rho, transpose_a=True)
+            g_outo = tf.multiply(1/tf.reduce_sum(g_outo), g_outo)
             path_dict.update({str(level) : {"dec_node" : next_dec_node, "rho" : rho, "g_outo" : g_outo}})
 
             return self.decision_path(next_dec_node,x,g,path_dict,level)
