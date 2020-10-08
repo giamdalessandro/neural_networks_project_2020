@@ -372,8 +372,8 @@ class InterpretableTree(tl.Tree):
             rho = tf.reshape(tf.multiply(w_v,x), shape=(512,1))
             g_outo = tf.matmul(self.A, rho, transpose_a=True)
 
+            # compute metrics data, m1, m2, m3
             m_1 = tf.multiply(tf.subtract(g_outo,q), 1/y)
-            # compute m_2
             t = tf.multiply(next_dec_node.g,x)
             hat_rho = tf.maximum(0,tf.multiply(rho,tf.math.sign(t)))
             m_2 = tf.divide(tf.minimum(hat_rho,tf.abs(t)),tf.maximum(hat_rho,tf.abs(t)))
@@ -384,7 +384,7 @@ class InterpretableTree(tl.Tree):
                     "rho" : rho, 
                     "g_outo" : g_outo, 
                     "m1" : m_1,
-                    #"m2" : m_2,
+                    "m2" : m_2,
                     "m3" : m_3,
                     "y" : y     
                 }
