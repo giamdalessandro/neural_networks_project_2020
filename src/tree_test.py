@@ -68,7 +68,7 @@ for img in os.listdir(dataset_folder):
         flat_output = flat_model.predict(test_image)
         y = m_trained.predict(test_image)[0][0]
 
-        decision_paths.append(twA.def_note(flat_output, fc_model, y)))
+        decision_paths.append(twA.def_note(flat_output, fc_model, y))
         
         for i in range(len(decision_path)):
             g_outo = decision_path[str(i+1)]['g_outo']
