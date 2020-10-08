@@ -104,7 +104,7 @@ class InterpretableTree(tl.Tree):
         print("       -- generic nodes:...", size - leaves - 1)
         print("       -- leaves:..........", leaves)
         print("       -- depth:...........", self.depth())
-        print("       -- gamma:...........", self.gamma.numpy())
+        print("       -- gamma:...........", self.gamma if isinstance(self.gamma, float) else self.gamma.numpy())
         print("       -- s (shape):.......", self.s.shape)
         print("-------------------------------------------------")
 

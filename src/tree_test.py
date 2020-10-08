@@ -43,7 +43,7 @@ if COMPUTE_A:
 
 twA = from_json(InterpretableTree(), "./forest/test_tree_"+str(STOP)+"_imgs_with_A.json")
 twA.info()
-'''
+
 flat_model = Model(inputs=m_trained.input, outputs=m_trained.get_layer("flatten").output)
 
 
@@ -67,7 +67,6 @@ for img in os.listdir(dataset_folder):
             print(tab, ' └──', "Contribution of tail parts  --", g_outo[3][0].numpy())
 
         # visualize_objpart_RF(m_trained, test_image, twA.A,os.path.join(POS_IMAGE_SET_TEST, img))
-'''
 
 '''
 TODO:
