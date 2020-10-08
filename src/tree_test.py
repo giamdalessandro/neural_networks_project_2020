@@ -29,7 +29,7 @@ if TEST:
     saved = new_tree.save2json(save_name="test_tree_"+str(STOP)+"_imgs")
     print("[TIME] -- test on ", STOP, " images took ", dt.now()-start)
 
-# CODE FOR COMPUTING AND SAVING A #
+
 if COMPUTE_A:
     loaded = from_json(InterpretableTree(), "./forest/test_tree_"+str(STOP)+"_imgs.json")
     loaded.A = compute_A(POS_IMAGE_SET_TEST, stop=100)
@@ -43,6 +43,12 @@ twA = from_json(InterpretableTree(), "./forest/test_tree_"+str(STOP)+"_imgs_with
 twA.info()
 
 flat_model = Model(inputs=m_trained.input, outputs=m_trained.get_layer("flatten").output)
+fc_model = tf.keras.Sequential([
+    m_trained.get_layer("fc1"),
+    m_trained.get_layer("fc2"),
+    m_trained.get_layer("fc3"),
+    m_trained.get_layer("activation")
+])
 
 
 decision_paths = []
@@ -53,7 +59,7 @@ for img in os.listdir(POS_IMAGE_SET_TEST):
         flat_output = flat_model.predict(test_image)
         y = m_trained.predict(test_image)[0][0]
 
-        decision_paths.append(twA.def_note(flat_output, m_trained))
+        decision_paths.append(twA.def_note(flat_output, fc_model, y))
 
         for i in range(len(decision_paths[-1])):
             g_outo = decision_paths[-1][str(i+1)]['g_outo']
