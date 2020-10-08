@@ -221,6 +221,8 @@ def visualize_objpart_RF(m_trained, test_image, A, filepath):
     tailos_j = tf.math.argmax(tf.reduce_max(x_tailos, axis=0),output_type=tf.int32).numpy()
     tailos_center, size = receptive_field((tailos_j, tailos_i))
 
+
+    cv2.imshow('original', cv2.resize(cv2.imread(filepath), (224,224), interpolation=cv2.INTER_LINEAR))
     display_RF(heados_center, filepath, 'head')
     display_RF(torsos_center, filepath, 'torso')
     display_RF(legos_center,  filepath, 'legs')
