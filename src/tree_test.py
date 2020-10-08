@@ -17,6 +17,7 @@ tf.config.experimental.set_memory_growth(gpus[0], True)
 
 m_trained = tf.keras.models.load_model(MASKED1, custom_objects={"MaskLayer":MaskLayer()})
 
+# CODE FOR CREATING THE TREE #
 if TEST:
     start = dt.now()
     tree, y_dict, x_dict = sow(m_trained, POS_IMAGE_SET_TEST)
@@ -28,18 +29,8 @@ if TEST:
     saved = new_tree.save2json(save_name="test_tree_"+str(STOP)+"_imgs")
     print("[TIME] -- test on ", STOP, " images took ", dt.now()-start)
 
-'''
-# CODE FOR COMPUTING AND SAVING A #
-else:
-    with tf.device("/CPU:0"):
-        loaded = from_json(InterpretableTree(), "./forest/test_tree_"+str(STOP)+"_imgs.json")
-        loaded.A = compute_A(POS_IMAGE_SET_TEST, stop=100)
-        saved = loaded.save2json(save_name="test_tree_"+str(STOP)+"_imgs_with_A")
-        print("A done.")
-        print("Evvai.")
-'''
-if COMPUTE_A:
 
+if COMPUTE_A:
     loaded = from_json(InterpretableTree(), "./forest/test_tree_"+str(STOP)+"_imgs.json")
     loaded.A = compute_A(POS_IMAGE_SET_TEST, stop=100)
     saved = loaded.save2json(save_name="test_tree_"+str(STOP)+"_imgs_with_A")
@@ -61,7 +52,7 @@ fc_model = tf.keras.Sequential([
 
 
 decision_paths = []
-for img in os.listdir(dataset_folder):
+for img in os.listdir(POS_IMAGE_SET_TEST):
     if img.endswith('.jpg') and img[0] == '2':
         print(">> Analyzing image", img)
         test_image = load_test_image(folder=POS_IMAGE_SET_TEST, fileid=img)
@@ -69,17 +60,27 @@ for img in os.listdir(dataset_folder):
         y = m_trained.predict(test_image)[0][0]
 
         decision_paths.append(twA.def_note(flat_output, fc_model, y))
-        
-        for i in range(len(decision_path)):
-            g_outo = decision_path[str(i+1)]['g_outo']
+
+        for i in range(len(decision_paths[-1])):
+            g_outo = decision_paths[-1][str(i+1)]['g_outo']
             tab = "  "*(i+1)
             print(("  "*i)+"[LEVEL] --", str(i+1))
-            print(tab, ' ├──', "Contribution of leg parts   --", g_outo[2][0].numpy())
-            print(tab, ' ├──', "Contribution of torso parts --", g_outo[1][0].numpy())
             print(tab, ' ├──', "Contribution of head parts  --", g_outo[0][0].numpy())
+            print(tab, ' ├──', "Contribution of torso parts --", g_outo[1][0].numpy())
+            print(tab, ' ├──', "Contribution of leg parts   --", g_outo[2][0].numpy())
             print(tab, ' └──', "Contribution of tail parts  --", g_outo[3][0].numpy())
+            print(tab, '──M1', decision_paths[-1][str(i+1)]['m1'])
+            print(tab, '──M2', decision_paths[-1][str(i+1)]['m2'])
+            print(tab, '──M3', decision_paths[-1][str(i+1)]['m3'])
+        visualize_objpart_RF(m_trained, test_image, twA.A,os.path.join(POS_IMAGE_SET_TEST, img))
+        break
+        
 
-        # visualize_objpart_RF(m_trained, test_image, twA.A,os.path.join(POS_IMAGE_SET_TEST, img))
+
+
+
+
+
 
 '''
 TODO:

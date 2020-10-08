@@ -75,8 +75,7 @@ def display_RF(rf_center, filepath, name):
     masked_image = cv2.bitwise_and(image, image, mask=mask)
 
     cv2.imshow(name, masked_image)
-    cv2.waitKey(0)
-    cv2.destroyAllWindows()
+    
 
 def binarify(matrix):
     for f in range(NUM_FILTERS):
@@ -221,6 +220,8 @@ def visualize_objpart_RF(m_trained, test_image, A, filepath):
     tailos_j = tf.math.argmax(tf.reduce_max(x_tailos, axis=0),output_type=tf.int32).numpy()
     tailos_center, size = receptive_field((tailos_j, tailos_i))
 
+
+    cv2.imshow('original', cv2.resize(cv2.imread(filepath), (224,224), interpolation=cv2.INTER_LINEAR))
     display_RF(heados_center, filepath, 'head')
     display_RF(torsos_center, filepath, 'torso')
     display_RF(legos_center,  filepath, 'legs')
@@ -231,7 +232,8 @@ def visualize_objpart_RF(m_trained, test_image, A, filepath):
 
     center, size = receptive_field((j,i))
     display_RF(center, filepath, 'all')
-
+    cv2.waitKey(0)
+    cv2.destroyAllWindows()
 
 
 
