@@ -26,7 +26,7 @@ parts = {'HEAD_PARTS':  ['head', 'beak', 'leye', 'reye'],
          'TAIL_PARTS':  ['tail']}
 
 THRESOLD = 20   # number of max distance in pixel between two centers (annotation's and RF's) 
-RF_SIZE = 54
+RF_SIZE = 100
 NUM_FILTERS = 512
 NUM_OBJ_PARTS = 4
 
@@ -74,7 +74,8 @@ def display_RF(rf_center, filepath, name):
     image = cv2.resize(cv2.imread(filepath), (224,224), interpolation=cv2.INTER_LINEAR)
     masked_image = cv2.bitwise_and(image, image, mask=mask)
 
-    cv2.imshow(name, masked_image)
+    cv2.imshow(name, cv2.resize(masked_image, (300, 300),
+                                interpolation=cv2.INTER_LINEAR))
     
 
 def binarify(matrix):
