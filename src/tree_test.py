@@ -70,9 +70,10 @@ for img in os.listdir(POS_IMAGE_SET_TEST):
             print(tab, ' ├──', "Contribution of torso parts --", g_outo[1][0].numpy())
             print(tab, ' ├──', "Contribution of leg parts   --", g_outo[2][0].numpy())
             print(tab, ' └──', "Contribution of tail parts  --", g_outo[3][0].numpy())
-            print(tab, ' ─M1', decision_paths[-1][str(i+1)]['m1'])
-            print(tab, ' ─M2', decision_paths[-1][str(i+1)]['m2'])
-            print(tab, ' ─M3', decision_paths[-1][str(i+1)]['m3'])
+            #print(tab, ' ─M1', decision_paths[-1][str(i+1)]['m1'])
+            #print(tab, ' ─M2', decision_paths[-1][str(i+1)]['m2'])
+            #print(tab, ' ─M3', decision_paths[-1][str(i+1)]['m3'])
+            break
         visualize_objpart_RF(m_trained, test_image, twA.A,os.path.join(POS_IMAGE_SET_TEST, img))
         tested += 1
         if tested == 10:

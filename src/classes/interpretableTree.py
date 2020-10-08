@@ -370,7 +370,7 @@ class InterpretableTree(tl.Tree):
             level += 1
             w_v = next_dec_node.w
             rho = tf.multiply(w_v,x)
-            g_outo = tf.matmul(self.A, tf.reshape(rho, shape=(1,512)), transpose_a=True)
+            g_outo = tf.matmul(self.A, tf.reshape(rho, shape=(512, 1)), transpose_a=True)
 
             # compute metrics data, m1, m2, m3
             m_1 = tf.multiply(tf.subtract(g_outo,q), 1/y)
