@@ -62,7 +62,7 @@ for img in os.listdir(POS_IMAGE_SET_TEST):
         y = m_trained.predict(test_image)[0][0]
 
         decision_paths.append(twA.def_note(flat_output, fc_model, y))
-        '''
+
         for i in range(len(decision_paths[-1])):
             g_outo = decision_paths[-1][str(i+1)]['g_outo']
             tab = "  "*(i+1)
@@ -75,13 +75,13 @@ for img in os.listdir(POS_IMAGE_SET_TEST):
             #print(tab, ' ─M2', decision_paths[-1][str(i+1)]['m2'])
             #print(tab, ' ─M3', decision_paths[-1][str(i+1)]['m3'])
             break
-        #visualize_objpart_RF(m_trained, test_image, twA.A,os.path.join(POS_IMAGE_SET_TEST, img))
-        '''
+        visualize_objpart_RF(m_trained, test_image, twA.A,os.path.join(POS_IMAGE_SET_TEST, img))
+
         tested += 1
         if tested == N:
             break
 print(dt.now()-start)
-
+'''
 # METRIC 1 #
 M1_L2 = np.zeros((N, 4))
 M1_L5 = np.zeros((N, 4))
@@ -158,7 +158,7 @@ print("M3_L2 ", m3)
 #print("M3_L5", M3_L5.numpy())
 #print("M3_L9", M3_L9.numpy())
 
-
+'''
 '''
 TODO:
     - test metrics albero fake
