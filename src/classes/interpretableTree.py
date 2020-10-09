@@ -378,7 +378,6 @@ class InterpretableTree(tl.Tree):
 
             m_2 = tf.divide(tf.minimum(hat_rho,tf.abs(t)), tf.maximum(tf.maximum(hat_rho,tf.abs(t)), 0.0000000001))
             
-            m_3 = next_dec_node.h(xx=x)
             norm_g = tf.norm(next_dec_node.g, ord=2)
             path_dict.update({str(level) : {
                     "dec_node" : next_dec_node, 
@@ -386,7 +385,6 @@ class InterpretableTree(tl.Tree):
                     "g_outo" : g_outo, 
                     "m1" : m_1,
                     "m2" : m_2,
-                    "m3" : tf.nn.softmax(m_3),
                     "pred" : tf.divide(y, norm_g)    
                 }
             })
