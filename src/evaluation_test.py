@@ -17,13 +17,9 @@ def gimme_g_gimme_x(img, flat_model, fc_model, s):
     x = tf.reshape(x, shape=(512, 1))
 
     g = compute_g(fc_model, flat_x)
+    g = tf.multiply(tf.math.scalar_mul(1/L, s), vectorify_on_depth(g))
     g = tf.divide(g, tf.norm(g, ord=2))
     return x, g
-
-
-
-
-
 
 
 
@@ -43,13 +39,14 @@ gpus = tf.config.experimental.list_physical_devices('GPU')
 tf.config.experimental.set_memory_growth(gpus[0], True)
 
 # load saved models and tree100 #
-cnn = tf.keras.models.load_model(MASKED1, custom_objects={"MaskLayer": MaskLayer()})
-flat_model = Model(inputs=cnn.input, outputs=cnn.get_layer("flatten").output)
-fc_model = tf.keras.Sequential([
-    cnn.get_layer("fc1"),
-    cnn.get_layer("fc2"),
-    cnn.get_layer("fc3")
-])
+with tf.device("/CPU:0"):
+    cnn = tf.keras.models.load_model(MASKED1, custom_objects={"MaskLayer": MaskLayer()})
+    flat_model = Model(inputs=cnn.input, outputs=cnn.get_layer("flatten").output)
+    fc_model = tf.keras.Sequential([
+        cnn.get_layer("fc1"),
+        cnn.get_layer("fc2"),
+        cnn.get_layer("fc3")
+    ])
 
 
 tree100 = from_json(InterpretableTree(), TREE100)

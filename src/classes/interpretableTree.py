@@ -462,15 +462,17 @@ class InterpretableTree(tl.Tree):
             if similarity > max_similarity:
                 max_similarity = similarity
                 best_node = n
+        return best_node
 
     def compute_hatrho(self, x, g, t, level):
         """
         Returns hatrho for the jaccard similarity
         """
         if level == 1:
-            nodes = self.nodes(self.root)
+            nodes = self.children(self.root)
         else:
             nodes = self.get_generation(level)
         
         bestnode = self.find_best_node(nodes, g) 
+        rho = tf.multiply(bestnode.w,x)
         return tf.maximum(0, tf.multiply(rho, tf.math.sign(t)))
