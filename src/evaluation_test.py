@@ -61,7 +61,7 @@ if METRICS == 1:
 
 # metrica 2 #
 if METRICS == 2: 
-    BREAK = 100
+    BREAK = 10
     POS_IMAGE_SET_TEST = "./dataset/train_val/bird"
     
     t_list = []
@@ -81,7 +81,8 @@ if METRICS == 2:
             
             t = tf.multiply(g, x)
             t_list.append(t)
-            
+            print("I am legend, ",i)
+
             hatrho_1.append(tree100.compute_hatrho(x, g, t, level=1))
             hatrho_2.append(tree100.compute_hatrho(x, g, t, level=2))
             hatrho_3.append(tree100.compute_hatrho(x, g, t, level=3))
@@ -91,8 +92,8 @@ if METRICS == 2:
             hatrho_leaves.append(tree100.compute_hatrho(x, g, t, level=-1))
 
             i += 1
-            if i == BREAK:
-                break
+        if i == BREAK:
+            break
             
     print("jaccard score TREE layer 1     ", jaccard_score(t_list, hatrho_1))
     print("jaccard score TREE layer 2     ", jaccard_score(t_list, hatrho_2))
