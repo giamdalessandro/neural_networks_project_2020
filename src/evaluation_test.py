@@ -4,8 +4,34 @@ from classes.tree_utils import *
 from classes.maskLayer import MaskLayer
 from classes.interpretableNode import InterpretableNode
 from classes.interpretableTree import InterpretableTree
-from sklearn.metrics import accuracy_score, jaccard_similarity_score
+from sklearn.metrics import accuracy_score, jaccard_score
 
+
+
+
+def gimme_g_gimme_x(img, flat_model, fc_model, s):
+    test_image = load_test_image(folder=POS_IMAGE_SET_TEST, fileid=img)
+    flat_x = flat_model.predict(test_image)
+    x = tf.reshape(flat_x, shape=(7, 7, 512))
+    x = tf.divide(vectorify_on_depth(x), s)
+    x = tf.reshape(x, shape=(512, 1))
+
+    g = compute_g(fc_model, flat_x)
+    g = tf.divide(g, tf.norm(g, ord=2))
+    return x, g
+
+
+
+
+
+
+
+
+
+
+
+start = dt.now()
+METRICS = 2
 
 TREE100 = "./forest/test_tree_100_imgs_with_A.json"
 TREE007 = "./forest/test_tree_7_imgs_with_A.json"
@@ -30,82 +56,121 @@ tree100 = from_json(InterpretableTree(), TREE100)
 tree100.info()
 
 
+# metrica 1 #
+if METRICS == 1:
+    pass
+
+
+
+# metrica 2 #
+if METRICS == 2: 
+    BREAK = 100
+    POS_IMAGE_SET_TEST = "./dataset/train_val/bird"
+    
+    t_list = []
+    hatrho_1 = []
+    hatrho_2 = []
+    hatrho_3 = []
+    hatrho_4 = []
+    hatrho_5 = []
+    hatrho_6 = []
+    hatrho_leaves = []
+    
+    i = 0
+    for img in os.listdir(POS_IMAGE_SET_TEST):
+        if img.endswith('.jpg'):
+            
+            x, g = gimme_g_gimme_x(img, flat_model, fc_model, tree100.s)
+            
+            t = tf.multiply(g, x)
+            t_list.append(t)
+            
+            hatrho_1.append(tree100.compute_hatrho(x, g, t, level=1))
+            hatrho_2.append(tree100.compute_hatrho(x, g, t, level=2))
+            hatrho_3.append(tree100.compute_hatrho(x, g, t, level=3))
+            hatrho_4.append(tree100.compute_hatrho(x, g, t, level=4))
+            hatrho_5.append(tree100.compute_hatrho(x, g, t, level=5))
+            hatrho_6.append(tree100.compute_hatrho(x, g, t, level=6))
+            hatrho_leaves.append(tree100.compute_hatrho(x, g, t, level=-1))
+
+            i += 1
+            if i == BREAK:
+                break
+            
+    print("jaccard score TREE layer 1     ", jaccard_score(t_list, hatrho_1))
+    print("jaccard score TREE layer 2     ", jaccard_score(t_list, hatrho_2))
+    print("jaccard score TREE layer 3     ", jaccard_score(t_list, hatrho_3))
+    print("jaccard score TREE layer 4     ", jaccard_score(t_list, hatrho_4))
+    print("jaccard score TREE layer 5     ", jaccard_score(t_list, hatrho_5))
+    print("jaccard score TREE layer 6     ", jaccard_score(t_list, hatrho_6))
+    print("jaccard score TREE layer leaves", jaccard_score(t_list, hatrho_leaves))
+
+
 
 # metrica 3 #
-POS_IMAGE_SET_TEST = "./dataset/train_val/bird"
-NEG_IMAGE_SET_TEST = "./dataset/train_val/not_bird"
-BREAK = 100000
+if METRICS == 3:
+    POS_IMAGE_SET_TEST = "./dataset/train_val/bird"
+    NEG_IMAGE_SET_TEST = "./dataset/train_val/not_bird"
+    BREAK = 100000
 
-y_true = []
-y_cnn  = []
-y_tree100_1 = []
-y_tree100_2 = []
-y_tree100_3 = []
-y_tree100_4 = []
-y_tree100_5 = []
-y_tree100_6 = []
-y_tree100_8 = []
+    y_true = []
+    y_cnn  = []
+    y_tree100_1 = []
+    y_tree100_2 = []
+    y_tree100_3 = []
+    y_tree100_4 = []
+    y_tree100_5 = []
+    y_tree100_6 = []
+    y_tree100_8 = []
 
-start = dt.now()
-print(">> Testing on ", BREAK, " positive images")
-i = 0
-for img in os.listdir(POS_IMAGE_SET_TEST):
-    if img.endswith('.jpg'):
-        test_image = load_test_image(folder=POS_IMAGE_SET_TEST, fileid=img)
-        flat_output = flat_model.predict(test_image)
+    print(">> Testing on ", BREAK, " positive images")
+    i = 0
+    for img in os.listdir(POS_IMAGE_SET_TEST):
+        if img.endswith('.jpg'):
+            test_image = load_test_image(folder=POS_IMAGE_SET_TEST, fileid=img)
+            flat_output = flat_model.predict(test_image)
 
-        y_true.append(1)
-        y_cnn.append(1 if cnn.predict(test_image)[0][0] > 0.5 else 0)
-        y_tree100_1.append(1 if tree100.predict(test_image, fc_model, flat_output, level=1) > 0.5 else 0)
-        y_tree100_2.append(1 if tree100.predict(test_image, fc_model, flat_output, level=2) > 0.5 else 0)
-        y_tree100_3.append(1 if tree100.predict(test_image, fc_model, flat_output, level=3) > 0.5 else 0)
-        y_tree100_4.append(1 if tree100.predict(test_image, fc_model, flat_output, level=4) > 0.5 else 0)
-        y_tree100_5.append(1 if tree100.predict(test_image, fc_model, flat_output, level=5) > 0.5 else 0)
-        y_tree100_6.append(1 if tree100.predict(test_image, fc_model, flat_output, level=6) > 0.5 else 0)
-        y_tree100_8.append(1 if tree100.predict(test_image, fc_model, flat_output, level=-1) > 0.5 else 0)
-        i += 1
-        if i == BREAK:
-            break
+            y_true.append(1)
+            y_cnn.append(1 if cnn.predict(test_image)[0][0] > 0.5 else 0)
+            y_tree100_1.append(1 if tree100.predict(test_image, fc_model, flat_output, level=1) > 0.5 else 0)
+            y_tree100_2.append(1 if tree100.predict(test_image, fc_model, flat_output, level=2) > 0.5 else 0)
+            y_tree100_3.append(1 if tree100.predict(test_image, fc_model, flat_output, level=3) > 0.5 else 0)
+            y_tree100_4.append(1 if tree100.predict(test_image, fc_model, flat_output, level=4) > 0.5 else 0)
+            y_tree100_5.append(1 if tree100.predict(test_image, fc_model, flat_output, level=5) > 0.5 else 0)
+            y_tree100_6.append(1 if tree100.predict(test_image, fc_model, flat_output, level=6) > 0.5 else 0)
+            y_tree100_8.append(1 if tree100.predict(test_image, fc_model, flat_output, level=-1) > 0.5 else 0)
+            i += 1
+            if i == BREAK:
+                break
 
-print(">> Testing on ", BREAK, " negative images")
-i = 0
-for img in os.listdir(NEG_IMAGE_SET_TEST):
-    if img.endswith('.jpg'):
-        test_image = load_test_image(folder=NEG_IMAGE_SET_TEST, fileid=img)
-        y_true.append(0)
-        y_cnn.append(1 if cnn.predict(test_image)[0][0] > 0.5 else 0)
-        y_tree100_1.append(1 if tree100.predict(test_image, fc_model, flat_output, level=1) > 0.5 else 0)
-        y_tree100_2.append(1 if tree100.predict(test_image, fc_model, flat_output, level=2) > 0.5 else 0)
-        y_tree100_3.append(1 if tree100.predict(test_image, fc_model, flat_output, level=3) > 0.5 else 0)
-        y_tree100_4.append(1 if tree100.predict(test_image, fc_model, flat_output, level=4) > 0.5 else 0)
-        y_tree100_5.append(1 if tree100.predict(test_image, fc_model, flat_output, level=5) > 0.5 else 0)
-        y_tree100_6.append(1 if tree100.predict(test_image, fc_model, flat_output, level=6) > 0.5 else 0)
-        y_tree100_8.append(1 if tree100.predict(test_image, fc_model, flat_output, level=-1) > 0.5 else 0)
-        i += 1
-        if i == BREAK:
-            break
+    print(">> Testing on ", BREAK, " negative images")
+    i = 0
+    for img in os.listdir(NEG_IMAGE_SET_TEST):
+        if img.endswith('.jpg'):
+            test_image = load_test_image(folder=NEG_IMAGE_SET_TEST, fileid=img)
+            y_true.append(0)
+            y_cnn.append(1 if cnn.predict(test_image)[0][0] > 0.5 else 0)
+            y_tree100_1.append(1 if tree100.predict(test_image, fc_model, flat_output, level=1) > 0.5 else 0)
+            y_tree100_2.append(1 if tree100.predict(test_image, fc_model, flat_output, level=2) > 0.5 else 0)
+            y_tree100_3.append(1 if tree100.predict(test_image, fc_model, flat_output, level=3) > 0.5 else 0)
+            y_tree100_4.append(1 if tree100.predict(test_image, fc_model, flat_output, level=4) > 0.5 else 0)
+            y_tree100_5.append(1 if tree100.predict(test_image, fc_model, flat_output, level=5) > 0.5 else 0)
+            y_tree100_6.append(1 if tree100.predict(test_image, fc_model, flat_output, level=6) > 0.5 else 0)
+            y_tree100_8.append(1 if tree100.predict(test_image, fc_model, flat_output, level=-1) > 0.5 else 0)
+            i += 1
+            if i == BREAK:
+                break
 
 
-print("accuracy_score CNN          ", (accuracy_score(y_true, y_cnn)*100))
-print("accuracy_score TREE layer 1 ", (accuracy_score(y_true, y_tree100_1)*100))
-print("accuracy_score TREE layer 2 ", (accuracy_score(y_true, y_tree100_2)*100))
-print("accuracy_score TREE layer 3 ", (accuracy_score(y_true, y_tree100_3)*100))
-print("accuracy_score TREE layer 4 ", (accuracy_score(y_true, y_tree100_4)*100))
-print("accuracy_score TREE layer 5 ", (accuracy_score(y_true, y_tree100_5)*100))
-print("accuracy_score TREE layer 6 ", (accuracy_score(y_true, y_tree100_6)*100))
-print("accuracy_score TREE leaves  ", (accuracy_score(y_true, y_tree100_8)*100))
+    print("accuracy_score CNN          ", (accuracy_score(y_true, y_cnn)*100))
+    print("accuracy_score TREE layer 1 ", (accuracy_score(y_true, y_tree100_1)*100))
+    print("accuracy_score TREE layer 2 ", (accuracy_score(y_true, y_tree100_2)*100))
+    print("accuracy_score TREE layer 3 ", (accuracy_score(y_true, y_tree100_3)*100))
+    print("accuracy_score TREE layer 4 ", (accuracy_score(y_true, y_tree100_4)*100))
+    print("accuracy_score TREE layer 5 ", (accuracy_score(y_true, y_tree100_5)*100))
+    print("accuracy_score TREE layer 6 ", (accuracy_score(y_true, y_tree100_6)*100))
+    print("accuracy_score TREE leaves  ", (accuracy_score(y_true, y_tree100_8)*100))
+
 
 print("TIME --", dt.now()-start)
-
-
-
-
-
-
-
-
-
-
-
-
 print("þøþł")

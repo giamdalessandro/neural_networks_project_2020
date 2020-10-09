@@ -373,8 +373,7 @@ class InterpretableTree(tl.Tree):
             g_outo = tf.matmul(self.A, tf.reshape(rho, shape=(512, 1)), transpose_a=True)
             g_outo = tf.multiply(1/tf.reduce_sum(g_outo), g_outo)
             m_1 = tf.abs(tf.subtract(g_outo,q))
-            t = tf.multiply(next_dec_node.g,x)
-            hat_rho = tf.maximum(0,tf.multiply(rho,tf.math.sign(t)))
+            
 
             m_2 = tf.divide(tf.minimum(hat_rho,tf.abs(t)), tf.maximum(tf.maximum(hat_rho,tf.abs(t)), 0.0000000001))
             
@@ -420,6 +419,7 @@ class InterpretableTree(tl.Tree):
 
     def predict(self, test_image, fc_model, flat_x, level=1):
         # only used to compute g, no need for activation
+        # RABARBARO MUOVERE g e x FUORI dalla predict, inutile ricomputarla ogni volta per ogni livello
         g = compute_g(fc_model, flat_x)
         g = tf.divide(g, tf.norm(g, ord=2))
 
@@ -431,6 +431,7 @@ class InterpretableTree(tl.Tree):
             children = self.children(self.root)
         else:
             children = self.get_generation(level)
+        ## find best node ##
         max_similarity = self.cos_similarity(g, children[0].w)
         node = children[0]
         for child in children:
@@ -438,17 +439,38 @@ class InterpretableTree(tl.Tree):
             if similarity > max_similarity:
                 max_similarity = similarity
                 node = child
-        #print("Node found", node.tag)
-        #print("Similarity", max_similarity)
-
+        ## RABARBARO ##
+        
         return tf.matmul(tf.reshape(node.w, shape=(512, 1)), x, transpose_a=True).numpy()/1000
 
 
     def get_generation(self, level):
         """
-        Gets all node at a certain level of the tree
+        Gets all nodes at a certain level of the tree
         """
         if level > 0:
             return [node for node in self.all_nodes_itr() if self.level(node.identifier) == level]
         else:
             return self.leaves()
+    
+
+    def find_best_node(self, nodes, g):
+        max_similarity = self.cos_similarity(g, nodes[0].w)
+        best_node = nodes[0]
+        for n in nodes:
+            similarity = self.cos_similarity(g, n.w)
+            if similarity > max_similarity:
+                max_similarity = similarity
+                best_node = n
+
+    def compute_hatrho(self, x, g, t, level):
+        """
+        Returns hatrho for the jaccard similarity
+        """
+        if level == 1:
+            nodes = self.nodes(self.root)
+        else:
+            nodes = self.get_generation(level)
+        
+        bestnode = self.find_best_node(nodes, g) 
+        return tf.maximum(0, tf.multiply(rho, tf.math.sign(t)))
