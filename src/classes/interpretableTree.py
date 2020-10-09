@@ -451,11 +451,15 @@ class InterpretableTree(tl.Tree):
         """
         Returns hatrho for the jaccard similarity
         """
-        if level == 1:
-            nodes = self.children(self.root)
-        else:
-            nodes = self.get_generation(level)
-        
+        nodes = self.children(self.root) if level == 1 else self.get_generation(level)
         bestnode = self.find_best_node(nodes, g) 
         rho = tf.multiply(bestnode.w,x)
         return tf.maximum(0, tf.multiply(rho, tf.math.sign(t)))
+
+
+    def compute_g_strano(self, x, g, level=1):
+        nodes = self.children(self.root) if level == 1 else self.get_generation(level)        
+        bestnode = self.find_best_node(nodes, g)
+        rho = tf.multiply(tf.reshape(bestnode.w, shape=(512,1)), x)
+        g_outo = tf.matmul(self.A, rho, transpose_a=True)
+        return tf.multiply(1/tf.reduce_sum(g_outo), g_outo)

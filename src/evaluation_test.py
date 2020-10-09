@@ -20,7 +20,7 @@ def gimme_g_gimme_x(test_image, flat_model, fc_model, s):
 
 
 start = dt.now()
-METRICS = 3
+METRICS = 1
 
 TREE100 = "./forest/test_tree_100_imgs_with_A.json"
 MODELS = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'models'))
@@ -47,7 +47,63 @@ tree100.info()
 
 # metrica 1 #
 if METRICS == 1:
-    pass
+    fc_model_activated = tf.keras.Sequential([
+        cnn.get_layer("fc1"),
+        cnn.get_layer("fc2"),
+        cnn.get_layer("fc3"),
+        cnn.get_layer("activation")
+    ])
+    BREAK = 100
+    POS_IMAGE_SET_TEST = "./dataset/train_val/bird"
+    
+    y_list = []
+    g_strano_1 = []
+    g_strano_2 = []
+    g_strano_3 = []
+    g_strano_4 = []
+    g_strano_5 = []
+    g_strano_6 = []
+    g_strano_leaves = []
+    
+    i = 0
+    for img in os.listdir(POS_IMAGE_SET_TEST):
+        if img.endswith('.jpg') and img[0] == '2':
+            test_image = load_test_image(folder=POS_IMAGE_SET_TEST, fileid=img)
+            
+            y = cnn.predict(test_image)[0][0]
+            y_list.append(y)
+            x, g = gimme_g_gimme_x(test_image, flat_model, fc_model, tree100.s)
+            
+            flat_x = flat_model.predict(test_image)
+            flat_x = tf.reshape(flat_x, shape=(7, 7, 512))
+            q = []
+            for p in range(4):
+                x_p = tf.multiply(flat_x, tf.reshape(tree100.A, shape=(4, 512)).numpy()[p])
+                y_p = fc_model_activated.predict(tf.reshape(x_p, shape=(1, 25088)))[0][0]
+                q.append(y-y_p)
+            q = tf.reshape(tf.convert_to_tensor(q), shape=(4, 1))
+            
+
+            g_strano_1.append(     tf.subtract(tree100.compute_g_strano(x, g, level=1),  q))
+            g_strano_2.append(     tf.subtract(tree100.compute_g_strano(x, g, level=2),  q))
+            g_strano_3.append(     tf.subtract(tree100.compute_g_strano(x, g, level=3),  q))
+            g_strano_4.append(     tf.subtract(tree100.compute_g_strano(x, g, level=4),  q))
+            g_strano_5.append(     tf.subtract(tree100.compute_g_strano(x, g, level=5),  q))
+            g_strano_6.append(     tf.subtract(tree100.compute_g_strano(x, g, level=6),  q))
+            g_strano_leaves.append(tf.subtract(tree100.compute_g_strano(x, g, level=-1), q))
+            
+            i += 1
+        if i == BREAK:
+            break
+    
+    ymean = tf.reduce_mean(y_list)
+    print("objpart contribution error layer 2",      tf.divide(tf.reduce_mean(g_strano_2,      axis=0), ymean))
+    print("objpart contribution error layer 1",      tf.divide(tf.reduce_mean(g_strano_1,      axis=0), ymean))
+    print("objpart contribution error layer 3",      tf.divide(tf.reduce_mean(g_strano_3,      axis=0), ymean))
+    print("objpart contribution error layer 4",      tf.divide(tf.reduce_mean(g_strano_4,      axis=0), ymean))
+    print("objpart contribution error layer 5",      tf.divide(tf.reduce_mean(g_strano_5,      axis=0), ymean))
+    print("objpart contribution error layer 6",      tf.divide(tf.reduce_mean(g_strano_6,      axis=0), ymean))
+    print("objpart contribution error layer leaves", tf.divide(tf.reduce_mean(g_strano_leaves, axis=0), ymean))
 
 
 
@@ -105,8 +161,6 @@ if METRICS == 2:
     print("jaccard score TREE layer 5     ", tf.reduce_mean(hatrho_5).numpy())
     print("jaccard score TREE layer 6     ", tf.reduce_mean(hatrho_6).numpy())
     print("jaccard score TREE layer leaves", tf.reduce_mean(hatrho_leaves).numpy())
-
-
 
 # metrica 3 #
 if METRICS == 3:
