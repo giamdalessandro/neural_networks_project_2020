@@ -31,14 +31,14 @@ gpus = tf.config.experimental.list_physical_devices('GPU')
 tf.config.experimental.set_memory_growth(gpus[0], True)
 
 # load saved models and tree100 #
-with tf.device("/CPU:0"):
-    cnn = tf.keras.models.load_model(MASKED1, custom_objects={"MaskLayer": MaskLayer()})
-    flat_model = Model(inputs=cnn.input, outputs=cnn.get_layer("flatten").output)
-    fc_model = tf.keras.Sequential([
-        cnn.get_layer("fc1"),
-        cnn.get_layer("fc2"),
-        cnn.get_layer("fc3")
-    ])
+#with tf.device("/CPU:0"):
+cnn = tf.keras.models.load_model(MASKED1, custom_objects={"MaskLayer": MaskLayer()})
+flat_model = Model(inputs=cnn.input, outputs=cnn.get_layer("flatten").output)
+fc_model = tf.keras.Sequential([
+    cnn.get_layer("fc1"),
+    cnn.get_layer("fc2"),
+    cnn.get_layer("fc3")
+])
 
 
 tree100 = from_json(InterpretableTree(), TREE100)
@@ -53,10 +53,9 @@ if METRICS == 1:
 
 # metrica 2 #
 if METRICS == 2: 
-    BREAK = 10
+    BREAK = 100
     POS_IMAGE_SET_TEST = "./dataset/train_val/bird"
     
-    t_list = []
     hatrho_1 = []
     hatrho_2 = []
     hatrho_3 = []
@@ -67,33 +66,45 @@ if METRICS == 2:
     
     i = 0
     for img in os.listdir(POS_IMAGE_SET_TEST):
-        if img.endswith('.jpg'):
-            
-            x, g = gimme_g_gimme_x(img, flat_model, fc_model, tree100.s)
+        if img.endswith('.jpg') and img[0] == '2':
+            test_image = load_test_image(folder=POS_IMAGE_SET_TEST, fileid=img)
+            x, g = gimme_g_gimme_x(test_image, flat_model, fc_model, tree100.s)
             
             t = tf.multiply(g, x)
-            t_list.append(t)
             print("I am legend, ",i)
+            
+            hatrho_1.append(tf.divide(tf.reduce_sum(tf.minimum(tf.abs(t), tree100.compute_hatrho(x, g, t, level=1))),
+                                      tf.reduce_sum(tf.maximum(tf.abs(t), tree100.compute_hatrho(x, g, t, level=1)))))
 
-            hatrho_1.append(tree100.compute_hatrho(x, g, t, level=1))
-            hatrho_2.append(tree100.compute_hatrho(x, g, t, level=2))
-            hatrho_3.append(tree100.compute_hatrho(x, g, t, level=3))
-            hatrho_4.append(tree100.compute_hatrho(x, g, t, level=4))
-            hatrho_5.append(tree100.compute_hatrho(x, g, t, level=5))
-            hatrho_6.append(tree100.compute_hatrho(x, g, t, level=6))
-            hatrho_leaves.append(tree100.compute_hatrho(x, g, t, level=-1))
+            hatrho_2.append(tf.divide(tf.reduce_sum(tf.minimum(tf.abs(t), tree100.compute_hatrho(x, g, t, level=2))),
+                                      tf.reduce_sum(tf.maximum(tf.abs(t), tree100.compute_hatrho(x, g, t, level=2)))))
+            
+            hatrho_3.append(tf.divide(tf.reduce_sum(tf.minimum(tf.abs(t), tree100.compute_hatrho(x, g, t, level=3))),
+                                      tf.reduce_sum(tf.maximum(tf.abs(t), tree100.compute_hatrho(x, g, t, level=3)))))
+            
+            hatrho_4.append(tf.divide(tf.reduce_sum(tf.minimum(tf.abs(t), tree100.compute_hatrho(x, g, t, level=4))),
+                                      tf.reduce_sum(tf.maximum(tf.abs(t), tree100.compute_hatrho(x, g, t, level=4)))))
+            
+            hatrho_5.append(tf.divide(tf.reduce_sum(tf.minimum(tf.abs(t), tree100.compute_hatrho(x, g, t, level=5))),
+                                      tf.reduce_sum(tf.maximum(tf.abs(t), tree100.compute_hatrho(x, g, t, level=5)))))
+            
+            hatrho_6.append(tf.divide(tf.reduce_sum(tf.minimum(tf.abs(t), tree100.compute_hatrho(x, g, t, level=6))),
+                                      tf.reduce_sum(tf.maximum(tf.abs(t), tree100.compute_hatrho(x, g, t, level=6)))))
+            
+            hatrho_leaves.append(tf.divide(tf.reduce_sum(tf.minimum(tf.abs(t), tree100.compute_hatrho(x, g, t, level=-1))),
+                                           tf.reduce_sum(tf.maximum(tf.abs(t), tree100.compute_hatrho(x, g, t, level=-1)))))
 
             i += 1
         if i == BREAK:
             break
-            
-    print("jaccard score TREE layer 1     ", jaccard_score(t_list, hatrho_1))
-    print("jaccard score TREE layer 2     ", jaccard_score(t_list, hatrho_2))
-    print("jaccard score TREE layer 3     ", jaccard_score(t_list, hatrho_3))
-    print("jaccard score TREE layer 4     ", jaccard_score(t_list, hatrho_4))
-    print("jaccard score TREE layer 5     ", jaccard_score(t_list, hatrho_5))
-    print("jaccard score TREE layer 6     ", jaccard_score(t_list, hatrho_6))
-    print("jaccard score TREE layer leaves", jaccard_score(t_list, hatrho_leaves))
+
+    print("jaccard score TREE layer 1     ", tf.reduce_mean(hatrho_1).numpy())
+    print("jaccard score TREE layer 2     ", tf.reduce_mean(hatrho_2).numpy())
+    print("jaccard score TREE layer 3     ", tf.reduce_mean(hatrho_3).numpy())
+    print("jaccard score TREE layer 4     ", tf.reduce_mean(hatrho_4).numpy())
+    print("jaccard score TREE layer 5     ", tf.reduce_mean(hatrho_5).numpy())
+    print("jaccard score TREE layer 6     ", tf.reduce_mean(hatrho_6).numpy())
+    print("jaccard score TREE layer leaves", tf.reduce_mean(hatrho_leaves).numpy())
 
 
 
@@ -101,7 +112,7 @@ if METRICS == 2:
 if METRICS == 3:
     POS_IMAGE_SET_TEST = "./dataset/train_val/bird"
     NEG_IMAGE_SET_TEST = "./dataset/train_val/not_bird"
-    BREAK = 11
+    BREAK = 100
 
     y_true = []
     y_cnn  = []
@@ -111,7 +122,8 @@ if METRICS == 3:
     y_tree100_4 = []
     y_tree100_5 = []
     y_tree100_6 = []
-    y_tree100_8 = []
+    y_tree100_leaves = []
+
 
     print(">> Testing on ", BREAK, " positive images")
     i = 0
@@ -122,13 +134,13 @@ if METRICS == 3:
 
             y_true.append(1)
             y_cnn.append(1 if cnn.predict(test_image)[0][0] > 0.5 else 0)
-            y_tree100_1.append(1 if tree100.predict(g, x, level=1) > 0.5 else 0)
-            y_tree100_2.append(1 if tree100.predict(g, x, level=2) > 0.5 else 0)
-            y_tree100_3.append(1 if tree100.predict(g, x, level=3) > 0.5 else 0)
-            y_tree100_4.append(1 if tree100.predict(g, x, level=4) > 0.5 else 0)
-            y_tree100_5.append(1 if tree100.predict(g, x, level=5) > 0.5 else 0)
-            y_tree100_6.append(1 if tree100.predict(g, x, level=6) > 0.5 else 0)
-            y_tree100_8.append(1 if tree100.predict(g, x, level=-1) > 0.5 else 0)
+            y_tree100_1.append(tree100.predict(g, x, level=1) )
+            y_tree100_2.append(tree100.predict(g, x, level=2) )
+            y_tree100_3.append(tree100.predict(g, x, level=3) )
+            y_tree100_4.append(tree100.predict(g, x, level=4) )
+            y_tree100_5.append(tree100.predict(g, x, level=5) )
+            y_tree100_6.append(tree100.predict(g, x, level=6) )
+            y_tree100_leaves.append(tree100.predict(g, x, level=-1))
             i += 1
             if i == BREAK:
                 break
@@ -142,26 +154,33 @@ if METRICS == 3:
 
             y_true.append(0)
             y_cnn.append(1 if cnn.predict(test_image)[0][0] > 0.5 else 0)
-            y_tree100_1.append(1 if tree100.predict(g, x, level=1) > 0.5 else 0)
-            y_tree100_2.append(1 if tree100.predict(g, x, level=2) > 0.5 else 0)
-            y_tree100_3.append(1 if tree100.predict(g, x, level=3) > 0.5 else 0)
-            y_tree100_4.append(1 if tree100.predict(g, x, level=4) > 0.5 else 0)
-            y_tree100_5.append(1 if tree100.predict(g, x, level=5) > 0.5 else 0)
-            y_tree100_6.append(1 if tree100.predict(g, x, level=6) > 0.5 else 0)
-            y_tree100_8.append(1 if tree100.predict(g, x, level=-1) > 0.5 else 0)
+            y_tree100_1.append(tree100.predict(g, x, level=1) )
+            y_tree100_2.append(tree100.predict(g, x, level=2) )
+            y_tree100_3.append(tree100.predict(g, x, level=3) )
+            y_tree100_4.append(tree100.predict(g, x, level=4) )
+            y_tree100_5.append(tree100.predict(g, x, level=5) )
+            y_tree100_6.append(tree100.predict(g, x, level=6) )
+            y_tree100_leaves.append(tree100.predict(g, x, level=-1))
             i += 1
             if i == BREAK:
                 break
 
+    print("min", tf.reduce_min(y_tree100_1).numpy(), "max", tf.reduce_max(y_tree100_1).numpy())
+    print("min", tf.reduce_min(y_tree100_2).numpy(), "max", tf.reduce_max(y_tree100_2).numpy())
+    print("min", tf.reduce_min(y_tree100_3).numpy(), "max", tf.reduce_max(y_tree100_3).numpy())
+    print("min", tf.reduce_min(y_tree100_4).numpy(), "max", tf.reduce_max(y_tree100_4).numpy())
+    print("min", tf.reduce_min(y_tree100_5).numpy(), "max", tf.reduce_max(y_tree100_5).numpy())
+    print("min", tf.reduce_min(y_tree100_6).numpy(), "max", tf.reduce_max(y_tree100_6).numpy())
+    print("min", tf.reduce_min(y_tree100_leaves).numpy(), "max", tf.reduce_max(y_tree100_leaves).numpy())
 
-    print("accuracy_score CNN          ", (accuracy_score(y_true, y_cnn)*100))
-    print("accuracy_score TREE layer 1 ", (accuracy_score(y_true, y_tree100_1)*100))
-    print("accuracy_score TREE layer 2 ", (accuracy_score(y_true, y_tree100_2)*100))
-    print("accuracy_score TREE layer 3 ", (accuracy_score(y_true, y_tree100_3)*100))
-    print("accuracy_score TREE layer 4 ", (accuracy_score(y_true, y_tree100_4)*100))
-    print("accuracy_score TREE layer 5 ", (accuracy_score(y_true, y_tree100_5)*100))
-    print("accuracy_score TREE layer 6 ", (accuracy_score(y_true, y_tree100_6)*100))
-    print("accuracy_score TREE leaves  ", (accuracy_score(y_true, y_tree100_8)*100))
+    #print("accuracy_score CNN          ", (accuracy_score(y_true, y_cnn)*100))
+    #print("accuracy_score TREE layer 1 ", (accuracy_score(y_true, y_tree100_1)*100))
+    #print("accuracy_score TREE layer 2 ", (accuracy_score(y_true, y_tree100_2)*100))
+    #print("accuracy_score TREE layer 3 ", (accuracy_score(y_true, y_tree100_3)*100))
+    #print("accuracy_score TREE layer 4 ", (accuracy_score(y_true, y_tree100_4)*100))
+    #print("accuracy_score TREE layer 5 ", (accuracy_score(y_true, y_tree100_5)*100))
+    #print("accuracy_score TREE layer 6 ", (accuracy_score(y_true, y_tree100_6)*100))
+    #print("accuracy_score TREE leaves  ", (accuracy_score(y_true, y_tree100_leaves)*100))
 
 
 print("TIME --", dt.now()-start)
