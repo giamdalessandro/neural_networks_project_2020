@@ -113,6 +113,7 @@ if METRICS == 3:
     POS_IMAGE_SET_TEST = "./dataset/train_val/bird"
     NEG_IMAGE_SET_TEST = "./dataset/train_val/not_bird"
     BREAK = 100
+    MEAN = 0.5
 
     y_true = []
     y_cnn  = []
@@ -134,13 +135,13 @@ if METRICS == 3:
 
             y_true.append(1)
             y_cnn.append(1 if cnn.predict(test_image)[0][0] > 0.5 else 0)
-            y_tree100_1.append(tree100.predict(g, x, level=1) )
-            y_tree100_2.append(tree100.predict(g, x, level=2) )
-            y_tree100_3.append(tree100.predict(g, x, level=3) )
-            y_tree100_4.append(tree100.predict(g, x, level=4) )
-            y_tree100_5.append(tree100.predict(g, x, level=5) )
-            y_tree100_6.append(tree100.predict(g, x, level=6) )
-            y_tree100_leaves.append(tree100.predict(g, x, level=-1))
+            y_tree100_1.append(     1 if tree100.predict(g, x, level=1) > MEAN else 0)
+            y_tree100_2.append(     1 if tree100.predict(g, x, level=2) > MEAN else 0)
+            y_tree100_3.append(     1 if tree100.predict(g, x, level=3) > MEAN else 0)
+            y_tree100_4.append(     1 if tree100.predict(g, x, level=4) > MEAN else 0)
+            y_tree100_5.append(     1 if tree100.predict(g, x, level=5) > MEAN else 0)
+            y_tree100_6.append(     1 if tree100.predict(g, x, level=6) > MEAN else 0)
+            y_tree100_leaves.append(1 if tree100.predict(g, x, level=-1)> MEAN else 0)
             i += 1
             if i == BREAK:
                 break
@@ -154,33 +155,25 @@ if METRICS == 3:
 
             y_true.append(0)
             y_cnn.append(1 if cnn.predict(test_image)[0][0] > 0.5 else 0)
-            y_tree100_1.append(tree100.predict(g, x, level=1) )
-            y_tree100_2.append(tree100.predict(g, x, level=2) )
-            y_tree100_3.append(tree100.predict(g, x, level=3) )
-            y_tree100_4.append(tree100.predict(g, x, level=4) )
-            y_tree100_5.append(tree100.predict(g, x, level=5) )
-            y_tree100_6.append(tree100.predict(g, x, level=6) )
-            y_tree100_leaves.append(tree100.predict(g, x, level=-1))
+            y_tree100_1.append(     1 if tree100.predict(g, x, level=1) > MEAN else 0)
+            y_tree100_2.append(     1 if tree100.predict(g, x, level=2) > MEAN else 0)
+            y_tree100_3.append(     1 if tree100.predict(g, x, level=3) > MEAN else 0)
+            y_tree100_4.append(     1 if tree100.predict(g, x, level=4) > MEAN else 0)
+            y_tree100_5.append(     1 if tree100.predict(g, x, level=5) > MEAN else 0)
+            y_tree100_6.append(     1 if tree100.predict(g, x, level=6) > MEAN else 0)
+            y_tree100_leaves.append(1 if tree100.predict(g, x, level=-1)> MEAN else 0)
             i += 1
             if i == BREAK:
                 break
 
-    print("min", tf.reduce_min(y_tree100_1).numpy(), "max", tf.reduce_max(y_tree100_1).numpy())
-    print("min", tf.reduce_min(y_tree100_2).numpy(), "max", tf.reduce_max(y_tree100_2).numpy())
-    print("min", tf.reduce_min(y_tree100_3).numpy(), "max", tf.reduce_max(y_tree100_3).numpy())
-    print("min", tf.reduce_min(y_tree100_4).numpy(), "max", tf.reduce_max(y_tree100_4).numpy())
-    print("min", tf.reduce_min(y_tree100_5).numpy(), "max", tf.reduce_max(y_tree100_5).numpy())
-    print("min", tf.reduce_min(y_tree100_6).numpy(), "max", tf.reduce_max(y_tree100_6).numpy())
-    print("min", tf.reduce_min(y_tree100_leaves).numpy(), "max", tf.reduce_max(y_tree100_leaves).numpy())
-
-    #print("accuracy_score CNN          ", (accuracy_score(y_true, y_cnn)*100))
-    #print("accuracy_score TREE layer 1 ", (accuracy_score(y_true, y_tree100_1)*100))
-    #print("accuracy_score TREE layer 2 ", (accuracy_score(y_true, y_tree100_2)*100))
-    #print("accuracy_score TREE layer 3 ", (accuracy_score(y_true, y_tree100_3)*100))
-    #print("accuracy_score TREE layer 4 ", (accuracy_score(y_true, y_tree100_4)*100))
-    #print("accuracy_score TREE layer 5 ", (accuracy_score(y_true, y_tree100_5)*100))
-    #print("accuracy_score TREE layer 6 ", (accuracy_score(y_true, y_tree100_6)*100))
-    #print("accuracy_score TREE leaves  ", (accuracy_score(y_true, y_tree100_leaves)*100))
+    print("accuracy_score CNN          ", (accuracy_score(y_true, y_cnn)*100))
+    print("accuracy_score TREE layer 1 ", (accuracy_score(y_true, y_tree100_1)*100))
+    print("accuracy_score TREE layer 2 ", (accuracy_score(y_true, y_tree100_2)*100))
+    print("accuracy_score TREE layer 3 ", (accuracy_score(y_true, y_tree100_3)*100))
+    print("accuracy_score TREE layer 4 ", (accuracy_score(y_true, y_tree100_4)*100))
+    print("accuracy_score TREE layer 5 ", (accuracy_score(y_true, y_tree100_5)*100))
+    print("accuracy_score TREE layer 6 ", (accuracy_score(y_true, y_tree100_6)*100))
+    print("accuracy_score TREE leaves  ", (accuracy_score(y_true, y_tree100_leaves)*100))
 
 
 print("TIME --", dt.now()-start)
