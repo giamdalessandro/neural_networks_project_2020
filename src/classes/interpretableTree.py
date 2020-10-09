@@ -415,6 +415,43 @@ class InterpretableTree(tl.Tree):
         q = tf.reshape(tf.convert_to_tensor(q), shape=(4,1))
         #print("q: ", q)
 
-        x = tf.multiply(tf.math.scalar_mul(1/L,self.s), vectorify_on_depth(x))
-        path_dict = self.decision_path(self[self.root],x,g,y,q,path_dict,0)
+        x = tf.divide(vectorify_on_depth(x), self.s)
+        path_dict = self.decision_path(
+            self[self.root], x, g, y, q, path_dict, 0)
         return path_dict
+
+    def predict(self, test_image, m_trained):
+
+        # from here we get x
+        flat_model = Model(inputs=m_trained.input,
+                           outputs=m_trained.get_layer("flatten").output)
+
+        # only used to compute g, no need for activation
+        fc_model = tf.keras.Sequential([
+            m_trained.get_layer("fc1"),
+            m_trained.get_layer("fc2"),
+            m_trained.get_layer("fc3")
+        ])
+
+        flat_x = flat_model.predict(test_image)
+
+        g = compute_g(fc_model, flat_x)
+        g = tf.divide(g, tf.norm(g, ord=2))
+
+        x = tf.reshape(flat_x, shape=(7, 7, 512))
+        x = tf.divide(vectorify_on_depth(x), self.s)
+        x = tf.reshape(x, shape=(512, 1))
+        
+        children = self.children(self.root)
+        max_similarity = self.cos_similarity(g, children[0].w)
+        node = children[0]
+        for child in children:
+            similarity = self.cos_similarity(g, child.w)
+            if similarity > max_similarity:
+                max_similarity = similarity
+                node = child
+        #print("Node found", node.tag)
+        #print("Similarity", max_similarity)
+
+        return tf.matmul(tf.reshape(node.w, shape=(512, 1)), x, transpose_a=True).numpy()/1000
+
