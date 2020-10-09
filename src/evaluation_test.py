@@ -84,26 +84,27 @@ if METRICS == 1:
             q = tf.reshape(tf.convert_to_tensor(q), shape=(4, 1))
             
 
-            g_strano_1.append(     tf.subtract(tree100.compute_g_strano(x, g, level=1),  q))
-            g_strano_2.append(     tf.subtract(tree100.compute_g_strano(x, g, level=2),  q))
-            g_strano_3.append(     tf.subtract(tree100.compute_g_strano(x, g, level=3),  q))
-            g_strano_4.append(     tf.subtract(tree100.compute_g_strano(x, g, level=4),  q))
-            g_strano_5.append(     tf.subtract(tree100.compute_g_strano(x, g, level=5),  q))
-            g_strano_6.append(     tf.subtract(tree100.compute_g_strano(x, g, level=6),  q))
-            g_strano_leaves.append(tf.subtract(tree100.compute_g_strano(x, g, level=-1), q))
+            g_strano_1.append(     tf.abs(tf.subtract(tree100.compute_g_strano(x, g, level=1),  q)))
+            g_strano_2.append(     tf.abs(tf.subtract(tree100.compute_g_strano(x, g, level=2),  q)))
+            g_strano_3.append(     tf.abs(tf.subtract(tree100.compute_g_strano(x, g, level=3),  q)))
+            g_strano_4.append(     tf.abs(tf.subtract(tree100.compute_g_strano(x, g, level=4),  q)))
+            g_strano_5.append(     tf.abs(tf.subtract(tree100.compute_g_strano(x, g, level=5),  q)))
+            g_strano_6.append(     tf.abs(tf.subtract(tree100.compute_g_strano(x, g, level=6),  q)))
+            g_strano_leaves.append(tf.abs(tf.subtract(tree100.compute_g_strano(x, g, level=-1), q)))
             
             i += 1
         if i == BREAK:
             break
     
     ymean = tf.reduce_mean(y_list)
-    print("objpart contribution error layer 2",      tf.divide(tf.reduce_mean(g_strano_2,      axis=0), ymean))
-    print("objpart contribution error layer 1",      tf.divide(tf.reduce_mean(g_strano_1,      axis=0), ymean))
-    print("objpart contribution error layer 3",      tf.divide(tf.reduce_mean(g_strano_3,      axis=0), ymean))
-    print("objpart contribution error layer 4",      tf.divide(tf.reduce_mean(g_strano_4,      axis=0), ymean))
-    print("objpart contribution error layer 5",      tf.divide(tf.reduce_mean(g_strano_5,      axis=0), ymean))
-    print("objpart contribution error layer 6",      tf.divide(tf.reduce_mean(g_strano_6,      axis=0), ymean))
-    print("objpart contribution error layer leaves", tf.divide(tf.reduce_mean(g_strano_leaves, axis=0), ymean))
+    print("                                          HEAD --- TORSO --- LEG --- TAIL")
+    print("objpart contribution error layer 1     ", tf.reshape(tf.divide(tf.reduce_mean(g_strano_1,      axis=0), ymean), shape=(4)).numpy())
+    print("objpart contribution error layer 2     ", tf.reshape(tf.divide(tf.reduce_mean(g_strano_2,      axis=0), ymean), shape=(4)).numpy())
+    print("objpart contribution error layer 3     ", tf.reshape(tf.divide(tf.reduce_mean(g_strano_3,      axis=0), ymean), shape=(4)).numpy())
+    print("objpart contribution error layer 4     ", tf.reshape(tf.divide(tf.reduce_mean(g_strano_4,      axis=0), ymean), shape=(4)).numpy())
+    print("objpart contribution error layer 5     ", tf.reshape(tf.divide(tf.reduce_mean(g_strano_5,      axis=0), ymean), shape=(4)).numpy())
+    print("objpart contribution error layer 6     ", tf.reshape(tf.divide(tf.reduce_mean(g_strano_6,      axis=0), ymean), shape=(4)).numpy())
+    print("objpart contribution error layer leaves", tf.reshape(tf.divide(tf.reduce_mean(g_strano_leaves, axis=0), ymean), shape=(4)).numpy())
 
 
 
