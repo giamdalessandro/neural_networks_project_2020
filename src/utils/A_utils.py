@@ -26,7 +26,7 @@ parts = {'HEAD_PARTS':  ['head', 'beak', 'leye', 'reye'],
          'TAIL_PARTS':  ['tail']}
 
 THRESOLD = 20   # number of max distance in pixel between two centers (annotation's and RF's) 
-RF_SIZE = 54
+RF_SIZE = 100
 NUM_FILTERS = 512
 NUM_OBJ_PARTS = 4
 
@@ -62,25 +62,21 @@ def read_part_annotations(img_name, anno_path=ANNOTATIONS):
 
     return anno_dict
 
-def display_RF(rf_center, dataset_folder):
-    boh = np.zeros(shape=(224, 224, 512), dtype=np.uint8)
 
+
+def display_RF(rf_center, filepath, name):
+    mask = np.zeros(shape=(224, 224), dtype=np.uint8)
     for i in range(224):
         for j in range(224):
             if (i >= rf_center[0]-(RF_SIZE/2) and i <= rf_center[0]+(RF_SIZE/2)) and (j >= rf_center[1]-(RF_SIZE/2) and j <= rf_center[1]+(RF_SIZE/2)):
-                boh[i, j, d] = 1
+                mask[i, j] = 1
 
-    tens_boh = boh[:,:,d]
-    image = cv2.resize(cv2.imread(dataset_folder+img), (224,224), interpolation=cv2.INTER_LINEAR)
-    masked_image = cv2.bitwise_and(image,image,mask=tens_boh)
+    image = cv2.resize(cv2.imread(filepath), (224,224), interpolation=cv2.INTER_LINEAR)
+    masked_image = cv2.bitwise_and(image, image, mask=mask)
 
-    name, boxes = read_content(img[:-4])
-    print(name)
-    print(boxes)
-
-    cv2.imshow("Falcone (non Giovanni)", masked_image)
-    cv2.waitKey(0)
-    cv2.destroyAllWindows()
+    cv2.imshow(name, cv2.resize(masked_image, (300, 300),
+                                interpolation=cv2.INTER_LINEAR))
+    
 
 def binarify(matrix):
     for f in range(NUM_FILTERS):
@@ -185,6 +181,103 @@ def compute_A(dataset_folder, stop=STOP):
 
     binarify(A)
     print("[TIME] : ", dt.now()-start, "for", i, "images.")
-    print(tf.convert_to_tensor(A))
-    return tf.convert_to_tensor(A)
+    print(A)
+    return A
 
+
+def visualize_objpart_RF(m_trained, test_image, A, filepath):
+    
+    max_pool_model = Model(inputs=m_trained.input,outputs=m_trained.get_layer("final_max_pool").output)
+    pool_output = max_pool_model.predict(test_image)
+    x = tf.reshape(pool_output, shape=(7,7,512))
+    heados = []
+    torsos = []
+    legos  = []
+    tailos = []
+    for i in range(512):
+        heados.append(A[i][HEAD_PARTS])
+        torsos.append(A[i][TORSO_PARTS])
+        legos.append( A[i][LEG_PARTS])
+        tailos.append(A[i][TAIL_PARTS])
+    
+    x_heados = tf.reduce_mean(tf.multiply(heados, x), axis=2)
+    x_torsos = tf.reduce_mean(tf.multiply(torsos, x), axis=2)
+    x_legos  = tf.reduce_mean(tf.multiply(legos,  x), axis=2)
+    x_tailos = tf.reduce_mean(tf.multiply(tailos, x), axis=2)
+
+    heados_i = tf.math.argmax(tf.reduce_max(x_heados, axis=1),output_type=tf.int32).numpy()
+    heados_j = tf.math.argmax(tf.reduce_max(x_heados, axis=0),output_type=tf.int32).numpy()
+    heados_center, size = receptive_field((heados_j, heados_i))
+
+    torsos_i = tf.math.argmax(tf.reduce_max(x_torsos, axis=1),output_type=tf.int32).numpy()
+    torsos_j = tf.math.argmax(tf.reduce_max(x_torsos, axis=0),output_type=tf.int32).numpy()
+    torsos_center, size = receptive_field((torsos_j, torsos_i))
+
+    legos_i  = tf.math.argmax(tf.reduce_max(x_legos,  axis=1),output_type=tf.int32).numpy()
+    legos_j  = tf.math.argmax(tf.reduce_max(x_legos,  axis=0),output_type=tf.int32).numpy()
+    legos_center, size = receptive_field((legos_j, legos_i))
+
+    tailos_i = tf.math.argmax(tf.reduce_max(x_tailos, axis=1),output_type=tf.int32).numpy()
+    tailos_j = tf.math.argmax(tf.reduce_max(x_tailos, axis=0),output_type=tf.int32).numpy()
+    tailos_center, size = receptive_field((tailos_j, tailos_i))
+
+
+    cv2.imshow('original', cv2.resize(cv2.imread(filepath), (224,224), interpolation=cv2.INTER_LINEAR))
+    display_RF(heados_center, filepath, 'head')
+    display_RF(torsos_center, filepath, 'torso')
+    display_RF(legos_center,  filepath, 'legs')
+    display_RF(tailos_center, filepath, 'tail')
+
+    i = tf.math.argmax(tf.reduce_max(tf.reduce_mean(x, axis=2), axis=1), output_type=tf.int32).numpy()
+    j = tf.math.argmax(tf.reduce_max(tf.reduce_mean(x, axis=2), axis=0), output_type=tf.int32).numpy()
+
+    center, size = receptive_field((j,i))
+    display_RF(center, filepath, 'all')
+    cv2.waitKey(0)
+    cv2.destroyAllWindows()
+
+
+
+
+
+
+
+    '''
+
+
+    rows_idx = tf.math.argmax(tf.reduce_max(pool_output[0], axis=1), output_type=tf.int32)
+    cols_idx = tf.math.argmax(tf.reduce_max(pool_output[0], axis=0), output_type=tf.int32)
+    
+    image = cv2.imread(filepath)
+    image = cv2.resize(image, (224, 224), interpolation=cv2.INTER_LINEAR)
+    
+    connection = {0: 'head parts', 1: 'torso parts', 2: 'leg parts', 3: 'tail parts'}
+    rfs = {'head parts': None, 'torso parts': None, 'leg parts': None,
+           'tail parts': None}          # where to save rfs of all objparts
+
+    for d in range(512):
+        max_i = rows_idx[d].numpy()
+        max_j = cols_idx[d].numpy()
+        rf_center, rf_size = receptive_field((max_i, max_j))
+        
+        objpart_index = np.argmax(A[d])
+        if A[d][objpart_index] == 1:    # può essere 0 nel caso non ci si un massimo
+            mask = np.zeros(shape=(224, 224), dtype=np.uint8)
+            for i in range(224):
+                for j in range(224):
+                    if (i >= rf_center[0]-(RF_SIZE/2) and i <= rf_center[0]+(RF_SIZE/2)) and (j >= rf_center[1]-(RF_SIZE/2) and j <= rf_center[1]+(RF_SIZE/2)):
+                        mask[i, j] = 1
+            if rfs[connection[objpart_index]] is None:
+                rfs[connection[objpart_index]] = mask
+            else:
+                rfs[connection[objpart_index]] = cv2.add(mask, rfs[connection[objpart_index]])
+            
+    
+    for k, v in rfs.items():
+        print("computing rf of", k)
+        v = tf.tile(tf.reshape(tf.convert_to_tensor(v), (224,224,1)),[1,1,3]).numpy()
+        cv2.imshow(k, cv2.addWeighted(image, 0.5, v, 0.5, 0))
+        cv2.waitKey(0)
+        cv2.destroyAllWindows()
+    '''
+    

@@ -103,7 +103,8 @@ class InterpretableTree(tl.Tree):
         print("[TREE] -- nodes:...........", size)
         print("       -- generic nodes:...", size - leaves - 1)
         print("       -- leaves:..........", leaves)
-        print("       -- gamma:...........", self.gamma.numpy())
+        print("       -- depth:...........", self.depth())
+        print("       -- gamma:...........", self.gamma if isinstance(self.gamma, float) else self.gamma.numpy())
         print("       -- s (shape):.......", self.s.shape)
         print("-------------------------------------------------")
 
@@ -117,7 +118,7 @@ class InterpretableTree(tl.Tree):
             "E"     : str(self.E)               if isinstance(self.E, int) or isinstance(self.E, float) else str(self.E.numpy()),
             "s"     : str(self.s.numpy())       if tf.is_tensor(self.s) else str(self.s),
             "gamma" : str(self.gamma.numpy())   if tf.is_tensor(self.gamma) else self.gamma,
-            "A"     : str(self.A.numpy())       if self.A is not None else self.A,
+            "A"     : str([list(self.A[d]) for d in range(len(self.A))])   if self.A is not None else self.A,
             "theta" : str(self.theta)
         }
         json_tree = json.loads(self.to_json(with_data=True))
@@ -334,29 +335,61 @@ class InterpretableTree(tl.Tree):
         self.add_node(pid, parent=self.root)
         self.move_node(nid1.identifier, pid.identifier)
         self.move_node(nid2.identifier, pid.identifier)
-        
-    def def_note(self, x_i, img, fc3_model):
+
+
+    ########## METRICS ###########
+
+    def cos_similarity(self, x, y):
         """
-        Computes rho and g parameters of the image 'img' using the loaded interpretable tree
+        Computes cosine similarity between x and y tensors
         """
-        A = binarify(compute_a(img))
-        g = compute_g(fc3_model, x_i)
-        g = tf.multiply(tf.math.scalar_mul(1/L, self.s), vectorify_on_depth(g))
-        g = tf.norm(g, ord=2)
+        norm_x = tf.nn.l2_normalize(x,0)        
+        norm_y = tf.nn.l2_normalize(y,0)
+        return tf.reduce_sum(tf.multiply(norm_x,norm_y))
 
-        second_layer = self.children(self.root)
-        max_similarity = 0
-        dec_node = second_layer[0]
-        for node in second_layer:
-            normalize_g = tf.nn.l2_normalize(g,0)        
-            normalize_w = tf.nn.l2_normalize(node.w,0)
-            cos_similarity = tf.reduce_sum(tf.multiply(normalize_a,normalize_b))
-            if cos_similarity > max_similarity:
-                max_similarity = cos_similarity
-                dec_node = node
+    def predict(self, g, x, level=1):
+        # only used to compute g, no need for activation
+        if level == 1:
+            children = self.children(self.root)
+        else:
+            children = self.get_generation(level)
+        node = self.find_best_node(children, g)        
+        return tf.matmul(tf.reshape(node.w, shape=(512, 1)), x, transpose_a=True).numpy()/1000
 
-        w_v = dec_node.w
-        rho = tf.multiply(w_v,x_i)
-        g_strano = tf.matmul(A,rho)
 
-        return rho, g_strano
+    def get_generation(self, level):
+        """
+        Gets all nodes at a certain level of the tree
+        """
+        if level > 0:
+            return [node for node in self.all_nodes_itr() if self.level(node.identifier) == level]
+        else:
+            return self.leaves()
+    
+
+    def find_best_node(self, nodes, g):
+        max_similarity = self.cos_similarity(g, nodes[0].w)
+        best_node = nodes[0]
+        for n in nodes:
+            similarity = self.cos_similarity(g, n.w)
+            if similarity > max_similarity:
+                max_similarity = similarity
+                best_node = n
+        return best_node
+
+    def compute_hatrho(self, x, g, t, level):
+        """
+        Returns hatrho for the jaccard similarity
+        """
+        nodes = self.children(self.root) if level == 1 else self.get_generation(level)
+        bestnode = self.find_best_node(nodes, g) 
+        rho = tf.multiply(bestnode.w,x)
+        return tf.maximum(0, tf.multiply(rho, tf.math.sign(t)))
+
+
+    def compute_g_strano(self, x, g, level=1):
+        nodes = self.children(self.root) if level == 1 else self.get_generation(level)        
+        bestnode = self.find_best_node(nodes, g)
+        rho = tf.multiply(tf.reshape(bestnode.w, shape=(512,1)), x)
+        g_outo = tf.matmul(self.A, rho, transpose_a=True)
+        return tf.multiply(1/tf.reduce_sum(g_outo), g_outo)

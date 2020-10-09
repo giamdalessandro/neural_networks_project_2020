@@ -91,16 +91,16 @@ def load_test_image(folder, fileid):
     img = preprocess_input(img)
     return img
 
-def compute_g(fc3_model, inputs):
+def compute_g(trained_model, inputs):
     '''
     Computes g = dy/dx, where x is the output of the top conv layer after the mask operation,
     and y is the output of the prediction before the softmax.
         - model:  the pretrained modell on witch g will be computed;
         - imputs: x, the output of the top conv layer after the mask operation.
     '''
-    fc_1 = fc3_model.get_layer("fc1")
-    fc_2 = fc3_model.get_layer("fc2")
-    fc_3 = fc3_model.get_layer("fc3")
+    fc_1 = trained_model.get_layer("fc1")
+    fc_2 = trained_model.get_layer("fc2")
+    fc_3 = trained_model.get_layer("fc3")
 
     with tf.GradientTape(watch_accessed_variables=False) as tape:
         tape.watch(fc_1.variables)
@@ -250,7 +250,6 @@ def unbornify(root_children, nid1, nid2, nodes_dict):
 
 ######### SAVE & LOAD ###########
 
-
 def str_to_tensor(str_val, dtype="float32"):
     """
     Converts np.array string to tf.Tensor
@@ -258,12 +257,11 @@ def str_to_tensor(str_val, dtype="float32"):
     stripped = []
     list_val = str_val.strip('[]\n').split()
     for elem in list_val:
-        e = elem.strip("[]")
-        if e != "" and e != "]":
+        e = elem.strip("[],")
+        if e != "" and e not in "[]":
             stripped.append(e)
 
     return tf.convert_to_tensor(np.array(stripped, dtype=dtype))
-
 
 def sanitize(i):
     """
@@ -316,7 +314,6 @@ def __parse_json_tree(tree, current, parent=None):
             
     return
 
-
 def from_json(res_tree, save_path):
     """
     Loads a tree from a JSON file
@@ -326,8 +323,8 @@ def from_json(res_tree, save_path):
         dict_tree = json.load(f)
         #print(dict_tree)
 
-    res_tree.A = dict_tree["tree_data"]["A"]
-    res_tree.s = dict_tree["tree_data"]["s"]
+    res_tree.A = None if dict_tree["tree_data"]["A"] is None else tf.reshape(str_to_tensor(dict_tree["tree_data"]["A"]), shape=(512,4))
+    res_tree.s = str_to_tensor(dict_tree["tree_data"]["s"])
     res_tree.E = float(dict_tree["tree_data"]["E"])
     res_tree.theta = float(dict_tree["tree_data"]["theta"])
     res_tree.gamma = float(dict_tree["tree_data"]["gamma"])
