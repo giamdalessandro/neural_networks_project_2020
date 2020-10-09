@@ -14,6 +14,7 @@ def gimme_g_gimme_x(test_image, flat_model, fc_model, s):
     x = tf.reshape(x, shape=(512, 1))
 
     g = compute_g(fc_model, flat_x)
+    g = tf.multiply(tf.math.scalar_mul(1/L, s), vectorify_on_depth(g))
     g = tf.divide(g, tf.norm(g, ord=2))
     return x, g
 
@@ -30,13 +31,14 @@ gpus = tf.config.experimental.list_physical_devices('GPU')
 tf.config.experimental.set_memory_growth(gpus[0], True)
 
 # load saved models and tree100 #
-cnn = tf.keras.models.load_model(MASKED1, custom_objects={"MaskLayer": MaskLayer()})
-flat_model = Model(inputs=cnn.input, outputs=cnn.get_layer("flatten").output)
-fc_model = tf.keras.Sequential([
-    cnn.get_layer("fc1"),
-    cnn.get_layer("fc2"),
-    cnn.get_layer("fc3")
-])
+with tf.device("/CPU:0"):
+    cnn = tf.keras.models.load_model(MASKED1, custom_objects={"MaskLayer": MaskLayer()})
+    flat_model = Model(inputs=cnn.input, outputs=cnn.get_layer("flatten").output)
+    fc_model = tf.keras.Sequential([
+        cnn.get_layer("fc1"),
+        cnn.get_layer("fc2"),
+        cnn.get_layer("fc3")
+    ])
 
 
 tree100 = from_json(InterpretableTree(), TREE100)
@@ -51,7 +53,7 @@ if METRICS == 1:
 
 # metrica 2 #
 if METRICS == 2: 
-    BREAK = 100
+    BREAK = 10
     POS_IMAGE_SET_TEST = "./dataset/train_val/bird"
     
     t_list = []
@@ -71,7 +73,8 @@ if METRICS == 2:
             
             t = tf.multiply(g, x)
             t_list.append(t)
-            
+            print("I am legend, ",i)
+
             hatrho_1.append(tree100.compute_hatrho(x, g, t, level=1))
             hatrho_2.append(tree100.compute_hatrho(x, g, t, level=2))
             hatrho_3.append(tree100.compute_hatrho(x, g, t, level=3))
@@ -81,8 +84,8 @@ if METRICS == 2:
             hatrho_leaves.append(tree100.compute_hatrho(x, g, t, level=-1))
 
             i += 1
-            if i == BREAK:
-                break
+        if i == BREAK:
+            break
             
     print("jaccard score TREE layer 1     ", jaccard_score(t_list, hatrho_1))
     print("jaccard score TREE layer 2     ", jaccard_score(t_list, hatrho_2))
