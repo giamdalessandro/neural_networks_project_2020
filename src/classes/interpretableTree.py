@@ -420,21 +420,8 @@ class InterpretableTree(tl.Tree):
             self[self.root], x, g, y, q, path_dict, 0)
         return path_dict
 
-    def predict(self, test_image, m_trained):
-
-        # from here we get x
-        flat_model = Model(inputs=m_trained.input,
-                           outputs=m_trained.get_layer("flatten").output)
-
+    def predict(self, test_image, fc_model, flat_x, level=1):
         # only used to compute g, no need for activation
-        fc_model = tf.keras.Sequential([
-            m_trained.get_layer("fc1"),
-            m_trained.get_layer("fc2"),
-            m_trained.get_layer("fc3")
-        ])
-
-        flat_x = flat_model.predict(test_image)
-
         g = compute_g(fc_model, flat_x)
         g = tf.divide(g, tf.norm(g, ord=2))
 
@@ -442,7 +429,10 @@ class InterpretableTree(tl.Tree):
         x = tf.divide(vectorify_on_depth(x), self.s)
         x = tf.reshape(x, shape=(512, 1))
         
-        children = self.children(self.root)
+        if level == 1:
+            children = self.children(self.root)
+        else:
+            children = self.get_generation(level)
         max_similarity = self.cos_similarity(g, children[0].w)
         node = children[0]
         for child in children:
@@ -455,3 +445,12 @@ class InterpretableTree(tl.Tree):
 
         return tf.matmul(tf.reshape(node.w, shape=(512, 1)), x, transpose_a=True).numpy()/1000
 
+
+    def get_generation(self, level):
+        """
+        Gets all node at a certain level of the tree
+        """
+        if level > 0:
+            return [node for node in self.all_nodes_itr() if self.level(node.identifier) == level]
+        else:
+            return self.leaves()
