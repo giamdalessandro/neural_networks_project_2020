@@ -7,10 +7,7 @@ from classes.interpretableTree import InterpretableTree
 from sklearn.metrics import accuracy_score, jaccard_score
 
 
-
-
-def gimme_g_gimme_x(img, flat_model, fc_model, s):
-    test_image = load_test_image(folder=POS_IMAGE_SET_TEST, fileid=img)
+def gimme_g_gimme_x(test_image, flat_model, fc_model, s):
     flat_x = flat_model.predict(test_image)
     x = tf.reshape(flat_x, shape=(7, 7, 512))
     x = tf.divide(vectorify_on_depth(x), s)
@@ -21,20 +18,10 @@ def gimme_g_gimme_x(img, flat_model, fc_model, s):
     return x, g
 
 
-
-
-
-
-
-
-
-
-
 start = dt.now()
-METRICS = 2
+METRICS = 3
 
 TREE100 = "./forest/test_tree_100_imgs_with_A.json"
-TREE007 = "./forest/test_tree_7_imgs_with_A.json"
 MODELS = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'models'))
 MASKED1 = os.path.join(MODELS, "masked1_no_dropout_binary_50_epochs_24_9_2020_14_7.h5")
 
@@ -111,7 +98,7 @@ if METRICS == 2:
 if METRICS == 3:
     POS_IMAGE_SET_TEST = "./dataset/train_val/bird"
     NEG_IMAGE_SET_TEST = "./dataset/train_val/not_bird"
-    BREAK = 100000
+    BREAK = 11
 
     y_true = []
     y_cnn  = []
@@ -128,17 +115,17 @@ if METRICS == 3:
     for img in os.listdir(POS_IMAGE_SET_TEST):
         if img.endswith('.jpg'):
             test_image = load_test_image(folder=POS_IMAGE_SET_TEST, fileid=img)
-            flat_output = flat_model.predict(test_image)
+            x, g = gimme_g_gimme_x(test_image, flat_model, fc_model, tree100.s)
 
             y_true.append(1)
             y_cnn.append(1 if cnn.predict(test_image)[0][0] > 0.5 else 0)
-            y_tree100_1.append(1 if tree100.predict(test_image, fc_model, flat_output, level=1) > 0.5 else 0)
-            y_tree100_2.append(1 if tree100.predict(test_image, fc_model, flat_output, level=2) > 0.5 else 0)
-            y_tree100_3.append(1 if tree100.predict(test_image, fc_model, flat_output, level=3) > 0.5 else 0)
-            y_tree100_4.append(1 if tree100.predict(test_image, fc_model, flat_output, level=4) > 0.5 else 0)
-            y_tree100_5.append(1 if tree100.predict(test_image, fc_model, flat_output, level=5) > 0.5 else 0)
-            y_tree100_6.append(1 if tree100.predict(test_image, fc_model, flat_output, level=6) > 0.5 else 0)
-            y_tree100_8.append(1 if tree100.predict(test_image, fc_model, flat_output, level=-1) > 0.5 else 0)
+            y_tree100_1.append(1 if tree100.predict(g, x, level=1) > 0.5 else 0)
+            y_tree100_2.append(1 if tree100.predict(g, x, level=2) > 0.5 else 0)
+            y_tree100_3.append(1 if tree100.predict(g, x, level=3) > 0.5 else 0)
+            y_tree100_4.append(1 if tree100.predict(g, x, level=4) > 0.5 else 0)
+            y_tree100_5.append(1 if tree100.predict(g, x, level=5) > 0.5 else 0)
+            y_tree100_6.append(1 if tree100.predict(g, x, level=6) > 0.5 else 0)
+            y_tree100_8.append(1 if tree100.predict(g, x, level=-1) > 0.5 else 0)
             i += 1
             if i == BREAK:
                 break
@@ -148,15 +135,17 @@ if METRICS == 3:
     for img in os.listdir(NEG_IMAGE_SET_TEST):
         if img.endswith('.jpg'):
             test_image = load_test_image(folder=NEG_IMAGE_SET_TEST, fileid=img)
+            x, g = gimme_g_gimme_x(test_image, flat_model, fc_model, tree100.s)
+
             y_true.append(0)
             y_cnn.append(1 if cnn.predict(test_image)[0][0] > 0.5 else 0)
-            y_tree100_1.append(1 if tree100.predict(test_image, fc_model, flat_output, level=1) > 0.5 else 0)
-            y_tree100_2.append(1 if tree100.predict(test_image, fc_model, flat_output, level=2) > 0.5 else 0)
-            y_tree100_3.append(1 if tree100.predict(test_image, fc_model, flat_output, level=3) > 0.5 else 0)
-            y_tree100_4.append(1 if tree100.predict(test_image, fc_model, flat_output, level=4) > 0.5 else 0)
-            y_tree100_5.append(1 if tree100.predict(test_image, fc_model, flat_output, level=5) > 0.5 else 0)
-            y_tree100_6.append(1 if tree100.predict(test_image, fc_model, flat_output, level=6) > 0.5 else 0)
-            y_tree100_8.append(1 if tree100.predict(test_image, fc_model, flat_output, level=-1) > 0.5 else 0)
+            y_tree100_1.append(1 if tree100.predict(g, x, level=1) > 0.5 else 0)
+            y_tree100_2.append(1 if tree100.predict(g, x, level=2) > 0.5 else 0)
+            y_tree100_3.append(1 if tree100.predict(g, x, level=3) > 0.5 else 0)
+            y_tree100_4.append(1 if tree100.predict(g, x, level=4) > 0.5 else 0)
+            y_tree100_5.append(1 if tree100.predict(g, x, level=5) > 0.5 else 0)
+            y_tree100_6.append(1 if tree100.predict(g, x, level=6) > 0.5 else 0)
+            y_tree100_8.append(1 if tree100.predict(g, x, level=-1) > 0.5 else 0)
             i += 1
             if i == BREAK:
                 break

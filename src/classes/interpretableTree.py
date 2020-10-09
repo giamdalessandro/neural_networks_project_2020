@@ -417,30 +417,13 @@ class InterpretableTree(tl.Tree):
             self[self.root], x, g, y, q, path_dict, 0)
         return path_dict
 
-    def predict(self, test_image, fc_model, flat_x, level=1):
+    def predict(self, g, x, level=1):
         # only used to compute g, no need for activation
-        # RABARBARO MUOVERE g e x FUORI dalla predict, inutile ricomputarla ogni volta per ogni livello
-        g = compute_g(fc_model, flat_x)
-        g = tf.divide(g, tf.norm(g, ord=2))
-
-        x = tf.reshape(flat_x, shape=(7, 7, 512))
-        x = tf.divide(vectorify_on_depth(x), self.s)
-        x = tf.reshape(x, shape=(512, 1))
-        
         if level == 1:
             children = self.children(self.root)
         else:
             children = self.get_generation(level)
-        ## find best node ##
-        max_similarity = self.cos_similarity(g, children[0].w)
-        node = children[0]
-        for child in children:
-            similarity = self.cos_similarity(g, child.w)
-            if similarity > max_similarity:
-                max_similarity = similarity
-                node = child
-        ## RABARBARO ##
-        
+        node = self.find_best_node(children, g)        
         return tf.matmul(tf.reshape(node.w, shape=(512, 1)), x, transpose_a=True).numpy()/1000
 
 
@@ -462,6 +445,7 @@ class InterpretableTree(tl.Tree):
             if similarity > max_similarity:
                 max_similarity = similarity
                 best_node = n
+        return best_node
 
     def compute_hatrho(self, x, g, t, level):
         """
