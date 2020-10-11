@@ -20,7 +20,7 @@ def gimme_g_gimme_x(test_image, flat_model, fc_model, s):
 
 
 start = dt.now()
-METRICS = 1
+METRICS = 4
 
 TREE100 = "./forest/test_tree_100_imgs_with_A.json"
 MODELS = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'models'))
@@ -105,8 +105,6 @@ if METRICS == 1:
     print("objpart contribution error layer 5     ", tf.reshape(tf.divide(tf.reduce_mean(g_strano_5,      axis=0), ymean), shape=(4)).numpy())
     print("objpart contribution error layer 6     ", tf.reshape(tf.divide(tf.reduce_mean(g_strano_6,      axis=0), ymean), shape=(4)).numpy())
     print("objpart contribution error layer leaves", tf.reshape(tf.divide(tf.reduce_mean(g_strano_leaves, axis=0), ymean), shape=(4)).numpy())
-
-
 
 # metrica 2 #
 if METRICS == 2: 
@@ -230,6 +228,15 @@ if METRICS == 3:
     print("accuracy_score TREE layer 6 ", (accuracy_score(y_true, y_tree100_6)*100))
     print("accuracy_score TREE leaves  ", (accuracy_score(y_true, y_tree100_leaves)*100))
 
+
+if METRICS == 4:
+    POS_IMAGE_SET_TEST = "./dataset/train_val/bird"
+    images = ["2008_003211.jpg", "2008_004730.jpg", "2008_004893.jpg",
+              "2008_005803.jpg", "2008_005895.jpg", "2008_006164.jpg", "2008_006281.jpg", "2008_006376.jpg", "2008_006626.jpg", "2008_008284.jpg", "2008_008423.jpg", "2008_008404.jpg"]
+    #[ "2008_000512.jpg", "2008_001679.jpg", "2008_001810.jpg", "2008_002389.jpg", "2008_003023.jpg"]
+    for img in images:
+        test_image = load_test_image(folder=POS_IMAGE_SET_TEST, fileid=img)
+        visualize_objpart_RF(cnn, test_image, tree100.A, os.path.join(POS_IMAGE_SET_TEST, img), img)
 
 print("TIME --", dt.now()-start)
 print("þøþł")

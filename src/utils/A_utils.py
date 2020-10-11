@@ -1,6 +1,7 @@
 import os
 import cv2
 import numpy as np
+import PIL
 import tensorflow as tf
 import matplotlib.pyplot as plt
 
@@ -61,21 +62,6 @@ def read_part_annotations(img_name, anno_path=ANNOTATIONS):
                 anno_dict[cat]["parts"].append(norm)
 
     return anno_dict
-
-
-
-def display_RF(rf_center, filepath, name):
-    mask = np.zeros(shape=(224, 224), dtype=np.uint8)
-    for i in range(224):
-        for j in range(224):
-            if (i >= rf_center[0]-(RF_SIZE/2) and i <= rf_center[0]+(RF_SIZE/2)) and (j >= rf_center[1]-(RF_SIZE/2) and j <= rf_center[1]+(RF_SIZE/2)):
-                mask[i, j] = 1
-
-    image = cv2.resize(cv2.imread(filepath), (224,224), interpolation=cv2.INTER_LINEAR)
-    masked_image = cv2.bitwise_and(image, image, mask=mask)
-
-    cv2.imshow(name, cv2.resize(masked_image, (300, 300),
-                                interpolation=cv2.INTER_LINEAR))
     
 
 def binarify(matrix):
@@ -185,7 +171,35 @@ def compute_A(dataset_folder, stop=STOP):
     return A
 
 
-def visualize_objpart_RF(m_trained, test_image, A, filepath):
+def display_RF(rf_center, filepath, name, iid):
+
+    image = cv2.resize(cv2.imread(filepath), (224, 224),
+                       interpolation=cv2.INTER_LINEAR)
+
+    fx = int(rf_center[1])      # Add your Focus cordinates here
+    fy = int(rf_center[0])
+    sigma = RF_SIZE/2.0         # Standard Deviation of the Gaussian
+    rows, cols = 224, 224
+
+    start = (fx - int(RF_SIZE/2), fy - int(RF_SIZE/2))
+    end   = (fx + int(RF_SIZE/2), fy + int(RF_SIZE/2))
+
+    result = np.copy(image)
+    result[:, :, :] = 0
+
+    a = cv2.getGaussianKernel(2*cols, sigma)[cols-fx:2*cols-fx]
+    b = cv2.getGaussianKernel(2*rows, sigma)[rows-fy:2*rows-fy]
+    c = b*a.T
+    d = c/c.max()
+    result[:, :, 0] = image[:, :, 0]*d
+    result[:, :, 1] = image[:, :, 1]*d
+    result[:, :, 2] = image[:, :, 2]*d
+    result = cv2.resize(cv2.rectangle(result, start, end, (0, 0, 255)), (300, 300), interpolation=cv2.INTER_LINEAR)
+    cv2.imshow(name, result)
+    cv2.imwrite(name+iid, result)
+
+
+def visualize_objpart_RF(m_trained, test_image, A, filepath, iid):
     
     max_pool_model = Model(inputs=m_trained.input,outputs=m_trained.get_layer("final_max_pool").output)
     pool_output = max_pool_model.predict(test_image)
@@ -221,63 +235,18 @@ def visualize_objpart_RF(m_trained, test_image, A, filepath):
     tailos_j = tf.math.argmax(tf.reduce_max(x_tailos, axis=0),output_type=tf.int32).numpy()
     tailos_center, size = receptive_field((tailos_j, tailos_i))
 
-
-    cv2.imshow('original', cv2.resize(cv2.imread(filepath), (224,224), interpolation=cv2.INTER_LINEAR))
-    display_RF(heados_center, filepath, 'head')
-    display_RF(torsos_center, filepath, 'torso')
-    display_RF(legos_center,  filepath, 'legs')
-    display_RF(tailos_center, filepath, 'tail')
+    original = cv2.resize(cv2.imread(filepath), (300,300), interpolation=cv2.INTER_LINEAR)
+    cv2.imshow('original', original)
+    cv2.imwrite('original'+iid, original)
+    display_RF(heados_center, filepath, 'head' , iid)
+    display_RF(torsos_center, filepath, 'torso', iid)
+    display_RF(legos_center,  filepath, 'legs' , iid)
+    display_RF(tailos_center, filepath, 'tail' , iid)
 
     i = tf.math.argmax(tf.reduce_max(tf.reduce_mean(x, axis=2), axis=1), output_type=tf.int32).numpy()
     j = tf.math.argmax(tf.reduce_max(tf.reduce_mean(x, axis=2), axis=0), output_type=tf.int32).numpy()
 
     center, size = receptive_field((j,i))
-    display_RF(center, filepath, 'all')
+    display_RF(center, filepath, 'all', iid)
     cv2.waitKey(0)
     cv2.destroyAllWindows()
-
-
-
-
-
-
-
-    '''
-
-
-    rows_idx = tf.math.argmax(tf.reduce_max(pool_output[0], axis=1), output_type=tf.int32)
-    cols_idx = tf.math.argmax(tf.reduce_max(pool_output[0], axis=0), output_type=tf.int32)
-    
-    image = cv2.imread(filepath)
-    image = cv2.resize(image, (224, 224), interpolation=cv2.INTER_LINEAR)
-    
-    connection = {0: 'head parts', 1: 'torso parts', 2: 'leg parts', 3: 'tail parts'}
-    rfs = {'head parts': None, 'torso parts': None, 'leg parts': None,
-           'tail parts': None}          # where to save rfs of all objparts
-
-    for d in range(512):
-        max_i = rows_idx[d].numpy()
-        max_j = cols_idx[d].numpy()
-        rf_center, rf_size = receptive_field((max_i, max_j))
-        
-        objpart_index = np.argmax(A[d])
-        if A[d][objpart_index] == 1:    # può essere 0 nel caso non ci si un massimo
-            mask = np.zeros(shape=(224, 224), dtype=np.uint8)
-            for i in range(224):
-                for j in range(224):
-                    if (i >= rf_center[0]-(RF_SIZE/2) and i <= rf_center[0]+(RF_SIZE/2)) and (j >= rf_center[1]-(RF_SIZE/2) and j <= rf_center[1]+(RF_SIZE/2)):
-                        mask[i, j] = 1
-            if rfs[connection[objpart_index]] is None:
-                rfs[connection[objpart_index]] = mask
-            else:
-                rfs[connection[objpart_index]] = cv2.add(mask, rfs[connection[objpart_index]])
-            
-    
-    for k, v in rfs.items():
-        print("computing rf of", k)
-        v = tf.tile(tf.reshape(tf.convert_to_tensor(v), (224,224,1)),[1,1,3]).numpy()
-        cv2.imshow(k, cv2.addWeighted(image, 0.5, v, 0.5, 0))
-        cv2.waitKey(0)
-        cv2.destroyAllWindows()
-    '''
-    

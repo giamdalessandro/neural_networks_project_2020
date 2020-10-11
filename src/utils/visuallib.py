@@ -5,14 +5,31 @@ from matplotlib import pyplot as plt
 from matplotlib import colors as clr
 import matplotlib.image as mpimg
 import numpy as np
+import matplotlib.image as mpimg
+
 from mpl_toolkits.axes_grid1 import AxesGrid
+from tensorflow.keras.preprocessing.image import ImageDataGenerator, load_img, img_to_array
+from tensorflow.keras.applications.vgg16 import preprocess_input
 
-from dataset_utils import load_test_image, FILE_ID
 
+from utils.dataset_utils import  FILE_ID
+
+POS_IMAGE_SET_TEST = "./dataset/train_val/bird"
 
 scale1 = 400     # beta * 100
 scale2 = 2*scale1*1000  
 
+
+def load_test_image(folder, fileid):
+    """
+    loads and preprocesses default img specified in 'visualize.py' in variable 'path'
+    """
+    path = os.path.join(folder, fileid)
+    img = load_img(path, target_size=(224, 224))      # test image
+    img = img_to_array(img)
+    img = np.expand_dims(img, axis=0)
+    img = preprocess_input(img)
+    return img
 
 
 def compute_heatmap(x, mode="sum"):
@@ -38,7 +55,10 @@ def print_heatmap(a, cmap="bone"):
 
     ax.append(fig.add_subplot(1, cols,1))
     ax[-1].set_title("preprocessed img")
-    images.append(plt.imshow(load_test_image()[0, :, :, :], cmap))
+    
+    img = mpimg.imread(os.path.join(POS_IMAGE_SET_TEST, "2008_001679.jpg"))
+    
+    images.append(plt.imshow(img))
     ax[-1].label_outer()
 
     ax.append(fig.add_subplot(1, cols, 2))

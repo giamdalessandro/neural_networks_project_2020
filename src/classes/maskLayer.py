@@ -58,6 +58,7 @@ class MaskLayer(tf.keras.layers.Layer):
             
             # output[b] = max( [T * max(val, -1)] * conv_output[b], 0)
             output[b]=tf.math.maximum((tf.math.multiply(self.tau * tf.math.maximum(val,-1), inputs[b])), 0)
+            #output[b]=tf.math.multiply(self.tau * tf.math.maximum(val,-1), inputs[b])  --> for displaying results
         return tf.convert_to_tensor(output)
 
     
