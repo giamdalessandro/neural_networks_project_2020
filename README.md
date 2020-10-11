@@ -18,5 +18,5 @@ python -c "import tensorflow as tf;print(tf.reduce_sum(tf.random.normal([1000, 1
 deactivate                                              # to exit the virtual env
 ```
 
-We used also:
+We also used:
     - https://github.com/caesar0301/treelib
