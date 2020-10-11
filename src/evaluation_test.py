@@ -20,7 +20,7 @@ def gimme_g_gimme_x(test_image, flat_model, fc_model, s):
 
 
 start = dt.now()
-METRICS = 1
+METRICS = 3
 
 TREE100 = "./forest/test_tree_100_imgs_with_A.json"
 MODELS = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'models'))
@@ -97,15 +97,23 @@ if METRICS == 1:
             break
     
     ymean = tf.reduce_mean(y_list)
-    print("                                          HEAD --- TORSO --- LEG --- TAIL")
-    print("objpart contribution error layer 1     ", tf.reshape(tf.divide(tf.reduce_mean(g_strano_1,      axis=0), ymean), shape=(4)).numpy())
-    print("objpart contribution error layer 2     ", tf.reshape(tf.divide(tf.reduce_mean(g_strano_2,      axis=0), ymean), shape=(4)).numpy())
-    print("objpart contribution error layer 3     ", tf.reshape(tf.divide(tf.reduce_mean(g_strano_3,      axis=0), ymean), shape=(4)).numpy())
-    print("objpart contribution error layer 4     ", tf.reshape(tf.divide(tf.reduce_mean(g_strano_4,      axis=0), ymean), shape=(4)).numpy())
-    print("objpart contribution error layer 5     ", tf.reshape(tf.divide(tf.reduce_mean(g_strano_5,      axis=0), ymean), shape=(4)).numpy())
-    print("objpart contribution error layer 6     ", tf.reshape(tf.divide(tf.reduce_mean(g_strano_6,      axis=0), ymean), shape=(4)).numpy())
-    print("objpart contribution error layer leaves", tf.reshape(tf.divide(tf.reduce_mean(g_strano_leaves, axis=0), ymean), shape=(4)).numpy())
-
+    print("                                        | HEAD --- |TORSO --- |LEG ---   |TAIL ---   |AVG")
+    print("objpart contribution error layer 1     ", tf.reshape(tf.divide(tf.reduce_mean(g_strano_1,      axis=0), ymean), shape=(4)).numpy(), tf.reduce_mean(tf.reshape(tf.divide(tf.reduce_mean(g_strano_1,      axis=0), ymean), shape=(4))).numpy())
+    print("objpart contribution error layer 2     ", tf.reshape(tf.divide(tf.reduce_mean(g_strano_2,      axis=0), ymean), shape=(4)).numpy(), tf.reduce_mean(tf.reshape(tf.divide(tf.reduce_mean(g_strano_2,      axis=0), ymean), shape=(4))).numpy())
+    print("objpart contribution error layer 3     ", tf.reshape(tf.divide(tf.reduce_mean(g_strano_3,      axis=0), ymean), shape=(4)).numpy(), tf.reduce_mean(tf.reshape(tf.divide(tf.reduce_mean(g_strano_3,      axis=0), ymean), shape=(4))).numpy())
+    print("objpart contribution error layer 4     ", tf.reshape(tf.divide(tf.reduce_mean(g_strano_4,      axis=0), ymean), shape=(4)).numpy(), tf.reduce_mean(tf.reshape(tf.divide(tf.reduce_mean(g_strano_4,      axis=0), ymean), shape=(4))).numpy())
+    print("objpart contribution error layer 5     ", tf.reshape(tf.divide(tf.reduce_mean(g_strano_5,      axis=0), ymean), shape=(4)).numpy(), tf.reduce_mean(tf.reshape(tf.divide(tf.reduce_mean(g_strano_5,      axis=0), ymean), shape=(4))).numpy())
+    print("objpart contribution error layer 6     ", tf.reshape(tf.divide(tf.reduce_mean(g_strano_6,      axis=0), ymean), shape=(4)).numpy(), tf.reduce_mean(tf.reshape(tf.divide(tf.reduce_mean(g_strano_6,      axis=0), ymean), shape=(4))).numpy())
+    print("objpart contribution error layer leaves", tf.reshape(tf.divide(tf.reduce_mean(g_strano_leaves, axis=0), ymean), shape=(4)).numpy(), tf.reduce_mean(tf.reshape(tf.divide(tf.reduce_mean(g_strano_leaves, axis=0), ymean), shape=(4))).numpy())
+    
+    print("                                        | HEAD --- |TORSO --- |LEG ---   |TAIL ---   |AVG")
+    print("Objpart contribution layer 1:          ", tf.reshape(tf.reduce_mean(g_strano_1     , axis=0), shape=(4)).numpy(), tf.reduce_mean(tf.reshape(tf.reduce_mean(g_strano_1     , axis=0), shape=(4))).numpy())
+    print("Objpart contribution layer 2:          ", tf.reshape(tf.reduce_mean(g_strano_2     , axis=0), shape=(4)).numpy(), tf.reduce_mean(tf.reshape(tf.reduce_mean(g_strano_2     , axis=0), shape=(4))).numpy())
+    print("Objpart contribution layer 3:          ", tf.reshape(tf.reduce_mean(g_strano_3     , axis=0), shape=(4)).numpy(), tf.reduce_mean(tf.reshape(tf.reduce_mean(g_strano_3     , axis=0), shape=(4))).numpy())
+    print("Objpart contribution layer 4:          ", tf.reshape(tf.reduce_mean(g_strano_4     , axis=0), shape=(4)).numpy(), tf.reduce_mean(tf.reshape(tf.reduce_mean(g_strano_4     , axis=0), shape=(4))).numpy())
+    print("Objpart contribution layer 5:          ", tf.reshape(tf.reduce_mean(g_strano_5     , axis=0), shape=(4)).numpy(), tf.reduce_mean(tf.reshape(tf.reduce_mean(g_strano_5     , axis=0), shape=(4))).numpy())
+    print("Objpart contribution layer 6:          ", tf.reshape(tf.reduce_mean(g_strano_6     , axis=0), shape=(4)).numpy(), tf.reduce_mean(tf.reshape(tf.reduce_mean(g_strano_6     , axis=0), shape=(4))).numpy())
+    print("Objpart contribution layer leaves:     ", tf.reshape(tf.reduce_mean(g_strano_leaves, axis=0), shape=(4)).numpy(), tf.reduce_mean(tf.reshape(tf.reduce_mean(g_strano_leaves, axis=0), shape=(4))).numpy())
 
 
 # metrica 2 #
@@ -179,44 +187,99 @@ if METRICS == 3:
     y_tree100_5 = []
     y_tree100_6 = []
     y_tree100_leaves = []
+    ymax = 0
+    ymin = 1
 
+    err1 = []
+    err2 = []
+    err3 = []
+    err4 = []
+    err5 = []
+    err6 = []
+    errleaves = []
 
     print(">> Testing on ", BREAK, " positive images")
     i = 0
     for img in os.listdir(POS_IMAGE_SET_TEST):
-        if img.endswith('.jpg'):
+        if img.endswith('.jpg') and img[0] == '2':
             test_image = load_test_image(folder=POS_IMAGE_SET_TEST, fileid=img)
             x, g = gimme_g_gimme_x(test_image, flat_model, fc_model, tree100.s)
 
             y_true.append(1)
-            y_cnn.append(1 if cnn.predict(test_image)[0][0] > 0.5 else 0)
-            y_tree100_1.append(     1 if tree100.predict(g, x, level=1) > MEAN else 0)
-            y_tree100_2.append(     1 if tree100.predict(g, x, level=2) > MEAN else 0)
-            y_tree100_3.append(     1 if tree100.predict(g, x, level=3) > MEAN else 0)
-            y_tree100_4.append(     1 if tree100.predict(g, x, level=4) > MEAN else 0)
-            y_tree100_5.append(     1 if tree100.predict(g, x, level=5) > MEAN else 0)
-            y_tree100_6.append(     1 if tree100.predict(g, x, level=6) > MEAN else 0)
-            y_tree100_leaves.append(1 if tree100.predict(g, x, level=-1)> MEAN else 0)
+            y = cnn.predict(test_image)[0][0]
+            if y > ymax:
+                ymax = y
+            if y < ymin:
+                ymin = y
+            
+            y_cnn.append(1 if y > 0.5 else 0)
+
+            y1      = tree100.predict(g, x, level=1)
+            y2      = tree100.predict(g, x, level=2)
+            y3      = tree100.predict(g, x, level=3)
+            y4      = tree100.predict(g, x, level=4)
+            y5      = tree100.predict(g, x, level=5)
+            y6      = tree100.predict(g, x, level=6)
+            yleaves = tree100.predict(g, x, level=-1)
+
+            y_tree100_1.append(     1 if y1      > MEAN else 0)
+            y_tree100_2.append(     1 if y2      > MEAN else 0)
+            y_tree100_3.append(     1 if y3      > MEAN else 0)
+            y_tree100_4.append(     1 if y4      > MEAN else 0)
+            y_tree100_5.append(     1 if y5      > MEAN else 0)
+            y_tree100_6.append(     1 if y6      > MEAN else 0)
+            y_tree100_leaves.append(1 if yleaves > MEAN else 0)
+            
+            err1.append(     abs(y1      - y))
+            err2.append(     abs(y2      - y))
+            err3.append(     abs(y3      - y))
+            err4.append(     abs(y4      - y))
+            err5.append(     abs(y5      - y))
+            err6.append(     abs(y6      - y))
+            errleaves.append(abs(yleaves - y))
+
             i += 1
             if i == BREAK:
                 break
-
     print(">> Testing on ", BREAK, " negative images")
     i = 0
     for img in os.listdir(NEG_IMAGE_SET_TEST):
-        if img.endswith('.jpg'):
+        if img.endswith('.jpg') and img[0] == '2'::
             test_image = load_test_image(folder=NEG_IMAGE_SET_TEST, fileid=img)
             x, g = gimme_g_gimme_x(test_image, flat_model, fc_model, tree100.s)
 
             y_true.append(0)
-            y_cnn.append(1 if cnn.predict(test_image)[0][0] > 0.5 else 0)
-            y_tree100_1.append(     1 if tree100.predict(g, x, level=1) > MEAN else 0)
-            y_tree100_2.append(     1 if tree100.predict(g, x, level=2) > MEAN else 0)
-            y_tree100_3.append(     1 if tree100.predict(g, x, level=3) > MEAN else 0)
-            y_tree100_4.append(     1 if tree100.predict(g, x, level=4) > MEAN else 0)
-            y_tree100_5.append(     1 if tree100.predict(g, x, level=5) > MEAN else 0)
-            y_tree100_6.append(     1 if tree100.predict(g, x, level=6) > MEAN else 0)
-            y_tree100_leaves.append(1 if tree100.predict(g, x, level=-1)> MEAN else 0)
+            y = cnn.predict(test_image)[0][0]
+            if y > ymax:
+                ymax = y
+            if y < ymin:
+                ymin = y
+            
+            y_cnn.append(1 if y > 0.5 else 0)
+            y1      = tree100.predict(g, x, level=1)
+            y2      = tree100.predict(g, x, level=2)
+            y3      = tree100.predict(g, x, level=3)
+            y4      = tree100.predict(g, x, level=4)
+            y5      = tree100.predict(g, x, level=5)
+            y6      = tree100.predict(g, x, level=6)
+            yleaves = tree100.predict(g, x, level=-1)
+
+            y_tree100_1.append(     1 if y1      > MEAN else 0)
+            y_tree100_2.append(     1 if y2      > MEAN else 0)
+            y_tree100_3.append(     1 if y3      > MEAN else 0)
+            y_tree100_4.append(     1 if y4      > MEAN else 0)
+            y_tree100_5.append(     1 if y5      > MEAN else 0)
+            y_tree100_6.append(     1 if y6      > MEAN else 0)
+            y_tree100_leaves.append(1 if yleaves > MEAN else 0)
+            
+            err1.append(     abs(y1      - y))
+            err2.append(     abs(y2      - y))
+            err3.append(     abs(y3      - y))
+            err4.append(     abs(y4      - y))
+            err5.append(     abs(y5      - y))
+            err6.append(     abs(y6      - y))
+            errleaves.append(abs(yleaves - y))
+
             i += 1
             if i == BREAK:
                 break
@@ -229,7 +292,15 @@ if METRICS == 3:
     print("accuracy_score TREE layer 5 ", (accuracy_score(y_true, y_tree100_5)*100))
     print("accuracy_score TREE layer 6 ", (accuracy_score(y_true, y_tree100_6)*100))
     print("accuracy_score TREE leaves  ", (accuracy_score(y_true, y_tree100_leaves)*100))
-
+    #ymax = 1
+    #ymin = 0
+    print("prediction error 2nd  layer", tf.reduce_mean(tf.divide(err1     , ymax-ymin)).numpy())
+    print("prediction error 3rd  layer", tf.reduce_mean(tf.divide(err2     , ymax-ymin)).numpy())
+    print("prediction error 4th  layer", tf.reduce_mean(tf.divide(err3     , ymax-ymin)).numpy())
+    print("prediction error 5th  layer", tf.reduce_mean(tf.divide(err4     , ymax-ymin)).numpy())
+    print("prediction error 6th  layer", tf.reduce_mean(tf.divide(err5     , ymax-ymin)).numpy())
+    print("prediction error 7th  layer", tf.reduce_mean(tf.divide(err6     , ymax-ymin)).numpy())
+    print("prediction error leaves    ", tf.reduce_mean(tf.divide(errleaves, ymax-ymin)).numpy())
 
 print("TIME --", dt.now()-start)
 print("þøþł")

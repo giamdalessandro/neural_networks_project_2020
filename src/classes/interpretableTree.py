@@ -104,8 +104,17 @@ class InterpretableTree(tl.Tree):
         print("       -- generic nodes:...", size - leaves - 1)
         print("       -- leaves:..........", leaves)
         print("       -- depth:...........", self.depth())
-        print("       -- gamma:...........", self.gamma if isinstance(self.gamma, float) else self.gamma.numpy())
-        print("       -- s (shape):.......", self.s.shape)
+        for i in range(self.depth()):
+            l = 0
+            if i == 7 or i == 8:
+                l = len(self.leaves())
+            else:
+                for node in self.all_nodes_itr():
+                    if self.level(node.identifier) == i:
+                        l+=1
+            print("       -- level", i, "has", l, "nodes")
+        #print("       -- gamma:...........", self.gamma if isinstance(self.gamma, float) else self.gamma.numpy())
+        #print("       -- s (shape):.......", self.s.shape)
         print("-------------------------------------------------")
 
     def save2json(self, save_name, save_folder="./forest"):
