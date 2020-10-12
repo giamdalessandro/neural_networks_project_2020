@@ -13,8 +13,7 @@ cd ~
 python3 -m venv --system-site-packages ./nn_venv
 source ./nn_venv/bin/activate                       # to enter the virtual env
 pip install --upgrade pip
-pip install -r requirements.txt
-python -c "import tensorflow as tf;print(tf.reduce_sum(tf.random.normal([1000, 1000])))"
+pip install -r requirments.txt
 deactivate                                              # to exit the virtual env
 ```
 
