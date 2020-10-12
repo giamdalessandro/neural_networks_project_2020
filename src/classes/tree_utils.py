@@ -6,7 +6,7 @@ import random as rd
 import treelib as tl
 import tensorflow as tf
 
-from beepy import beep
+#from beepy import beep
 from math import sqrt, log, exp
 from scipy.optimize import minimize
 from datetime import datetime as dt
