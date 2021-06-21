@@ -30,3 +30,8 @@ pip install -r requirments.txt
 ```
 
 - we exploited [treelib](https://github.com/caesar0301/treelib) as tree implementation.
+
+## Authors
+- [Giammarco D'Alessandro](https://gitlab.com/zascerta)
+- [Maria Rosaria Fraraccio](https://gitlab.com/rooosyf)
+- [Luca Gioffrè](https://gitlab.com/balthier)
