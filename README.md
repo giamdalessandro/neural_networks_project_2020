@@ -34,4 +34,4 @@ pip install -r requirments.txt
 ## Authors
 - [Giammarco D'Alessandro](https://github.com/giamdalessandro)
 - [Maria Rosaria Fraraccio](https://gitlab.com/rooosyf)
-- [Luca Gioffrè](https://github.com/balthier7997)
+- [Luca Gioffrè](https://github.com/lukfre)
